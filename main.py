@@ -199,19 +199,39 @@ def build_stroke_df(data: StrokeInput) -> pd.DataFrame:
         'noise_sources_Mosque', 'noise_sources_None', 'noise_sources_Welder'
     ]
 
+    # Exact codes confirmed from the trained LabelEncoders (le.classes_) on the
+    # real training CSV — not guesses. Do not change without re-verifying
+    # against the training data.
+    def encode(value, mapping, default_key):
+        key = str(value).strip().lower().replace(' ', '_')
+        return mapping.get(key, mapping[default_key])
+
+    gender_map = {'female': 0, 'male': 1}
+    ever_married_map = {'no': 0, 'yes': 1, 'married': 1, 'divorced': 1, 'widowed': 1, 'single': 0}
+    # NOTE: the training data never contained a "Never_worked" case, so there
+    # is no learned code for it. Mapping it to 'children' (both represent a
+    # non-working population) as the closest available proxy.
+    work_type_map = {
+        'govt_job': 0, 'private': 1, 'self-employed': 2,
+        'children': 3, 'child': 3, 'never_worked': 3,
+    }
+    residence_type_map = {'rural': 0, 'urban': 1}
+    smoking_status_map = {
+        'unknown': 0, 'formerly_smoked': 1, 'never_smoked': 2, 'smokes': 3,
+    }
+
     d = data.dict()
     row = {
-        'gender': 1 if str(d.get('gender', 'Male') or 'Male').strip().lower() == 'male' else 0,
+        'gender': encode(d.get('gender', 'Male'), gender_map, 'male'),
         'age': safe_float(d.get('age', 0)),
         'hypertension': int(d.get('hypertension', 0) or 0),
         'heart_disease': int(d.get('heart_disease', 0) or 0),
-        'ever_married': 1 if str(d.get('ever_married', 'No') or 'No').strip().lower()
-                              in ('yes', 'married', 'divorced', 'widowed', 'true', '1') else 0,
-        'work_type': str(d.get('work_type', 'Private') or 'Private'),
-        'Residence_type': str(d.get('Residence_type', 'Urban') or 'Urban'),
+        'ever_married': encode(d.get('ever_married', 'No'), ever_married_map, 'no'),
+        'work_type': encode(d.get('work_type', 'Private'), work_type_map, 'private'),
+        'Residence_type': encode(d.get('Residence_type', 'Urban'), residence_type_map, 'urban'),
         'avg_glucose_level': safe_float(d.get('avg_glucose_level', 100)),
         'bmi': safe_float(d.get('bmi', 25)),
-        'smoking_status': str(d.get('smoking_status', 'Never smoked') or 'Never smoked'),
+        'smoking_status': encode(d.get('smoking_status', 'Never smoked'), smoking_status_map, 'never_smoked'),
         'stress_level': safe_float(d.get('stress_level', 0)),
         'ptsd': safe_float(d.get('ptsd', 0)),
         'depression_level': safe_float(d.get('depression_level', 0)),
@@ -402,7 +422,7 @@ def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
         'PhysicalActivity', 'DietQuality', 'SleepQuality',
         'SystolicBP', 'DiastolicBP', 'CholesterolTotal',
         'CholesterolLDL', 'CholesterolHDL', 'CholesterolTriglycerides',
-        'FunctionalAssessment', 'ADL', 'HeadInjury', 'MMSE'
+        'FunctionalAssessment', 'ADL', 'MMSE'
     ]
     # These read as Yes/No or Male/Female in the UI, but — same pattern as
     # stroke's gender/ever_married — the model expects them pre-encoded 0/1,
@@ -411,9 +431,6 @@ def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
         'Gender', 'FamilyHistoryAlzheimers', 'CardiovascularDisease',
         'Diabetes', 'Depression', 'Hypertension', 'BehavioralProblems'
     ]
-    # Genuinely multi-value category (never smoked / formerly smoked / smokes) —
-    # stays a string for the model's categorical encoder.
-    string_categorical_cols = ['Smoking']
     boolean_cols = [
         'Confusion', 'Disorientation', 'PersonalityChanges',
         'DifficultyCompletingTasks', 'Forgetfulness', 'MemoryComplaints'
@@ -429,10 +446,25 @@ def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
         row[col] = safe_float(d.get(col, 0))
     for col in binary_cols:
         row[col] = to_binary(d.get(col, "No"))
-    for col in string_categorical_cols:
-        row[col] = str(d.get(col, "No") or "No")
     for col in boolean_cols:
         row[col] = int(d.get(col, 0) or 0)
+
+    # Smoking: the model was trained on a BINARY smoking feature (only 2
+    # unique values seen), but the UI collects 3 levels (never/formerly/
+    # smokes). Collapsing: treat any smoking history (past or present) as 1.
+    # If you'd rather only count *current* smokers as 1, change the check to
+    # `== 'smokes'` only.
+    smoking_raw = str(d.get('Smoking', 'No') or 'No').strip().lower()
+    row['Smoking'] = 1 if smoking_raw in ('smokes', 'formerly smoked', 'formerly_smoked', 'yes', '1') else 0
+
+    # HeadInjury: the model was trained on a BINARY head-injury feature, but
+    # the UI collects a type (None/Accident/Violence) or a count. Collapsing
+    # to Yes/No — any recorded injury type/count > 0 becomes 1.
+    head_raw = d.get('HeadInjury', 0)
+    try:
+        row['HeadInjury'] = 1 if float(head_raw) > 0 else 0
+    except (ValueError, TypeError):
+        row['HeadInjury'] = 0 if str(head_raw).strip().lower() in ('none', 'no', '') else 1
 
     return pd.DataFrame([row])[expected]
 
