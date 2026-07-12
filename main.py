@@ -201,11 +201,12 @@ def build_stroke_df(data: StrokeInput) -> pd.DataFrame:
 
     d = data.dict()
     row = {
-        'gender': str(d.get('gender', 'Male') or 'Male'),
+        'gender': 1 if str(d.get('gender', 'Male') or 'Male').strip().lower() == 'male' else 0,
         'age': safe_float(d.get('age', 0)),
         'hypertension': int(d.get('hypertension', 0) or 0),
         'heart_disease': int(d.get('heart_disease', 0) or 0),
-        'ever_married': str(d.get('ever_married', 'No') or 'No'),
+        'ever_married': 1 if str(d.get('ever_married', 'No') or 'No').strip().lower()
+                              in ('yes', 'married', 'divorced', 'widowed', 'true', '1') else 0,
         'work_type': str(d.get('work_type', 'Private') or 'Private'),
         'Residence_type': str(d.get('Residence_type', 'Urban') or 'Urban'),
         'avg_glucose_level': safe_float(d.get('avg_glucose_level', 100)),
@@ -403,21 +404,32 @@ def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
         'CholesterolLDL', 'CholesterolHDL', 'CholesterolTriglycerides',
         'FunctionalAssessment', 'ADL', 'HeadInjury', 'MMSE'
     ]
-    categorical_cols = [
-        'Gender', 'Smoking', 'FamilyHistoryAlzheimers',
-        'CardiovascularDisease', 'Diabetes', 'Depression',
-        'Hypertension', 'BehavioralProblems'
+    # These read as Yes/No or Male/Female in the UI, but — same pattern as
+    # stroke's gender/ever_married — the model expects them pre-encoded 0/1,
+    # not as strings, since they were label-encoded (not one-hot) at training time.
+    binary_cols = [
+        'Gender', 'FamilyHistoryAlzheimers', 'CardiovascularDisease',
+        'Diabetes', 'Depression', 'Hypertension', 'BehavioralProblems'
     ]
+    # Genuinely multi-value category (never smoked / formerly smoked / smokes) —
+    # stays a string for the model's categorical encoder.
+    string_categorical_cols = ['Smoking']
     boolean_cols = [
         'Confusion', 'Disorientation', 'PersonalityChanges',
         'DifficultyCompletingTasks', 'Forgetfulness', 'MemoryComplaints'
     ]
 
+    def to_binary(v):
+        s = str(v).strip().lower()
+        return 1 if s in ('yes', 'male', 'true', '1') else 0
+
     d = data.dict()
     row = {}
     for col in numeric_cols:
         row[col] = safe_float(d.get(col, 0))
-    for col in categorical_cols:
+    for col in binary_cols:
+        row[col] = to_binary(d.get(col, "No"))
+    for col in string_categorical_cols:
         row[col] = str(d.get(col, "No") or "No")
     for col in boolean_cols:
         row[col] = int(d.get(col, 0) or 0)
