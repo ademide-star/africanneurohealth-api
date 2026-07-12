@@ -65,9 +65,9 @@ def load_models():
                 logger.error(f"Failed to load stroke model from {path}: {e}")
 
     dementia_paths = [
-        "trained_dementia_models.pkl",
-        "models/trained_dementia_models.pkl",
-        "dementia_model.pkl",
+        "african_neurohealth_hgb.pkl",
+        "best_model_HistGradientBoosting.pkl",
+        "alzheimers_pipeline.joblib",
     ]
     for path in dementia_paths:
         if os.path.exists(path):
