@@ -2,8 +2,6 @@
 African NeuroHealth Intelligence — FastAPI Backend
 Loads your trained .pkl models and serves predictions to the HTML frontend.
 Deploy on Render (free tier) at: https://africanneurohealth-api.onrender.com
-
-CORS is open so the HTML on Vercel can call it freely.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -23,10 +21,13 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="African NeuroHealth Intelligence API",
     description="Stroke and Dementia risk prediction using trained ML models",
-    version="2.0.0"
+    version="2.1.0"
 )
 
 # ── CORS — allow your Vercel site and HF space ──
+# NOTE: "*" was removed. Per the CORS spec, a wildcard origin cannot be
+# combined with allow_credentials=True — browsers will reject credentialed
+# requests against a wildcard response. List every real origin explicitly.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -35,7 +36,6 @@ app.add_middleware(
         "https://neuromatrixbiosystems.com",
         "http://localhost:3000",
         "http://localhost:8080",
-        "*"   # open during development — restrict to above URLs in production
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -46,14 +46,15 @@ app.add_middleware(
 stroke_model  = None
 dementia_model = None
 
+
 @app.on_event("startup")
 def load_models():
     global stroke_model, dementia_model
 
     stroke_paths = [
         "stroke_REAL_model.pkl",
-        "models/stroke_REAL_model.pkl",
         "stroke_model.pkl",
+        "stroke_pipeline.joblib",
     ]
     for path in stroke_paths:
         if os.path.exists(path):
@@ -94,6 +95,7 @@ def root():
         "dementia_model": "loaded" if dementia_model else "demo mode",
         "timestamp": datetime.now().isoformat()
     }
+
 
 @app.get("/health")
 def health():
@@ -171,19 +173,18 @@ def safe_float(val, default=0.0):
 
 
 def build_stroke_df(data: StrokeInput) -> pd.DataFrame:
-    """Build the exact DataFrame the stroke model expects."""
-    numeric_features = [
-        'age', 'avg_glucose_level', 'bmi', 'stress_level',
-        'ptsd', 'depression_level', 'diabetes_type', 'sleep_hours',
-        'height', 'weight', 'systolic_bp', 'diastolic_bp'
-    ]
-    categorical_features = [
-        'gender', 'ever_married', 'work_type', 'Residence_type',
-        'smoking_status', 'blood_group', 'genotype'
-    ]
-    boolean_features = [
-        'chronic_pain_None', 'chronic_pain_Rheumatism',
-        'chronic_pain_Osteoarthritis', 'chronic_pain_Others',
+    """
+    Build the exact DataFrame the stroke model expects.
+    Columns/order here match model.feature_names_in_ exactly — do not add,
+    remove, or reorder without re-checking feature_names_in_ on the .pkl.
+    """
+    expected = [
+        'gender', 'age', 'hypertension', 'heart_disease', 'ever_married',
+        'work_type', 'Residence_type', 'avg_glucose_level', 'bmi',
+        'smoking_status', 'stress_level', 'ptsd', 'depression_level',
+        'diabetes_type', 'sleep_hours',
+        'chronic_pain_None', 'chronic_pain_Osteoarthritis',
+        'chronic_pain_Others', 'chronic_pain_Rheumatism',
         'salt_intake_High', 'salt_intake_Little',
         'salt_intake_Moderate', 'salt_intake_None',
         'hypertension_treatment_Drugs', 'hypertension_treatment_Herbal',
@@ -198,45 +199,48 @@ def build_stroke_df(data: StrokeInput) -> pd.DataFrame:
         'noise_sources_Mosque', 'noise_sources_None', 'noise_sources_Welder'
     ]
 
-    row = {}
     d = data.dict()
-
-    for col in numeric_features:
-        row[col] = safe_float(d.get(col, 0))
-
-    for col in categorical_features:
-        row[col] = str(d.get(col, "None") or "None")
-
-    # Map boolean features (handle space/hyphen in names)
-    bool_map = {
-        'chronic_pain_None':          d.get('chronic_pain_None', 1),
-        'chronic_pain_Rheumatism':    d.get('chronic_pain_Rheumatism', 0),
-        'chronic_pain_Osteoarthritis':d.get('chronic_pain_Osteoarthritis', 0),
-        'chronic_pain_Others':        d.get('chronic_pain_Others', 0),
-        'salt_intake_High':     d.get('salt_intake_High', 0),
-        'salt_intake_Little':   d.get('salt_intake_Little', 0),
+    row = {
+        'gender': str(d.get('gender', 'Male') or 'Male'),
+        'age': safe_float(d.get('age', 0)),
+        'hypertension': int(d.get('hypertension', 0) or 0),
+        'heart_disease': int(d.get('heart_disease', 0) or 0),
+        'ever_married': str(d.get('ever_married', 'No') or 'No'),
+        'work_type': str(d.get('work_type', 'Private') or 'Private'),
+        'Residence_type': str(d.get('Residence_type', 'Urban') or 'Urban'),
+        'avg_glucose_level': safe_float(d.get('avg_glucose_level', 100)),
+        'bmi': safe_float(d.get('bmi', 25)),
+        'smoking_status': str(d.get('smoking_status', 'Never smoked') or 'Never smoked'),
+        'stress_level': safe_float(d.get('stress_level', 0)),
+        'ptsd': safe_float(d.get('ptsd', 0)),
+        'depression_level': safe_float(d.get('depression_level', 0)),
+        'diabetes_type': safe_float(d.get('diabetes_type', 0)),
+        'sleep_hours': safe_float(d.get('sleep_hours', 7)),
+        'chronic_pain_None': d.get('chronic_pain_None', 1),
+        'chronic_pain_Osteoarthritis': d.get('chronic_pain_Osteoarthritis', 0),
+        'chronic_pain_Others': d.get('chronic_pain_Others', 0),
+        'chronic_pain_Rheumatism': d.get('chronic_pain_Rheumatism', 0),
+        'salt_intake_High': d.get('salt_intake_High', 0),
+        'salt_intake_Little': d.get('salt_intake_Little', 0),
         'salt_intake_Moderate': d.get('salt_intake_Moderate', 0),
-        'salt_intake_None':     d.get('salt_intake_None', 1),
-        'hypertension_treatment_Drugs':  d.get('hypertension_treatment_Drugs', 0),
+        'salt_intake_None': d.get('salt_intake_None', 1),
+        'hypertension_treatment_Drugs': d.get('hypertension_treatment_Drugs', 0),
         'hypertension_treatment_Herbal': d.get('hypertension_treatment_Herbal', 0),
-        'hypertension_treatment_None':   d.get('hypertension_treatment_None', 1),
-        'nutritional_lifestyle_Fast Foods':         d.get('nutritional_lifestyle_Fast_Foods', 0),
-        'nutritional_lifestyle_Homemade Food':      d.get('nutritional_lifestyle_Homemade_Food', 0),
-        'nutritional_lifestyle_Junk Food':          d.get('nutritional_lifestyle_Junk_Food', 0),
+        'hypertension_treatment_None': d.get('hypertension_treatment_None', 1),
+        'nutritional_lifestyle_Fast Foods': d.get('nutritional_lifestyle_Fast_Foods', 0),
+        'nutritional_lifestyle_Homemade Food': d.get('nutritional_lifestyle_Homemade_Food', 0),
+        'nutritional_lifestyle_Junk Food': d.get('nutritional_lifestyle_Junk_Food', 0),
         'nutritional_lifestyle_Local Bukka/Street Food': d.get('nutritional_lifestyle_Local_Bukka', 0),
-        'noise_sources_Block-Industry':   d.get('noise_sources_Block_Industry', 0),
-        'noise_sources_Church':           d.get('noise_sources_Church', 0),
-        'noise_sources_Club-House':       d.get('noise_sources_Club_House', 0),
-        'noise_sources_Generator':        d.get('noise_sources_Generator', 0),
+        'noise_sources_Block-Industry': d.get('noise_sources_Block_Industry', 0),
+        'noise_sources_Church': d.get('noise_sources_Church', 0),
+        'noise_sources_Club-House': d.get('noise_sources_Club_House', 0),
+        'noise_sources_Generator': d.get('noise_sources_Generator', 0),
         'noise_sources_Grinding-Machine': d.get('noise_sources_Grinding_Machine', 0),
-        'noise_sources_Market':           d.get('noise_sources_Market', 0),
-        'noise_sources_Mosque':           d.get('noise_sources_Mosque', 0),
-        'noise_sources_None':             d.get('noise_sources_None', 1),
-        'noise_sources_Welder':           d.get('noise_sources_Welder', 0),
+        'noise_sources_Market': d.get('noise_sources_Market', 0),
+        'noise_sources_Mosque': d.get('noise_sources_Mosque', 0),
+        'noise_sources_None': d.get('noise_sources_None', 1),
+        'noise_sources_Welder': d.get('noise_sources_Welder', 0),
     }
-    row.update(bool_map)
-
-    expected = numeric_features + categorical_features + boolean_features
     return pd.DataFrame([row])[expected]
 
 
@@ -246,7 +250,6 @@ def predict_stroke(data: StrokeInput):
         df = build_stroke_df(data)
 
         if stroke_model is None:
-            # Demo mode — use calibrated risk scoring
             risk_score = _demo_stroke_score(data)
         else:
             model = stroke_model.get('model') if isinstance(stroke_model, dict) else stroke_model
@@ -328,10 +331,10 @@ class DementiaInput(BaseModel):
     EducationLevel:          float = 12.0
     AlcoholConsumption:      float = 0.0
     PhysicalActivity:        float = 3.0
-    DietQuality:             float = 5.0
+    DietQuality:              float = 5.0
     SleepQuality:            float = 6.0
     SystolicBP:              float = 120.0
-    DiastolicBP:             float = 80.0
+    DiastolicBP:              float = 80.0
     CholesterolTotal:        float = 200.0
     CholesterolLDL:          float = 120.0
     CholesterolHDL:          float = 50.0
@@ -377,36 +380,48 @@ class DementiaInput(BaseModel):
 
 
 def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
-    numeric_features = [
+    """
+    Build the exact DataFrame the dementia model expects.
+    Columns/order here match model.feature_names_in_ exactly — do not add,
+    remove, or reorder without re-checking feature_names_in_ on the .pkl.
+    """
+    expected = [
+        'Age', 'Gender', 'EducationLevel', 'BMI', 'Smoking',
+        'AlcoholConsumption', 'PhysicalActivity', 'DietQuality', 'SleepQuality',
+        'FamilyHistoryAlzheimers', 'CardiovascularDisease', 'Diabetes', 'Depression',
+        'HeadInjury', 'Hypertension', 'SystolicBP', 'DiastolicBP',
+        'CholesterolTotal', 'CholesterolLDL', 'CholesterolHDL', 'CholesterolTriglycerides',
+        'MMSE', 'FunctionalAssessment', 'MemoryComplaints', 'BehavioralProblems', 'ADL',
+        'Confusion', 'Disorientation', 'PersonalityChanges',
+        'DifficultyCompletingTasks', 'Forgetfulness'
+    ]
+
+    numeric_cols = [
         'Age', 'BMI', 'EducationLevel', 'AlcoholConsumption',
         'PhysicalActivity', 'DietQuality', 'SleepQuality',
         'SystolicBP', 'DiastolicBP', 'CholesterolTotal',
         'CholesterolLDL', 'CholesterolHDL', 'CholesterolTriglycerides',
-        'FunctionalAssessment', 'ADL', 'HeadInjury', 'MMSE',
-        'Height', 'Weight', 'PollutionScore', 'Ethnicity',
-        'Country', 'Province_Option', 'MemoryScore', 'CustomStressScore'
+        'FunctionalAssessment', 'ADL', 'HeadInjury', 'MMSE'
     ]
-    categorical_features = [
+    categorical_cols = [
         'Gender', 'Smoking', 'FamilyHistoryAlzheimers',
         'CardiovascularDisease', 'Diabetes', 'Depression',
-        'Hypertension', 'BehavioralProblems', 'Genotype', 'BloodGroup'
+        'Hypertension', 'BehavioralProblems'
     ]
-    boolean_features = [
+    boolean_cols = [
         'Confusion', 'Disorientation', 'PersonalityChanges',
-        'DifficultyCompletingTasks', 'Forgetfulness', 'MemoryComplaints',
-        'PollutionCategoryLow', 'PollutionCategoryModerate', 'PollutionCategoryHigh'
+        'DifficultyCompletingTasks', 'Forgetfulness', 'MemoryComplaints'
     ]
 
     d = data.dict()
     row = {}
-    for col in numeric_features:
+    for col in numeric_cols:
         row[col] = safe_float(d.get(col, 0))
-    for col in categorical_features:
+    for col in categorical_cols:
         row[col] = str(d.get(col, "No") or "No")
-    for col in boolean_features:
+    for col in boolean_cols:
         row[col] = int(d.get(col, 0) or 0)
 
-    expected = numeric_features + categorical_features + boolean_features
     return pd.DataFrame([row])[expected]
 
 
@@ -419,9 +434,8 @@ def predict_dementia(data: DementiaInput):
             risk_score = _demo_dementia_score(data)
         else:
             model = dementia_model.get('model') if isinstance(dementia_model, dict) else dementia_model
-            # Handle ensemble dict from Streamlit app
+            # Handle ensemble dict from Streamlit app, if the pkl was saved that way
             if isinstance(model, dict):
-                # Average predictions from all models in ensemble
                 probas = []
                 for name, m in model.items():
                     try:
