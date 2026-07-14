@@ -429,6 +429,7 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
       </select>
     </div>
     <a href="https://neuromatrixbiosystems.com" target="_blank" class="btn btn-outline btn-sm" style="font-size:.75rem;padding:6px 14px;">NeuroMatrix ↗</a>
+    <button class="btn btn-outline btn-sm" onclick="showPage('herbs')">🌿 Herbal Remedies</button>
     <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="openLoginModal('researcher')">Researcher Login</button>
     <button class="btn btn-gold btn-sm" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
   </div></nav>
@@ -1275,6 +1276,42 @@ Designed to support research, clinical decision-making, and community health scr
 </div>
 </div>
 
+<!-- HERBAL REMEDIES GALLERY (public) -->
+<div id="page-herbs" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;">
+    <div><span class="section-label">// Ethnobotanical Database</span><h2 class="section-title" style="margin-bottom:0;">Herbal Remedies for Stroke</h2></div>
+    <button class="btn btn-outline btn-sm" onclick="showPage('home')">&#8592; Home</button>
+  </div>
+  <p style="color:var(--mist);font-size:.88rem;max-width:760px;margin-bottom:1.5rem;line-height:1.7;">
+    Documented traditional plant-based remedies used across African communities for stroke and related
+    conditions, gathered through ethnobotanical fieldwork. Entries are reviewed before publication;
+    validation status reflects current evidence — from traditional use only, through preliminary lab
+    findings, to peer-reviewed research.
+  </p>
+  <div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.25);border-radius:10px;padding:.9rem 1.1rem;font-size:.8rem;color:var(--smoke);margin-bottom:1.5rem;">
+    ⚠️ This database is for research and educational purposes only. It is not medical advice — consult a
+    qualified healthcare provider before using any plant-based remedy, especially alongside other treatment.
+  </div>
+
+  <div class="fg" style="max-width:320px;margin-bottom:1.5rem;">
+    <input type="text" id="herb-gallery-search" placeholder="Search by plant name..." oninput="renderHerbGallery()">
+  </div>
+
+  <div id="herb-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;">
+    <p style="color:var(--mist);">Loading remedies...</p>
+  </div>
+</div>
+</div>
+
+<!-- HERB DETAIL MODAL -->
+<div class="modal-bg" id="modal-herb-detail" onclick="closeModal('modal-herb-detail',event)">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('modal-herb-detail')">&#x2715;</button>
+    <div id="herb-detail-content"></div>
+  </div>
+</div>
+
 <!-- RESEARCHER PAGE -->
 <div id="page-researcher" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
 <div class="wrap">
@@ -1339,6 +1376,8 @@ Designed to support research, clinical decision-making, and community health scr
     <button class="tab-btn" onclick="switchTab('atab','models',this)">AI Models</button>
     <button class="tab-btn" onclick="switchTab('atab','livedata',this)">Live Data</button>
     <button class="tab-btn" onclick="switchTab('atab','import',this)">Import CSV</button>
+    <button class="tab-btn" onclick="switchTab('atab','herbs',this)">Herbal Remedies</button>
+    <button class="tab-btn" onclick="switchTab('atab','access',this)">Access Control</button>
     <button class="tab-btn" onclick="switchTab('atab','notifs',this)">Notifications</button>
   </div>
   <div id="atab-users" class="tab-panel active">
@@ -1380,6 +1419,8 @@ Designed to support research, clinical decision-making, and community health scr
           <option value="stress_assessments">stress_assessments</option>
           <option value="nutrition_tracker">nutrition_tracker</option>
           <option value="registered_users">registered_users</option>
+          <option value="herbal_remedies">herbal_remedies</option>
+          <option value="anhrl_survey_data">anhrl_survey_data</option>
           <option value="__custom__">Custom table name...</option>
         </select>
       </div>
@@ -1397,6 +1438,116 @@ Designed to support research, clinical decision-making, and community health scr
 
       <button class="btn btn-gold btn-sm" id="import-upload-btn" style="display:none;" onclick="uploadImportedCSV()">Upload to Supabase</button>
       <div id="import-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
+    </div>
+  </div>
+  <div id="atab-herbs" class="tab-panel">
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🌿 Add Herbal Remedy Entry</h4>
+      <p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">
+        New entries save as <strong>Draft</strong> and won't appear on the public gallery until you
+        publish them below. For bulk entries without photos, use Import CSV → <code>herbal_remedies</code>
+        instead, then come back here to attach photos and publish individually.
+      </p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="fg"><label>Plant Name *</label><input type="text" id="herb-plant-name" placeholder="e.g. Cinnamomum verum (local name)"></div>
+        <div class="fg"><label>Scientific Name</label><input type="text" id="herb-scientific-name" placeholder="Genus species"></div>
+        <div class="fg"><label>Family</label><input type="text" id="herb-family" placeholder="e.g. Lauraceae"></div>
+        <div class="fg"><label>Local Names</label><input type="text" id="herb-local-names" placeholder="Yoruba: ...; Hausa: ...; Igbo: ..."></div>
+        <div class="fg"><label>Part(s) Used</label><input type="text" id="herb-part-used" placeholder="e.g. Bark, Leaf"></div>
+        <div class="fg">
+          <label>Preparation Method</label>
+          <select id="herb-prep-method">
+            <option value="">Select</option>
+            <option>Decoction</option><option>Infusion</option><option>Maceration</option>
+            <option>Powder</option><option>Poultice</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Route of Administration</label>
+          <select id="herb-route"><option value="">Select</option><option>Oral</option><option>Topical</option><option>Other</option></select>
+        </div>
+        <div class="fg"><label>Dosage</label><input type="text" id="herb-dosage" placeholder="As documented, if known"></div>
+        <div class="fg"><label>Indication</label><input type="text" id="herb-indication" value="Stroke"></div>
+        <div class="fg"><label>Region Documented</label><input type="text" id="herb-region" placeholder="e.g. Ijebu Ode, Ogun State"></div>
+        <div class="fg"><label>Source Type</label><input type="text" id="herb-source-type" placeholder="e.g. Traditional healer"></div>
+        <div class="fg">
+          <label>Validation Status</label>
+          <select id="herb-validation">
+            <option>Traditional use only</option>
+            <option>Preliminary lab evidence</option>
+            <option>Peer-reviewed</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:1rem;"><label>Known Phytochemical Constituents</label><textarea id="herb-phytochem" rows="2" placeholder="e.g. Cinnamaldehyde, eugenol..."></textarea></div>
+      <div class="fg"><label>Notes</label><textarea id="herb-notes" rows="2"></textarea></div>
+
+      <div class="fg" style="margin-top:1rem;">
+        <label>Photo</label>
+        <input type="file" id="herb-image-file" accept="image/*">
+        <div id="herb-image-preview" style="margin-top:.5rem;"></div>
+      </div>
+
+      <button class="btn btn-gold btn-sm" style="margin-top:1rem;" onclick="saveHerbEntry()">💾 Save Entry (Draft)</button>
+      <div id="herb-save-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h4 style="font-family:'Playfair Display',serif;">📋 Manage Entries</h4>
+        <button class="btn btn-outline btn-sm" onclick="loadHerbEntries()">🔄 Refresh</button>
+      </div>
+      <div id="herb-entries-list"><p style="color:var(--mist);">Click Refresh to load entries.</p></div>
+    </div>
+  </div>
+  <div id="atab-access" class="tab-panel">
+    <div class="card" style="max-width:560px;margin-bottom:1.5rem;">
+      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🔑 Admin Password</h4>
+      <p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">
+        Unlocks the Admin Portal (and also lets that person view the Researcher Portal).
+        Changing it here updates it immediately — no redeploy needed.
+      </p>
+      <div class="fg" style="margin-bottom:1rem;">
+        <label>Current Password</label>
+        <div style="display:flex;gap:.5rem;">
+          <input type="text" id="access-admin-pass" readonly style="flex:1;font-family:'Space Mono',monospace;">
+          <button class="btn btn-outline btn-sm" onclick="copyAccessPassword('access-admin-pass')">Copy</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:1rem;">
+        <label>New Password</label>
+        <div style="display:flex;gap:.5rem;">
+          <input type="text" id="access-admin-new" placeholder="Type a new password, or generate one">
+          <button class="btn btn-outline btn-sm" onclick="generateAccessPassword('access-admin-new')">🎲 Generate</button>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="saveAccessPassword('admin_password','access-admin-new','access-admin-pass','access-admin-status')">💾 Save Admin Password</button>
+      <div id="access-admin-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
+    </div>
+
+    <div class="card" style="max-width:560px;">
+      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🔬 Researcher Password</h4>
+      <p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">
+        Unlocks only the Researcher Portal. Share this one with researchers, supervisors,
+        or students you want to give data-viewing access to, without giving them Admin access.
+      </p>
+      <div class="fg" style="margin-bottom:1rem;">
+        <label>Current Password</label>
+        <div style="display:flex;gap:.5rem;">
+          <input type="text" id="access-researcher-pass" readonly style="flex:1;font-family:'Space Mono',monospace;">
+          <button class="btn btn-outline btn-sm" onclick="copyAccessPassword('access-researcher-pass')">Copy</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:1rem;">
+        <label>New Password</label>
+        <div style="display:flex;gap:.5rem;">
+          <input type="text" id="access-researcher-new" placeholder="Type a new password, or generate one">
+          <button class="btn btn-outline btn-sm" onclick="generateAccessPassword('access-researcher-new')">🎲 Generate</button>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="saveAccessPassword('researcher_password','access-researcher-new','access-researcher-pass','access-researcher-status')">💾 Save Researcher Password</button>
+      <div id="access-researcher-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
     </div>
   </div>
   <div id="atab-notifs" class="tab-panel">
@@ -1598,10 +1749,28 @@ const SESSION = {
   admin: false
 };
 
-// Secret researcher password — change this to whatever you want
-// You can share it with specific people (supervisors, students)
-const RESEARCHER_SECRET = 'ANHRL2026';
-const ADMIN_SECRET      = 'ademideola2026';
+// Two separate access passwords — one per portal. Both loaded from
+// Supabase (app_config table) so either can be changed from the Admin
+// dashboard without redeploying. Fall back to these defaults if the
+// fetch fails (e.g. offline / Supabase unreachable).
+let ADMIN_PASSWORD      = 'ademideola2026';
+let RESEARCHER_PASSWORD = 'ANHRL2026';
+
+async function loadAccessPasswords() {
+  if (!supa) return;
+  try {
+    const { data, error } = await supa.from('app_config')
+      .select('key,value').in('key', ['admin_password', 'researcher_password']);
+    if (!error && data) {
+      data.forEach(row => {
+        if (row.key === 'admin_password')      ADMIN_PASSWORD = row.value;
+        if (row.key === 'researcher_password') RESEARCHER_PASSWORD = row.value;
+      });
+    }
+  } catch (e) {
+    console.warn('Could not load access passwords, using fallback:', e);
+  }
+}
 
 function isLoggedIn() { return SESSION.user !== null; }
 
@@ -2278,6 +2447,13 @@ function showPage(id) {
   window.scrollTo(0, 0);
   if (id === 'home')       { setTimeout(initHomeCharts, 300); }
   if (id === 'researcher') { setTimeout(loadResearcherChart, 300); runCounters(document.getElementById('page-researcher')); }
+  if (id === 'herbs') { loadHerbGallery(); }
+  if (id === 'admin') {
+    const a = document.getElementById('access-admin-pass');
+    const r = document.getElementById('access-researcher-pass');
+    if (a) a.value = ADMIN_PASSWORD;
+    if (r) r.value = RESEARCHER_PASSWORD;
+  }
 }
 
 function gotoSection(id) {
@@ -2412,7 +2588,10 @@ function skipRegistration() {
   setTimeout(() => { document.getElementById('modal-assess').classList.add('open'); }, 300);
 }
 
-/* ── Researcher / Admin login ── */
+/* ── Researcher / Admin login ──
+   Two separate passwords. Admin password unlocks the Admin portal (and
+   also grants researcher visibility). Researcher password unlocks only
+   the Researcher portal. Manage both from Admin → Access Control. */
 function handleLogin() {
   const nameEl = document.getElementById('login-name');
   const name   = nameEl ? nameEl.value.trim() : '';
@@ -2422,16 +2601,14 @@ function handleLogin() {
   if (!name) { toast('⚠️ Please enter your full name.'); return; }
   if (!pass)  { toast('⚠️ Please enter the access password.'); return; }
 
-  const RESEARCHER_SECRET = 'ANHRL2026';
-  const ADMIN_SECRET      = 'ademideola2026';
-
-  if (role === 'admin' && pass === ADMIN_SECRET) {
-    SESSION.researcher = true; SESSION.admin = true;
-    SESSION.user = { name, role: 'admin', id: 'ADMIN-001' };
+  if (role === 'admin' && pass === ADMIN_PASSWORD) {
+    SESSION.admin = true;
+    SESSION.researcher = true;
+    SESSION.user = { name, role: 'admin', id: 'ADMIN-' + Date.now() };
     document.getElementById('modal-login').classList.remove('open');
     showPage('admin');
     toast('Welcome, ' + name + ' — Admin access granted ✅');
-  } else if (pass === RESEARCHER_SECRET || pass === ADMIN_SECRET) {
+  } else if (role === 'researcher' && (pass === RESEARCHER_PASSWORD || pass === ADMIN_PASSWORD)) {
     SESSION.researcher = true;
     SESSION.user = { name, role: 'researcher', id: 'RES-' + Date.now() };
     document.getElementById('modal-login').classList.remove('open');
@@ -3551,6 +3728,315 @@ async function uploadImportedCSV() {
   toast('✅ ' + uploaded + ' row(s) imported to ' + table);
 }
 
+/* ══════════════════════════════════════════════
+   ACCESS PASSWORDS — Admin can view/rotate the two
+   separate passwords (one per portal)
+══════════════════════════════════════════════ */
+function generateAccessPassword(targetInputId) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pass = '';
+  for (let i = 0; i < 12; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+  const el = document.getElementById(targetInputId);
+  if (el) el.value = pass;
+}
+
+function copyAccessPassword(sourceInputId) {
+  const el = document.getElementById(sourceInputId);
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    toast('✅ Password copied to clipboard');
+  }).catch(() => {
+    el.select();
+    toast('Select-all applied — copy manually (clipboard access blocked)');
+  });
+}
+
+async function saveAccessPassword(configKey, newInputId, currentInputId, statusElId) {
+  const statusEl = document.getElementById(statusElId);
+  const newPassEl = document.getElementById(newInputId);
+  const newPass = (newPassEl ? newPassEl.value : '').trim();
+
+  if (!newPass || newPass.length < 6) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Password must be at least 6 characters.</span>';
+    return;
+  }
+  if (!supa) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Supabase is not connected — cannot save.</span>';
+    return;
+  }
+
+  try {
+    const { error } = await supa.from('app_config')
+      .update({ value: newPass, updated_at: new Date().toISOString() })
+      .eq('key', configKey);
+    if (error) {
+      statusEl.innerHTML = '<span style="color:#EF4444;">Save failed: ' + error.message + '</span>';
+      return;
+    }
+    if (configKey === 'admin_password')      ADMIN_PASSWORD = newPass;
+    if (configKey === 'researcher_password') RESEARCHER_PASSWORD = newPass;
+    const currentEl = document.getElementById(currentInputId);
+    if (currentEl) currentEl.value = newPass;
+    newPassEl.value = '';
+    statusEl.innerHTML = '<span style="color:var(--mint);">✅ Password updated. The old one no longer works.</span>';
+    toast('✅ Password updated');
+  } catch (e) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Save error: ' + e.message + '</span>';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   HERBAL REMEDIES — Admin add/manage, public gallery reads
+   only status='published' rows.
+══════════════════════════════════════════════ */
+
+// Live preview of the selected photo before upload
+document.addEventListener('change', (e) => {
+  if (e.target && e.target.id === 'herb-image-file') {
+    const file = e.target.files[0];
+    const preview = document.getElementById('herb-image-preview');
+    if (!preview) return;
+    if (!file) { preview.innerHTML = ''; return; }
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = '<img src="' + url + '" style="max-width:180px;border-radius:8px;border:1px solid var(--border);">';
+  }
+});
+
+async function uploadHerbImage(file) {
+  if (!supa || !file) return null;
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = 'herbs/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  const { error } = await supa.storage.from('herbal-images').upload(path, file);
+  if (error) throw error;
+  const { data } = supa.storage.from('herbal-images').getPublicUrl(path);
+  return data ? data.publicUrl : null;
+}
+
+async function saveHerbEntry() {
+  const statusEl = document.getElementById('herb-save-status');
+  const plantName = document.getElementById('herb-plant-name').value.trim();
+
+  if (!plantName) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Plant name is required.</span>';
+    return;
+  }
+  if (!supa) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Supabase is not connected — cannot save.</span>';
+    return;
+  }
+
+  statusEl.innerHTML = '<span style="color:var(--mist);">Saving...</span>';
+
+  try {
+    let imageUrl = null;
+    const fileEl = document.getElementById('herb-image-file');
+    const file = fileEl && fileEl.files[0];
+    if (file) {
+      statusEl.innerHTML = '<span style="color:var(--mist);">Uploading photo...</span>';
+      imageUrl = await uploadHerbImage(file);
+    }
+
+    const payload = {
+      plant_name: plantName,
+      scientific_name: document.getElementById('herb-scientific-name').value.trim(),
+      family: document.getElementById('herb-family').value.trim(),
+      local_names: document.getElementById('herb-local-names').value.trim(),
+      part_used: document.getElementById('herb-part-used').value.trim(),
+      preparation_method: document.getElementById('herb-prep-method').value,
+      route_of_administration: document.getElementById('herb-route').value,
+      dosage: document.getElementById('herb-dosage').value.trim(),
+      indication: document.getElementById('herb-indication').value.trim() || 'Stroke',
+      region: document.getElementById('herb-region').value.trim(),
+      source_type: document.getElementById('herb-source-type').value.trim(),
+      validation_status: document.getElementById('herb-validation').value,
+      phytochemical_constituents: document.getElementById('herb-phytochem').value.trim(),
+      notes: document.getElementById('herb-notes').value.trim(),
+      image_url: imageUrl,
+      status: 'draft',
+      submitted_by: (SESSION.user && SESSION.user.name) || 'Admin',
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supa.from('herbal_remedies').insert([payload]);
+    if (error) {
+      statusEl.innerHTML = '<span style="color:#EF4444;">Save failed: ' + error.message + '</span>';
+      return;
+    }
+
+    statusEl.innerHTML = '<span style="color:var(--mint);">✅ Saved as draft. Publish it below to make it public.</span>';
+    toast('✅ Herb entry saved');
+
+    // Clear form
+    ['herb-plant-name','herb-scientific-name','herb-family','herb-local-names','herb-part-used',
+     'herb-dosage','herb-region','herb-source-type','herb-phytochem','herb-notes'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('herb-prep-method').value = '';
+    document.getElementById('herb-route').value = '';
+    document.getElementById('herb-indication').value = 'Stroke';
+    document.getElementById('herb-validation').value = 'Traditional use only';
+    if (fileEl) fileEl.value = '';
+    document.getElementById('herb-image-preview').innerHTML = '';
+
+    loadHerbEntries();
+  } catch (e) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Error: ' + e.message + '</span>';
+  }
+}
+
+async function loadHerbEntries() {
+  const el = document.getElementById('herb-entries-list');
+  if (!el) return;
+  if (!supa) { el.innerHTML = '<p style="color:#EF4444;">Supabase not connected.</p>'; return; }
+
+  el.innerHTML = '<p style="color:var(--mist);">Loading...</p>';
+  try {
+    const { data, error } = await supa.from('herbal_remedies')
+      .select('*').order('created_at', { ascending: false });
+    if (error) { el.innerHTML = '<p style="color:#EF4444;">' + error.message + '</p>'; return; }
+    if (!data || !data.length) { el.innerHTML = '<p style="color:var(--mist);">No entries yet.</p>'; return; }
+
+    let html = '<div style="display:flex;flex-direction:column;gap:.75rem;">';
+    data.forEach(row => {
+      const statusTag = row.status === 'published'
+        ? '<span class="tag tag-green">Published</span>'
+        : '<span class="tag tag-gold">Draft</span>';
+      const thumb = row.image_url
+        ? '<img src="' + row.image_url + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;">'
+        : '<div style="width:56px;height:56px;border-radius:8px;background:var(--glass);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🌿</div>';
+      html += '<div style="display:flex;align-items:center;gap:1rem;background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:.75rem;">' +
+        thumb +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-weight:600;">' + (row.plant_name || 'Untitled') + '</div>' +
+          '<div style="font-size:.78rem;color:var(--mist);">' + (row.scientific_name || '') + (row.region ? ' · ' + row.region : '') + '</div>' +
+        '</div>' +
+        statusTag +
+        '<button class="btn btn-outline btn-sm" onclick="toggleHerbStatus(' + row.id + ',\'' + row.status + '\')">' +
+          (row.status === 'published' ? 'Unpublish' : 'Publish') +
+        '</button>' +
+        '<button class="btn btn-outline btn-sm" onclick="deleteHerbEntry(' + row.id + ')" style="color:#EF4444;">Delete</button>' +
+      '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<p style="color:#EF4444;">' + e.message + '</p>';
+  }
+}
+
+async function toggleHerbStatus(id, currentStatus) {
+  const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+  try {
+    const { error } = await supa.from('herbal_remedies').update({ status: newStatus }).eq('id', id);
+    if (error) { toast('⚠️ ' + error.message); return; }
+    toast(newStatus === 'published' ? '✅ Published — now visible on the public gallery' : 'Moved back to draft');
+    loadHerbEntries();
+  } catch (e) { toast('⚠️ ' + e.message); }
+}
+
+async function deleteHerbEntry(id) {
+  if (!confirm('Delete this entry permanently?')) return;
+  try {
+    const { error } = await supa.from('herbal_remedies').delete().eq('id', id);
+    if (error) { toast('⚠️ ' + error.message); return; }
+    toast('🗑️ Entry deleted');
+    loadHerbEntries();
+  } catch (e) { toast('⚠️ ' + e.message); }
+}
+
+/* ══════════════════════════════════════════════
+   HERBAL REMEDIES — Public gallery (published entries only)
+══════════════════════════════════════════════ */
+let herbGalleryData = [];
+
+async function loadHerbGallery() {
+  const el = document.getElementById('herb-gallery');
+  if (!el) return;
+  if (!supa) { el.innerHTML = '<p style="color:var(--mist);">Unable to connect to the database right now.</p>'; return; }
+
+  try {
+    const { data, error } = await supa.from('herbal_remedies')
+      .select('*').eq('status', 'published').order('created_at', { ascending: false });
+    if (error) { el.innerHTML = '<p style="color:var(--mist);">Could not load entries.</p>'; return; }
+    herbGalleryData = data || [];
+    renderHerbGallery();
+  } catch (e) {
+    el.innerHTML = '<p style="color:var(--mist);">Could not load entries.</p>';
+  }
+}
+
+function renderHerbGallery() {
+  const el = document.getElementById('herb-gallery');
+  if (!el) return;
+  const searchEl = document.getElementById('herb-gallery-search');
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+  const filtered = herbGalleryData.filter(row => {
+    if (!q) return true;
+    return (row.plant_name || '').toLowerCase().includes(q) ||
+           (row.scientific_name || '').toLowerCase().includes(q) ||
+           (row.local_names || '').toLowerCase().includes(q);
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = '<p style="color:var(--mist);grid-column:1/-1;">' +
+      (herbGalleryData.length ? 'No matches for that search.' : 'No published entries yet — check back soon.') + '</p>';
+    return;
+  }
+
+  el.innerHTML = filtered.map((row, i) => {
+    const idx = herbGalleryData.indexOf(row);
+    const img = row.image_url
+      ? '<img src="' + row.image_url + '" style="width:100%;height:160px;object-fit:cover;border-radius:12px 12px 0 0;">'
+      : '<div style="width:100%;height:160px;border-radius:12px 12px 0 0;background:var(--glass);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🌿</div>';
+    return '<div class="card" style="padding:0;cursor:pointer;overflow:hidden;" onclick="openHerbDetail(' + idx + ')">' +
+      img +
+      '<div style="padding:1rem;">' +
+        '<div style="font-weight:600;font-family:\'Playfair Display\',serif;">' + (row.plant_name || 'Unnamed plant') + '</div>' +
+        (row.scientific_name ? '<div style="font-size:.78rem;color:var(--mist);font-style:italic;margin-top:.15rem;">' + row.scientific_name + '</div>' : '') +
+        (row.region ? '<div style="font-size:.75rem;color:var(--mist);margin-top:.4rem;">📍 ' + row.region + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openHerbDetail(idx) {
+  const row = herbGalleryData[idx];
+  if (!row) return;
+  const content = document.getElementById('herb-detail-content');
+
+  const img = row.image_url
+    ? '<img src="' + row.image_url + '" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:1rem;">'
+    : '';
+
+  const validationColor = row.validation_status === 'Peer-reviewed' ? 'tag-green'
+    : row.validation_status === 'Preliminary lab evidence' ? 'tag-gold' : 'tag-purple';
+
+  const rows = [
+    ['Local Names', row.local_names],
+    ['Family', row.family],
+    ['Part(s) Used', row.part_used],
+    ['Preparation Method', row.preparation_method],
+    ['Route of Administration', row.route_of_administration],
+    ['Dosage', row.dosage],
+    ['Indication', row.indication],
+    ['Region', row.region],
+    ['Source', row.source_type],
+    ['Phytochemical Constituents', row.phytochemical_constituents],
+    ['Notes', row.notes],
+  ].filter(([, v]) => v);
+
+  content.innerHTML = img +
+    '<h2 style="margin-bottom:.15rem;">' + (row.plant_name || 'Unnamed plant') + '</h2>' +
+    (row.scientific_name ? '<p style="font-style:italic;color:var(--mist);margin-bottom:.75rem;">' + row.scientific_name + '</p>' : '') +
+    '<span class="tag ' + validationColor + '" style="margin-bottom:1rem;display:inline-block;">' + (row.validation_status || 'Traditional use only') + '</span>' +
+    '<div style="display:flex;flex-direction:column;gap:.6rem;margin-top:.5rem;">' +
+    rows.map(([label, val]) => '<div><strong style="font-size:.8rem;color:var(--gold);">' + label + '</strong><p style="font-size:.88rem;margin-top:.15rem;">' + val + '</p></div>').join('') +
+    '</div>';
+
+  document.getElementById('modal-herb-detail').classList.add('open');
+}
+
 async function loadResearcherChart() {
   const el = document.getElementById('researcher-chart');
   if (!el || !window.Plotly) return;
@@ -3656,6 +4142,7 @@ window.addEventListener('load', () => {
   setTimeout(initHomeCharts, 500);
   setTimeout(initMap, 600);
   showMemState('start');
+  loadAccessPasswords();
   const statsEl = document.getElementById('stats');
   if (statsEl) statsObs.observe(statsEl);
 
