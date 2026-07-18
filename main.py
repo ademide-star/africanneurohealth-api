@@ -1,7 +1,7 @@
 """
 African NeuroHealth Intelligence — FastAPI Backend
 Loads your trained .pkl models and serves predictions to the HTML frontend.
-Deploy on Render (free tier) at: https://africanneurohealth-api.onrender.com
+Deploy on Render (free tier) at: https://africanneurohealth-api-jhke.onrender.com
 """
 
 from fastapi import FastAPI, HTTPException
