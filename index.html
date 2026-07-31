@@ -430,6 +430,7 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
     </div>
     <a href="https://neuromatrixbiosystems.com" target="_blank" class="btn btn-outline btn-sm" style="font-size:.75rem;padding:6px 14px;">NeuroMatrix ↗</a>
     <button class="btn btn-outline btn-sm" onclick="showPage('herbs')">🌿 Herbal Remedies</button>
+    <button class="btn btn-outline btn-sm" onclick="showPage('painstudy')">🩹 Pain-Stroke Study</button>
     <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="openLoginModal('researcher')">Researcher Login</button>
     <button class="btn btn-gold btn-sm" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
   </div></nav>
@@ -718,6 +719,84 @@ Designed to support research, clinical decision-making, and community health scr
 .check-lbl input{width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;}
 .assess-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:2.5rem;align-items:start;}
 @media(max-width:900px){.assess-grid{grid-template-columns:1fr;}}
+
+/* ═══════════════════════════════════════════════════════════════
+   CINNAMON EVIDENCE OVERLAY — African NeuroHealth Dashboard
+   ═══════════════════════════════════════════════════════════════ */
+#cinn-panel {
+  display: none;
+  background: linear-gradient(135deg, #1a0a00 0%, #2d1200 50%, #1a0800 100%);
+  border: 1px solid #8B4513;
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  color: #FAF3E8;
+  position: relative;
+  overflow: hidden;
+  animation: cinnFadeIn 0.4s ease;
+}
+@keyframes cinnFadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+#cinn-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, #D4742A, #8B3A0F);
+}
+#cinn-panel.active { display: block; }
+.cinn-hdr { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid rgba(212,116,42,0.3); flex-wrap:wrap; }
+.cinn-badge { background:rgba(212,116,42,0.2); border:1px solid #D4742A; border-radius:6px; padding:.3rem .75rem; font-size:.72rem; color:#D4742A; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+.cinn-hdr-text h3 { font-size:1.25rem; font-weight:700; color:#E8A545; margin:0.2rem 0 0.1rem; }
+.cinn-hdr-text p  { font-size:.78rem; color:#9E7D5A; margin:0; }
+.cinn-tabs { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+.cinn-tab { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:.35rem .8rem; font-size:.78rem; color:#9E7D5A; cursor:pointer; transition:all .2s; font-family:inherit; }
+.cinn-tab:hover, .cinn-tab.ct-active { background:rgba(212,116,42,.2); border-color:#D4742A; color:#E8A545; }
+.cinn-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:.9rem; }
+.cinn-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:.9rem; transition:border-color .2s; }
+.cinn-card:hover { border-color:rgba(212,116,42,.4); }
+.cinn-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; margin-bottom:.15rem; }
+.cinn-card-name { font-size:.9rem; font-weight:700; color:#FAF3E8; }
+.dir-b { display:inline-block; font-size:.62rem; padding:.08rem .35rem; border-radius:4px; }
+.dir-b.hi { background:rgba(39,174,96,.2); color:#58D68D; }
+.dir-b.lo { background:rgba(192,80,77,.2); color:#E07570; }
+.cinn-unit { font-size:.68rem; color:#9E7D5A; margin-bottom:.5rem; }
+.cinn-clin { font-size:.72rem; color:#B89A7A; line-height:1.5; margin-bottom:.75rem; font-style:italic; border-left:2px solid rgba(212,116,42,.3); padding-left:.5rem; }
+.cinn-rec-lbl { font-size:.65rem; color:#9E7D5A; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.35rem; }
+.cinn-bar-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.28rem; }
+.cinn-sex { font-size:.68rem; width:12px; }
+.cinn-bar-bg { flex:1; background:rgba(255,255,255,.07); border-radius:4px; height:7px; overflow:hidden; }
+.cinn-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+.cinn-bar-fill.m { background:linear-gradient(90deg,#2E75B6,#5BA4D4); }
+.cinn-bar-fill.f { background:linear-gradient(90deg,#C0504D,#E07570); }
+.cinn-pct { font-size:.68rem; width:36px; text-align:right; font-weight:700; }
+.cinn-stars { font-size:.65rem; color:#D4742A; width:28px; }
+.cinn-means { display:grid; grid-template-columns:1fr 1fr; gap:.35rem; margin-top:.65rem; padding-top:.65rem; border-top:1px solid rgba(255,255,255,.06); }
+.cinn-mc { background:rgba(255,255,255,.03); border-radius:6px; padding:.35rem .45rem; font-size:.68rem; }
+.cinn-mc .mg { color:#9E7D5A; font-size:.62rem; margin-bottom:.08rem; }
+.cinn-mc .mv .mx { color:#5BA4D4; }
+.cinn-mc .mv .fx { color:#E07570; }
+.cinn-pop { background:rgba(27,79,114,.15); border:1px solid rgba(27,79,114,.4); border-radius:10px; padding:.9rem 1.1rem; margin-top:1.5rem; font-size:.8rem; color:#AED6F1; line-height:1.65; }
+.cinn-pop strong { color:#85C1E9; }
+.cinn-loading { text-align:center; padding:1.5rem; color:#9E7D5A; }
+.cinn-spinner { display:inline-block; width:20px; height:20px; border:2px solid rgba(212,116,42,.3); border-top-color:#D4742A; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Pain study result card ─────────────────────────────── */
+#ps-stroke-result {
+  display: none;
+  margin-top: 1.5rem;
+  border-radius: 14px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #0f1f35, #1a2d4a);
+  border: 1px solid rgba(46,117,182,.4);
+  animation: cinnFadeIn .4s ease;
+}
+#ps-stroke-result.visible { display: block; }
+.psr-title { font-size: 1rem; font-weight: 700; color: #AED6F1; margin-bottom: .5rem; }
+.psr-risk-bar-bg { background: rgba(255,255,255,.1); border-radius: 8px; height: 14px; overflow: hidden; margin: .75rem 0; }
+.psr-risk-bar-fill { height: 100%; border-radius: 8px; transition: width 1s ease; }
+.psr-note { font-size: .75rem; color: #7a9cb8; line-height: 1.6; margin-top: .5rem; font-style: italic; }
+
 </style>
 
 <!-- STROKE PAGE -->
@@ -1105,8 +1184,47 @@ Designed to support research, clinical decision-making, and community health scr
         <div class="fg"><label>Whole Grains / Complex Carbs</label><select id="n-grain"><option value="2">Regular (daily)</option><option value="1">Occasional</option><option value="0">Rarely/Never</option></select></div>
         <div class="fg"><label>Protein Sources</label><select id="n-protein"><option value="2">Lean (fish, beans, eggs daily)</option><option value="1">Moderate (mixed)</option><option value="0">Mostly red/processed meat</option></select></div>
         <div class="fg"><label>Meal Frequency</label><select id="n-meals"><option value="2">3 balanced meals/day</option><option value="1">2 meals</option><option value="0">1 or irregular</option></select></div>
-        <div class="fg"><label>Salt Intake</label><select id="n-salt"><option value="2">Low</option><option value="1">Moderate</option><option value="0">High</option></select></div>
         <div class="fg"><label>Sugary Drinks / Junk Food</label><select id="n-junk"><option value="2">Rarely/Never</option><option value="1">Weekly</option><option value="0">Daily</option></select></div>
+      </div>
+      <div class="asmt-section">
+        <h3>&#x1F9C2; Salt Intake Assessment (Detailed)</h3>
+        <p style="font-size:.8rem;color:var(--mist);margin-bottom:1rem;line-height:1.6;">Answer all 10 questions for an accurate dietary sodium risk score. This replaces the simple Salt Intake rating above.</p>
+
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:1rem 0 .5rem;">Part 1 &middot; Cooking &amp; Discretionary Salt</div>
+        <div class="fg"><label>1. How often is table salt added to the family pot when cooking meals at home?</label>
+          <select id="salt-q1"><option value="0">Never</option><option value="1">Sometimes (only in certain dishes)</option><option value="2">Always / In almost every meal</option></select>
+        </div>
+        <div class="fg"><label>2. Do you add raw table salt directly to your plate of food before eating?</label>
+          <select id="salt-q2"><option value="0">Never</option><option value="1">Rarely (only if the food tastes completely fresh)</option><option value="2">Frequently / Always (before even tasting the food)</option></select>
+        </div>
+        <div class="fg"><label>3. How many bouillon cubes (e.g., Maggi, Knorr, Royco) are typically added to a single family cooking pot?</label>
+          <select id="salt-q3"><option value="0">None / We do not use them</option><option value="1">1 to 2 cubes per pot</option><option value="3">3 or more cubes per pot</option></select>
+        </div>
+
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:1.25rem 0 .5rem;">Part 2 &middot; Processed &amp; High-Sodium Local Foods</div>
+        <div class="fg"><label>4. How often do you eat instant noodles (e.g., Indomie, Chikki) including the spice seasoning packet?</label>
+          <select id="salt-q4"><option value="0">Never or less than once a month</option><option value="1">1 to 2 times per week</option><option value="3">3 or more times per week</option></select>
+        </div>
+        <div class="fg"><label>5. How often do you eat salted/dried fish, stockfish (panla, eja kika), or dried meats (suya, kilishi)?</label>
+          <select id="salt-q5"><option value="0">Never or less than once a month</option><option value="1">1 to 2 times per week</option><option value="2">3 or more times per week</option></select>
+        </div>
+        <div class="fg"><label>6. How often do you eat commercial savory snacks (e.g., chin-chin, plantain chips, puff-puff, salted peanuts)?</label>
+          <select id="salt-q6"><option value="0">Never or less than once a month</option><option value="1">1 to 2 times per week</option><option value="2">3 or more times per week</option></select>
+        </div>
+        <div class="fg"><label>7. How often do you use traditional fermented condiments that contain added salt (e.g., commercial iru, dawadawa, ogiri)?</label>
+          <select id="salt-q7"><option value="0">Never / We use salt-free versions</option><option value="1">1 to 2 times per week</option><option value="2">3 or more times per week</option></select>
+        </div>
+        <div class="fg"><label>8. How often do you eat meals prepared outside the home (e.g., from bukkas, local restaurants, or fast-food vendors)?</label>
+          <select id="salt-q8"><option value="0">Never / Rarely (mostly home-cooked meals)</option><option value="1">1 to 3 times per week</option><option value="2">4 or more times per week</option></select>
+        </div>
+
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:1.25rem 0 .5rem;">Part 3 &middot; Consumer Knowledge &amp; Habits</div>
+        <div class="fg"><label>9. When purchasing packaged or canned foods, how often do you read the nutritional label for sodium or salt content?</label>
+          <select id="salt-q9"><option value="2">Never / I do not look at labels</option><option value="1">Sometimes</option><option value="0">Always</option></select>
+        </div>
+        <div class="fg"><label>10. How much salt do you personally think you consume on a daily basis?</label>
+          <select id="salt-q10"><option value="0">Too little / Just the right amount</option><option value="1">A bit too much</option><option value="2">Far too much</option></select>
+        </div>
       </div>
       <div class="asmt-section">
         <h3>Supplements Taken</h3>
@@ -1169,6 +1287,7 @@ Designed to support research, clinical decision-making, and community health scr
         <div class="progress-track" style="margin-bottom:1.5rem;"><div class="progress-fill" id="nutri-progress" style="width:0%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div>
         <div id="nutri-category" class="risk-badge risk-low">Excellent Nutrition</div>
         <div id="nutri-detail" style="margin-top:1.25rem;"></div>
+        <div id="nutri-salt" style="margin-top:1rem;"></div>
         <div id="nutri-supplements" style="margin-top:1rem;"></div>
         <div id="nutri-herbs" style="margin-top:1rem;"></div>
         <div id="nutri-lifestyle" style="margin-top:1rem;"></div>
@@ -1219,6 +1338,151 @@ Designed to support research, clinical decision-making, and community health scr
       <div id="stress-placeholder" class="result-card" style="text-align:center;padding:2.5rem 1.5rem;">
         <div style="font-size:3rem;margin-bottom:1rem;">&#x1F60C;</div>
         <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">Adjust the sliders to see your stress profile.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PAIN-STROKE STUDY PAGE -->
+<div id="page-painstudy" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
+<div class="wrap">
+  <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
+  <span class="section-label">// Research Study</span>
+  <h2 class="section-title" style="margin-bottom:.5rem;">🩹 Pain & Stroke Risk Study</h2>
+  <p style="color:var(--mist);font-size:.88rem;max-width:680px;margin-bottom:2rem;line-height:1.7;">
+    A research study exploring whether pain patterns — headache frequency, pain intensity and location,
+    and analgesic use — can help identify elevated stroke risk earlier. Your responses contribute to the
+    "Silent Signals" study. All data is used for research purposes only.
+  </p>
+
+  <div class="assess-grid">
+    <div>
+      <div class="asmt-section">
+        <h3>Who is filling this out?</h3>
+        <div class="fg">
+          <label>Entry Mode</label>
+          <select id="ps-entry-mode" onchange="document.getElementById('ps-interviewer-wrap').style.display = this.value==='interviewer' ? 'block':'none';">
+            <option value="self_report">Self-report (participant)</option>
+            <option value="interviewer">Research assistant / interviewer</option>
+          </select>
+        </div>
+        <div class="fg" id="ps-interviewer-wrap" style="display:none;">
+          <label>Interviewer Name</label>
+          <input type="text" id="ps-interviewer-name" placeholder="Research assistant's name">
+        </div>
+      </div>
+
+      <div class="asmt-section">
+        <h3>Participant Information</h3>
+        <div class="fg"><label>Participant Name / ID</label><input type="text" id="ps-name" placeholder="Name or anonymized ID"></div>
+        <div class="fg"><label>Age</label><input type="number" id="ps-age" min="0" max="120"></div>
+        <div class="fg"><label>Sex</label><select id="ps-sex"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+        <div class="fg"><label>Region (LGA / Zone / State)</label><input type="text" id="ps-region" placeholder="e.g. Ijebu Ode, Ogun State"></div>
+      </div>
+
+      <div class="asmt-section">
+        <h3>Pain Profile</h3>
+        <div class="fg"><label>Pain Intensity (right now, or typical): <span id="ps-intensity-v" style="color:var(--gold);font-weight:700;">0</span> / 10</label>
+          <input type="range" id="ps-intensity" min="0" max="10" value="0" oninput="document.getElementById('ps-intensity-v').textContent=this.value">
+        </div>
+        <div class="fg">
+          <label>Pain Location(s) — select all that apply</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.4rem;">
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Head/Neck"> Head / Neck</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Chest"> Chest</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Back"> Back</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Abdomen"> Abdomen</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Arms"> Arms</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Legs"> Legs</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Joints"> Joints</label>
+            <label style="font-weight:400;"><input type="checkbox" class="ps-location" value="Generalized"> Generalized / Whole body</label>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Pain Duration</label>
+          <select id="ps-duration">
+            <option value="">Select</option>
+            <option>Acute (&lt;1 month)</option>
+            <option>Subacute (1-3 months)</option>
+            <option>Chronic (&gt;3 months)</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Headache Frequency</label>
+          <select id="ps-headache-freq">
+            <option value="">Select</option>
+            <option>Never</option><option>Rarely</option><option>Occasionally</option>
+            <option>Weekly</option><option>Daily</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Analgesic / Pain-relief Medication Use</label>
+          <select id="ps-analgesic-freq">
+            <option value="">Select</option>
+            <option>Never</option><option>Occasionally</option><option>Weekly</option><option>Daily</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Type Used (if any)</label>
+          <select id="ps-analgesic-type">
+            <option value="">Select</option>
+            <option>Paracetamol</option><option>NSAIDs</option><option>Herbal</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="asmt-section">
+        <h3>Vascular & Lifestyle Factors</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="fg"><label>Systolic BP</label><input type="number" id="ps-sbp" min="60" max="260" value="120"></div>
+          <div class="fg"><label>Diastolic BP</label><input type="number" id="ps-dbp" min="40" max="160" value="80"></div>
+        </div>
+        <div class="fg"><label>Glucose Level (mg/dL)</label><input type="number" id="ps-glucose" min="40" max="500" value="100"></div>
+        <div class="fg"><label>Sleep Quality: <span id="ps-sleep-v" style="color:var(--gold);font-weight:700;">3</span> / 5</label>
+          <input type="range" id="ps-sleep" min="1" max="5" value="3" oninput="document.getElementById('ps-sleep-v').textContent=this.value">
+        </div>
+        <div class="fg"><label>Stress Level: <span id="ps-stress-v" style="color:var(--gold);font-weight:700;">0</span> / 10</label>
+          <input type="range" id="ps-stress" min="0" max="10" value="0" oninput="document.getElementById('ps-stress-v').textContent=this.value">
+        </div>
+        <div class="fg">
+          <label>Physical Activity</label>
+          <select id="ps-activity"><option value="">Select</option><option>Sedentary</option><option>Light</option><option>Moderate</option><option>Active</option><option>Very Active</option></select>
+        </div>
+        <div class="fg"><label>Notes</label><textarea id="ps-notes" rows="2"></textarea></div>
+      </div>
+
+      <button class="btn btn-gold btn-full" style="font-size:1rem;padding:16px;" onclick="submitPainStudy()">💾 Submit Entry</button>
+      <div id="ps-submit-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);text-align:center;"></div>
+
+<!-- ══ PAIN STUDY — STROKE RISK RESULT ════════════════════════════ -->
+<div id="ps-stroke-result">
+  <div class="psr-title">🧠 Vascular Risk Profile — Based on Your Entry</div>
+  <div id="psr-score-text" style="font-size:1.6rem;font-weight:700;color:#AED6F1;margin:.3rem 0;"></div>
+  <div class="psr-risk-bar-bg">
+    <div id="psr-bar" class="psr-risk-bar-fill" style="width:0%;"></div>
+  </div>
+  <div id="psr-category" style="font-size:.85rem;font-weight:600;margin-bottom:.5rem;"></div>
+  <div id="psr-factors" style="font-size:.78rem;color:#7a9cb8;line-height:1.7;"></div>
+  <div class="psr-note">
+    ⚠️ This is an indicative risk estimate based on your vascular profile —
+    it is not a clinical diagnosis. Your data has been saved to the
+    Silent Signals research dataset. Consult a qualified healthcare provider
+    for personalised assessment.
+  </div>
+</div>
+<!-- ══ END PAIN RESULT ═════════════════════════════════════════════ -->
+
+    </div>
+
+    <div style="position:sticky;top:88px;">
+      <div class="result-card" style="text-align:center;padding:2.5rem 1.5rem;">
+        <div style="font-size:3rem;margin-bottom:1rem;">🩹</div>
+        <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">
+          This study collects pain phenotype data to test whether it can improve early stroke risk
+          identification. There's no immediate result shown — your entry is added to the research dataset
+          for later analysis.
+        </p>
       </div>
     </div>
   </div>
@@ -1301,6 +1565,43 @@ Designed to support research, clinical decision-making, and community health scr
   <div id="herb-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;">
     <p style="color:var(--mist);">Loading remedies...</p>
   </div>
+
+<!-- ══ CINNAMON EVIDENCE PANEL ══════════════════════════════════ -->
+<div id="cinn-panel">
+  <div class="cinn-hdr">
+    <div>
+      <span class="cinn-badge">🔬 Preclinical Evidence</span>
+      <div class="cinn-hdr-text">
+        <h3>Saigon Cinnamon — Laboratory Evidence</h3>
+        <p>26 biomarkers &middot; 84 Wistar rats &middot; 7 treatment groups &middot; Male &amp; Female<br>
+           Neuroscience &amp; Inflammation Unit, University of Ilorin &middot; Adebimpe-John et al. (in prep.)</p>
+      </div>
+    </div>
+  </div>
+  <div class="cinn-tabs" id="cinn-tabs">
+    <button class="cinn-tab ct-active" data-d="all">All Domains</button>
+    <button class="cinn-tab" data-d="Signalling">Signalling</button>
+    <button class="cinn-tab" data-d="Neurotrophic">Neurotrophic</button>
+    <button class="cinn-tab" data-d="Inflammation">Inflammation</button>
+    <button class="cinn-tab" data-d="Neurotransmitters">Neurotransmitters</button>
+    <button class="cinn-tab" data-d="Oxidative">Oxidative Stress</button>
+    <button class="cinn-tab" data-d="Behavioral">Behavioral</button>
+    <button class="cinn-tab" data-d="Histology">Histology</button>
+  </div>
+  <div id="cinn-grid" class="cinn-grid"></div>
+  <div class="cinn-pop">
+    <strong>📊 Population Context (ANHRL Survey, n=4,000, Ogun State):</strong>
+    Among 500 community members reporting Saigon/Ceylon cinnamon use,
+    hypertension rates (25.2%) and forgetting symptoms were slightly lower
+    than non-herb users (26.8%), though not statistically significant (p=0.96).
+    This reflects <em>food-level spice use</em>, not therapeutic dosing.
+    The mechanistic evidence above comes from controlled preclinical research
+    at pharmacological doses. Human dose-response studies are needed before
+    clinical recommendations can be made.
+  </div>
+</div>
+<!-- ══ END CINNAMON PANEL ══════════════════════════════════════════ -->
+
 </div>
 </div>
 
@@ -1322,6 +1623,7 @@ Designed to support research, clinical decision-making, and community health scr
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('rtab','overview',this)">Overview</button>
     <button class="tab-btn" onclick="switchTab('rtab','datasets',this)">Datasets</button>
+    <button class="tab-btn" onclick="switchTab('rtab','painstudy',this)">Pain-Stroke Study</button>
     <button class="tab-btn" onclick="switchTab('rtab','analysis',this)">Analysis</button>
     <button class="tab-btn" onclick="switchTab('rtab','export',this)">Export CSV</button>
   </div>
@@ -1343,9 +1645,41 @@ Designed to support research, clinical decision-making, and community health scr
           <tr><td>alzheimer_predictions</td><td>983</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('alzheimer_predictions')">CSV</button></td></tr>
           <tr><td>stress_assessments</td><td>543</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('stress_assessments')">CSV</button></td></tr>
           <tr><td>nutrition_tracker</td><td>312</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('nutrition_tracker')">CSV</button></td></tr>
+          <tr><td>pain_stroke_study</td><td id="ds-painstudy-count">—</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('pain_stroke_study')">CSV</button></td></tr>
+          <tr><td>herbal_remedies</td><td>—</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('herbal_remedies')">CSV</button></td></tr>
+          <tr><td>anhrl_survey_data</td><td>4,000</td><td><span class="tag tag-green">Live</span></td><td><button class="btn btn-outline btn-sm" onclick="exportSupabaseCSV('anhrl_survey_data')">CSV</button></td></tr>
         </tbody>
       </table>
     </div>
+
+<!-- ══ RESEARCHER CINNAMON DATA BUTTON ════════════════════════════ -->
+<div style="margin-top:1.5rem;padding:1.2rem;background:rgba(139,58,15,.1);border:1px solid rgba(139,58,15,.3);border-radius:12px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;">
+    <div>
+      <div style="font-size:.95rem;font-weight:700;color:#E8A545;margin-bottom:.3rem;">🌿 Cinnamon Mechanistic Evidence Browser</div>
+      <div style="font-size:.8rem;color:var(--mist);">26-biomarker preclinical dataset · 84 Wistar rats · Adebimpe-John et al. (in prep.)</div>
+    </div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+      <button onclick="openCinnamonPanel()" 
+        style="background:linear-gradient(135deg,#8B3A0F,#D4742A);color:white;border:none;border-radius:8px;padding:.5rem 1.1rem;font-size:.85rem;font-weight:600;cursor:pointer;">
+        View Evidence Panel →
+      </button>
+      <button onclick="downloadCinnamonCSV()"
+        style="background:transparent;color:#D4742A;border:1px solid #D4742A;border-radius:8px;padding:.5rem 1.1rem;font-size:.85rem;cursor:pointer;">
+        ↓ CSV
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ══ END RESEARCHER BUTTON ══════════════════════════════════════ -->
+
+  </div>
+  <div id="rtab-painstudy" class="tab-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <p style="color:var(--mist);font-size:.85rem;">Live recruitment progress and descriptive statistics for the pain-phenotyping sub-study.</p>
+      <button class="btn btn-outline btn-sm" onclick="loadPainStudyDashboard()">🔄 Refresh</button>
+    </div>
+    <div id="painstudy-dashboard"><p style="color:var(--mist);">Click Refresh to load data.</p></div>
   </div>
   <div id="rtab-analysis" class="tab-panel">
     <div class="grid2" style="gap:2rem;">
@@ -1420,6 +1754,7 @@ Designed to support research, clinical decision-making, and community health scr
           <option value="nutrition_tracker">nutrition_tracker</option>
           <option value="registered_users">registered_users</option>
           <option value="herbal_remedies">herbal_remedies</option>
+          <option value="pain_stroke_study">pain_stroke_study</option>
           <option value="anhrl_survey_data">anhrl_survey_data</option>
           <option value="__custom__">Custom table name...</option>
         </select>
@@ -2473,6 +2808,7 @@ function switchTab(prefix, id, btn) {
   if (panel) panel.classList.add('active');
   btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  if (prefix === 'rtab' && id === 'painstudy') loadPainStudyDashboard();
 }
 
 /* ══════════════════════════════════════════════
@@ -2738,6 +3074,11 @@ function runStrokeAssessment() {
   const region   = document.getElementById('stroke-region').value || '';
   const ethnicity= document.getElementById('stroke-ethnicity').value || '';
 
+  // Pull in Nutrition Tracker results (including the detailed Salt Intake score) if completed
+  const nutritionData    = window._lastNutrition || null;
+  const nutritionScore   = nutritionData ? nutritionData.total : null;     // out of 13
+  const saltRiskScore    = nutritionData ? nutritionData.saltTotal : null; // out of 22
+
   const payload = {
     age, gender, bmi, height, weight,
     avg_glucose_level: glucose,
@@ -2765,6 +3106,8 @@ function runStrokeAssessment() {
     noise_sources_Welder:          noise === 'Welder' ? 1 : 0,
     noise_sources_None:            noise === 'None' ? 1 : 0,
     chronic_pain_None:             1,
+    nutritional_score: nutritionScore,
+    salt_risk_score: saltRiskScore,
     country, province, region, ethnicity
   };
 
@@ -2833,6 +3176,7 @@ function runStrokeAssessment() {
         { label: 'Glucose', value: glucose + ' mg/dL' },
         { label: 'Smoking', value: smoke },
         { label: 'Salt Intake', value: salt },
+        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Risk ' + saltRiskScore + '/22') : 'Not completed' },
         { label: 'Location', value: (province||'—') + ', ' + (country||'—') },
         { label: 'Ethnicity', value: ethnicity || '—' }
       ]
@@ -2846,12 +3190,12 @@ function runStrokeAssessment() {
     console.error('API error:', err);
     toast('⚠️ API offline. Using offline scoring...');
     // Fallback to JS scoring if API is unreachable
-    runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, htn, heart, stress, ptsd, dep, salt, country, province, region, ethnicity);
+    runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, htn, heart, stress, ptsd, dep, salt, country, province, region, ethnicity, nutritionScore, saltRiskScore);
   });
 }
 
 // Fallback offline scoring (used if API is down)
-function runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, htn, heart, stress, ptsd, dep, salt, country, province, region, ethnicity) {
+function runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, htn, heart, stress, ptsd, dep, salt, country, province, region, ethnicity, nutritionScore, saltRiskScore) {
   let score = 0;
   const age = payload.age;
   const factors = []; const recos = [];
@@ -2863,7 +3207,15 @@ function runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, h
   if (smoke === 'Smokes') { score += 0.9; factors.push('Smoker'); recos.push('Smoking cessation'); }
   if (bmi > 30)    { score += 0.6; factors.push('Obesity BMI '+bmi.toFixed(1)); recos.push('Weight management'); }
   if (stress >= 2) { score += 0.5; factors.push('High stress'); }
-  if (salt === 'High') { score += 0.4; factors.push('High salt'); recos.push('Reduce salt intake'); }
+  // Nutritional & Salt Intake score from the Nutrition Tracker (preferred, more precise than the dropdown below)
+  if (saltRiskScore !== null && saltRiskScore !== undefined) {
+    if (saltRiskScore >= 15)      { score += 0.5; factors.push('High dietary salt/sodium risk ('+saltRiskScore+'/22)'); recos.push('Cut back on bouillon cubes, processed & salted foods'); }
+    else if (saltRiskScore >= 8)  { score += 0.25; factors.push('Moderate dietary salt/sodium risk ('+saltRiskScore+'/22)'); }
+  } else if (salt === 'High') { score += 0.4; factors.push('High salt'); recos.push('Reduce salt intake'); }
+  if (nutritionScore !== null && nutritionScore !== undefined) {
+    if (nutritionScore <= 4)      { score += 0.5; factors.push('Poor overall nutritional profile ('+nutritionScore+'/13)'); recos.push('Improve diet — more fruit, vegetables, whole grains'); }
+    else if (nutritionScore <= 7) { score += 0.25; factors.push('Fair overall nutritional profile ('+nutritionScore+'/13)'); }
+  }
   recos.push('Mediterranean diet'); recos.push('150 min/week exercise');
   const finalScore = Math.min(0.97, score * 0.095);
   const pct = Math.round(finalScore * 100);
@@ -2957,6 +3309,11 @@ function runDementiaAssessment() {
   const region    = document.getElementById('dem-region').value || '';
   const ethnicity = document.getElementById('dem-ethnicity').value || '';
 
+  // Pull in Nutrition Tracker results (including the detailed Salt Intake score) if completed
+  const nutritionData  = window._lastNutrition || null;
+  const nutritionScore = nutritionData ? nutritionData.total : null;     // out of 13
+  const saltRiskScore  = nutritionData ? nutritionData.saltTotal : null; // out of 22
+
   const pollLow = poll < 33 ? 1 : 0;
   const pollMod = (poll >= 33 && poll < 66) ? 1 : 0;
   const pollHigh= poll >= 66 ? 1 : 0;
@@ -2991,7 +3348,8 @@ function runDementiaAssessment() {
     PollutionCategoryModerate: pollMod,
     PollutionCategoryHigh: pollHigh,
     country_name: country, province_name: province,
-    region_name: region, ethnicity_name: ethnicity
+    region_name: region, ethnicity_name: ethnicity,
+    NutritionalScore: nutritionScore, SaltRiskScore: saltRiskScore
   };
 
   // Show loading
@@ -3063,6 +3421,7 @@ function runDementiaAssessment() {
         { label: 'Diet Quality', value: diet + '/10' },
         { label: 'Sleep Quality', value: sleep + '/10' },
         { label: 'Pollution', value: poll + '/100' },
+        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Risk ' + saltRiskScore + '/22') : 'Not completed' },
         { label: 'Location', value: (province||'—') + ', ' + (country||'—') }
       ]
     };
@@ -3074,12 +3433,12 @@ function runDementiaAssessment() {
   .catch(err => {
     console.error('Dementia API error:', err);
     toast('⚠️ API offline. Using offline scoring...');
-    runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province);
+    runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province, nutritionScore, saltRiskScore);
   });
 }
 
 // Fallback offline scoring (used if API is down) — mirrors runStrokeScoreOffline
-function runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province) {
+function runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province, nutritionScore, saltRiskScore) {
   let score = 0;
   const factors = []; const recos = [];
   if (age > 65)          { score += 1.3; factors.push('Age above 65'); }
@@ -3095,6 +3454,14 @@ function runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp
   if (sleep < 5)         { score += 0.3; factors.push('Poor sleep quality'); recos.push('Improve sleep hygiene'); }
   if (stress >= 7)       { score += 0.3; factors.push('High stress'); }
   if (poll >= 66)        { score += 0.2; factors.push('High pollution exposure'); }
+  // Nutrition Tracker score (including detailed Salt Intake assessment), if completed
+  if (nutritionScore !== null && nutritionScore !== undefined) {
+    if (nutritionScore <= 4)      { score += 0.4; factors.push('Poor overall nutritional profile (Nutrition Tracker: ' + nutritionScore + '/13)'); recos.push('Improve diet — more fruit, vegetables, whole grains'); }
+    else if (nutritionScore <= 7) { score += 0.2; factors.push('Fair overall nutritional profile (Nutrition Tracker: ' + nutritionScore + '/13)'); }
+  }
+  if (saltRiskScore !== null && saltRiskScore !== undefined && saltRiskScore >= 15) {
+    score += 0.3; factors.push('High dietary salt/sodium intake risk (' + saltRiskScore + '/22)'); recos.push('Reduce bouillon cubes, processed & salted foods');
+  }
   recos.push('Cognitive stimulation activities (reading, puzzles, social engagement)');
   const finalScore = Math.min(0.97, score * 0.11);
   const pct = Math.round(finalScore * 100);
@@ -3122,6 +3489,19 @@ function runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp
 }
 
 
+// ===== DETAILED SALT INTAKE RISK SCORE (10-question survey, 0-22) =====
+function computeSaltRiskScore() {
+  const ids = ['salt-q1','salt-q2','salt-q3','salt-q4','salt-q5','salt-q6','salt-q7','salt-q8','salt-q9','salt-q10'];
+  let total = 0;
+  ids.forEach(id => { total += parseInt(gv(id,'0')) || 0; });
+  total = Math.max(0, Math.min(22, total));
+  let category, tag;
+  if (total <= 7)       { category = 'Low Salt Risk';      tag = 'risk-low'; }
+  else if (total <= 14) { category = 'Moderate Salt Risk';  tag = 'risk-medium'; }
+  else                   { category = 'High Salt Risk';     tag = 'risk-high'; }
+  return { total, category, tag };
+}
+
 function runNutrition() {
   const fruit   = parseInt(gv('n-fruit','0'))  || 0;
   const veg     = parseInt(gv('n-veg','0'))    || 0;
@@ -3129,7 +3509,9 @@ function runNutrition() {
   const grain   = parseInt(gv('n-grain','0'))  || 0;
   const protein = parseInt(gv('n-protein','0'))|| 0;
   const meals   = parseInt(gv('n-meals','0'))  || 0;
-  const salt    = parseInt(gv('n-salt','0'))   || 0;
+  const saltRisk = computeSaltRiskScore();
+  // Convert the 0-22 salt-risk score to the 0-2 scale used by the nutrition formula (higher = better/lower risk)
+  const salt    = saltRisk.total <= 7 ? 2 : saltRisk.total <= 14 ? 1 : 0;
   const junk    = parseInt(gv('n-junk','0'))   || 0;
   const vegfreq = parseInt(gv('n-vegfreq','0'))|| 0;
 
@@ -3171,6 +3553,12 @@ function runNutrition() {
     '<div class="reco-item">Choose whole grains over refined carbohydrates</div>' +
     '<div class="reco-item">Traditional African diets rich in legumes and vegetables are neuroprotective</div>';
 
+  const nsalt = document.getElementById('nutri-salt');
+  if (nsalt) nsalt.innerHTML = '<div style="background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;">' +
+    '<strong style="font-size:.82rem;color:var(--gold);">&#x1F9C2; Salt Risk Score: ' + saltRisk.total + '/22 — ' + saltRisk.category + '</strong>' +
+    '<div class="progress-track" style="margin-top:.6rem;"><div class="progress-fill" style="width:' + Math.round(saltRisk.total/22*100) + '%;background:linear-gradient(90deg,#F59E0B,#EF4444);"></div></div>' +
+    '</div>';
+
   const ns = document.getElementById('nutri-supplements');
   if (ns) ns.innerHTML = suppChecks.length ? '<div style="background:rgba(78,203,130,.07);border:1px solid rgba(78,203,130,.2);border-radius:10px;padding:1rem;margin-top:.75rem;"><strong style="font-size:.82rem;color:var(--mint);">💊 Supplements:</strong><p style="font-size:.82rem;color:var(--smoke);margin-top:.35rem;">' + suppChecks.join(', ') + '</p></div>' : '';
 
@@ -3183,11 +3571,13 @@ function runNutrition() {
     fruit_intake: fruit, vegetable_intake: veg, hydration_liters: water,
     supplements_used: suppChecks.join(', '), natural_herbs: herbChecks.join(', '),
     lifestyle_choices: lifestyleList, nutritional_score: total,
+    salt_risk_score: saltRisk.total, salt_risk_category: saltRisk.category,
     assessment_date: new Date().toISOString().split('T')[0]
   });
 
-  window._lastNutrition = { total, pct, level, suppChecks, herbChecks, lifestyleList, advice, fruit, veg, water };
-  toast('Nutrition score: ' + total + '/13 — ' + level);
+  window._lastNutrition = { total, pct, level, suppChecks, herbChecks, lifestyleList, advice, fruit, veg, water,
+    saltTotal: saltRisk.total, saltCategory: saltRisk.category, saltTag: saltRisk.tag };
+  toast('Nutrition score: ' + total + '/13 — ' + level + ' | Salt risk: ' + saltRisk.total + '/22 — ' + saltRisk.category);
 }
 
 /* ══════════════════════════════════════════════
@@ -3450,6 +3840,7 @@ function generateNutritionPDF() {
   fld2('Vegetable Intake', d.veg + ' servings/day');
   fld2('Water Intake', d.water + ' litres/day');
   fld2('Lifestyle Choices', d.lifestyleList||'Not specified'); y+=3;
+  if (d.saltTotal !== undefined) { sec2('🧂 Salt Intake Assessment'); fld2('Salt Risk Score', d.saltTotal+'/22'); fld2('Category', d.saltCategory||'N/A'); y+=3; }
   if (d.suppChecks&&d.suppChecks.length) { sec2('💊 Supplements'); doc.text(d.suppChecks.join(', '),M,y);y+=10; }
   if (d.herbChecks&&d.herbChecks.length) {
     sec2('🌿 Herbal Remedies');
@@ -4037,6 +4428,142 @@ function openHerbDetail(idx) {
   document.getElementById('modal-herb-detail').classList.add('open');
 }
 
+/* ══════════════════════════════════════════════
+   PAIN-STROKE STUDY — data collection form
+══════════════════════════════════════════════ */
+async function submitPainStudy() {
+  const statusEl = document.getElementById('ps-submit-status');
+  const entryMode = document.getElementById('ps-entry-mode').value;
+  const name = document.getElementById('ps-name').value.trim();
+
+  if (!name) { statusEl.innerHTML = '<span style="color:#EF4444;">Participant name/ID is required.</span>'; return; }
+  if (entryMode === 'interviewer' && !document.getElementById('ps-interviewer-name').value.trim()) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Interviewer name is required for interviewer-mode entries.</span>';
+    return;
+  }
+  if (!supa) { statusEl.innerHTML = '<span style="color:#EF4444;">Not connected to the database.</span>'; return; }
+
+  const locations = Array.from(document.querySelectorAll('.ps-location:checked')).map(el => el.value).join(', ');
+
+  const payload = {
+    entry_mode: entryMode,
+    interviewer_name: document.getElementById('ps-interviewer-name').value.trim() || null,
+    participant_name: name,
+    age: safeParseInt(document.getElementById('ps-age').value),
+    sex: document.getElementById('ps-sex').value || null,
+    region: document.getElementById('ps-region').value.trim() || null,
+    pain_intensity: parseInt(document.getElementById('ps-intensity').value, 10),
+    pain_locations: locations || null,
+    pain_duration: document.getElementById('ps-duration').value || null,
+    headache_frequency: document.getElementById('ps-headache-freq').value || null,
+    analgesic_use_frequency: document.getElementById('ps-analgesic-freq').value || null,
+    analgesic_type: document.getElementById('ps-analgesic-type').value || null,
+    systolic_bp: safeParseInt(document.getElementById('ps-sbp').value),
+    diastolic_bp: safeParseInt(document.getElementById('ps-dbp').value),
+    glucose_level: parseFloat(document.getElementById('ps-glucose').value) || null,
+    sleep_quality: parseInt(document.getElementById('ps-sleep').value, 10),
+    stress_level: parseInt(document.getElementById('ps-stress').value, 10),
+    physical_activity: document.getElementById('ps-activity').value || null,
+    notes: document.getElementById('ps-notes').value.trim() || null,
+    created_at: new Date().toISOString()
+  };
+
+  statusEl.innerHTML = '<span style="color:var(--mist);">Saving...</span>';
+  try {
+    const { error } = await supa.from('pain_stroke_study').insert([payload]);
+    if (error) {
+      statusEl.innerHTML = '<span style="color:#EF4444;">Save failed: ' + error.message + '</span>';
+      return;
+    }
+    statusEl.innerHTML = '<span style="color:var(--mint);">✅ Entry saved. Thank you for contributing to the study.</span>';
+    runPainStrokeRisk(payload);
+    toast('✅ Pain-stroke study entry saved');
+
+    // Reset form for the next entry
+    document.getElementById('ps-name').value = '';
+    document.getElementById('ps-age').value = '';
+    document.getElementById('ps-sex').value = '';
+    document.getElementById('ps-region').value = '';
+    document.getElementById('ps-intensity').value = 0;
+    document.getElementById('ps-intensity-v').textContent = '0';
+    document.querySelectorAll('.ps-location:checked').forEach(el => el.checked = false);
+    document.getElementById('ps-duration').value = '';
+    document.getElementById('ps-headache-freq').value = '';
+    document.getElementById('ps-analgesic-freq').value = '';
+    document.getElementById('ps-analgesic-type').value = '';
+    document.getElementById('ps-sbp').value = 120;
+    document.getElementById('ps-dbp').value = 80;
+    document.getElementById('ps-glucose').value = 100;
+    document.getElementById('ps-sleep').value = 3; document.getElementById('ps-sleep-v').textContent = '3';
+    document.getElementById('ps-stress').value = 0; document.getElementById('ps-stress-v').textContent = '0';
+    document.getElementById('ps-activity').value = '';
+    document.getElementById('ps-notes').value = '';
+  } catch (e) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Error: ' + e.message + '</span>';
+  }
+}
+
+function safeParseInt(v) {
+  const n = parseInt(v, 10);
+  return isNaN(n) ? null : n;
+}
+
+/* ══════════════════════════════════════════════
+   PAIN-STROKE STUDY — researcher dashboard analytics
+══════════════════════════════════════════════ */
+async function loadPainStudyDashboard() {
+  const el = document.getElementById('painstudy-dashboard');
+  if (!el) return;
+  if (!supa) { el.innerHTML = '<p style="color:var(--mist);">Not connected to the database.</p>'; return; }
+
+  el.innerHTML = '<p style="color:var(--mist);">Loading...</p>';
+  try {
+    const { data, error } = await supa.from('pain_stroke_study').select('*');
+    if (error) { el.innerHTML = '<p style="color:#EF4444;">' + error.message + '</p>'; return; }
+    if (!data || !data.length) { el.innerHTML = '<p style="color:var(--mist);">No entries yet.</p>'; return; }
+
+    const total = data.length;
+    const avgIntensity = (data.reduce((s, r) => s + (r.pain_intensity || 0), 0) / total).toFixed(1);
+    const selfReport = data.filter(r => r.entry_mode === 'self_report').length;
+    const interviewer = data.filter(r => r.entry_mode === 'interviewer').length;
+
+    const freqCounts = {};
+    data.forEach(r => {
+      const f = r.headache_frequency || 'Not recorded';
+      freqCounts[f] = (freqCounts[f] || 0) + 1;
+    });
+
+    const locCounts = {};
+    data.forEach(r => {
+      (r.pain_locations || '').split(',').map(s => s.trim()).filter(Boolean).forEach(loc => {
+        locCounts[loc] = (locCounts[loc] || 0) + 1;
+      });
+    });
+
+    let html = '<div class="grid4" style="margin-bottom:1.5rem;">' +
+      '<div class="admin-stat"><div class="admin-stat-num">' + total + '</div><div class="admin-stat-lbl">Total Entries</div></div>' +
+      '<div class="admin-stat"><div class="admin-stat-num">' + avgIntensity + '</div><div class="admin-stat-lbl">Avg Pain Intensity /10</div></div>' +
+      '<div class="admin-stat"><div class="admin-stat-num">' + selfReport + '</div><div class="admin-stat-lbl">Self-reported</div></div>' +
+      '<div class="admin-stat"><div class="admin-stat-num">' + interviewer + '</div><div class="admin-stat-lbl">Interviewer-collected</div></div>' +
+      '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">';
+    html += '<div><h4 style="margin-bottom:.75rem;">Headache Frequency</h4>' +
+      Object.entries(freqCounts).map(([k, v]) =>
+        '<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:.4rem 0;border-bottom:1px solid var(--border);"><span>' + k + '</span><span style="color:var(--gold);font-weight:600;">' + v + '</span></div>'
+      ).join('') + '</div>';
+    html += '<div><h4 style="margin-bottom:.75rem;">Pain Locations</h4>' +
+      Object.entries(locCounts).sort((a,b) => b[1]-a[1]).map(([k, v]) =>
+        '<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:.4rem 0;border-bottom:1px solid var(--border);"><span>' + k + '</span><span style="color:var(--gold);font-weight:600;">' + v + '</span></div>'
+      ).join('') + '</div>';
+    html += '</div>';
+
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<p style="color:#EF4444;">' + e.message + '</p>';
+  }
+}
+
 async function loadResearcherChart() {
   const el = document.getElementById('researcher-chart');
   if (!el || !window.Plotly) return;
@@ -4162,6 +4689,356 @@ window.addEventListener('load', () => {
 });
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous">
+
+/* ── Cinnamon Evidence Data (embedded from AD_model_verified_data.xlsx) ── */
+const CINNAMON_EVIDENCE = [
+  { key:'Nrf2', name:'Nrf2/ARE Pathway', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Master antioxidant regulator. Suppressed in AD. Cinnamaldehyde activates via Keap1 interaction — the same pathway targeted by sulforaphane.',
+    m:{ctrl:100.2,sham:98.1,scp:40.3,pretx:85.2,cotx:82.1,posttx:79.3,don:74.8,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.0008},
+    f:{ctrl:102.1,sham:100.3,scp:55.1,pretx:90.2,cotx:88.1,posttx:86.0,don:80.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
+  { key:'pCREB', name:'pCREB/CREB Ratio', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Memory consolidation transcription factor. Links cholinergic signalling to BDNF gene expression. Reduced in AD and cognitive decline.',
+    m:{ctrl:100.1,sham:98.2,scp:35.1,pretx:80.3,cotx:78.1,posttx:72.2,don:70.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0003},
+    f:{ctrl:102.3,sham:100.1,scp:55.2,pretx:85.1,cotx:84.2,posttx:78.3,don:75.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002}},
+  { key:'PSD95', name:'PSD-95 Synaptic Protein', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Postsynaptic scaffolding protein. Loss indicates synapse deterioration. Strong predictor of cognitive function — reduced in MCI and AD.',
+    m:{ctrl:100.2,sham:98.1,scp:45.2,pretx:90.1,cotx:88.2,posttx:82.3,don:78.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:103.1,sham:101.2,scp:60.1,pretx:94.2,cotx:92.1,posttx:86.2,don:82.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'BDNF', name:'BDNF', domain:'Neurotrophic', unit:'pg/mg protein', dir:'higher_better',
+    clinical:'Neuronal survival and plasticity factor. Depleted in AD, depression, and chronic stress. Exercise, sleep, and certain polyphenols upregulate BDNF.',
+    m:{ctrl:62.1,sham:60.2,scp:38.1,pretx:58.2,cotx:55.1,posttx:52.1,don:50.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:66.2,sham:65.1,scp:46.2,pretx:63.1,cotx:61.2,posttx:59.1,don:54.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'Caspase3', name:'Caspase-3', domain:'Neurotrophic', unit:'ng/mg protein', dir:'lower_better',
+    clinical:'Apoptosis executioner. Elevated in AD and neuroinflammatory states. Cinnamon suppresses via BDNF/pCREB survival signalling cascade.',
+    m:{ctrl:1.06,sham:1.00,scp:2.20,pretx:1.25,cotx:1.36,posttx:1.41,don:1.53,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
+    f:{ctrl:0.98,sham:0.95,scp:1.80,pretx:1.00,cotx:1.18,posttx:1.22,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.001}},
+  { key:'TNFa', name:'TNF-α', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Primary pro-inflammatory cytokine. Elevated in stroke, hypertension, and AD. Cinnamon suppresses NF-κB upstream, reducing TNF-α production.',
+    m:{ctrl:82.0,sham:83.0,scp:220.0,pretx:98.0,cotx:100.0,posttx:101.9,don:108.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:86.0,sham:85.0,scp:210.1,pretx:92.0,cotx:96.0,posttx:98.3,don:105.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'IL6', name:'IL-6', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Pleiotropic inflammatory cytokine. Elevated in obesity, hypertension, and neuroinflammation. Notably showed no sex difference in our study.',
+    m:{ctrl:21.5,sham:20.7,scp:78.9,pretx:24.0,cotx:24.8,posttx:25.0,don:27.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:23.0,sham:22.9,scp:75.0,pretx:21.0,cotx:22.0,posttx:22.7,don:25.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'IL10', name:'IL-10', domain:'Inflammation', unit:'pg/mg tissue', dir:'higher_better',
+    clinical:'Anti-inflammatory cytokine. Suppressed in the AD model. Cinnamon partially restores IL-10 — supporting its immunomodulatory, not just suppressive, profile.',
+    m:{ctrl:23.0,sham:22.8,scp:14.0,pretx:21.0,cotx:20.2,posttx:19.9,don:17.5,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
+    f:{ctrl:24.0,sham:23.0,scp:16.0,pretx:22.0,cotx:21.4,posttx:20.6,don:19.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
+  { key:'NFkB', name:'NF-κB', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Master inflammatory transcription factor. Upstream of TNF-α, IL-6, and COX-2. Key cinnamon target — cinnamaldehyde blocks IκB kinase directly.',
+    m:{ctrl:85.7,sham:85.0,scp:235.1,pretx:100.0,cotx:105.0,posttx:102.0,don:125.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:82.0,sham:80.0,scp:170.0,pretx:90.0,cotx:92.0,posttx:94.8,don:115.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'AChE', name:'Acetylcholinesterase', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Degrades acetylcholine — cholinergic neurotransmission. Overactivated in AD. Same target as Donepezil. Our study shows cinnamon comparable efficacy.',
+    m:{ctrl:10.1,sham:10.0,scp:15.0,pretx:9.5,cotx:11.0,posttx:12.0,don:13.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.7,sham:9.6,scp:13.0,pretx:9.2,cotx:10.5,posttx:11.5,don:12.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MAOA', name:'MAO-A', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Metabolises serotonin and norepinephrine. Elevated in depression and AD. Cinnamon OUTPERFORMS Donepezil on MAO suppression — a key finding.',
+    m:{ctrl:1.01,sham:1.00,scp:1.70,pretx:1.10,cotx:1.13,posttx:1.18,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0005},
+    f:{ctrl:1.05,sham:1.03,scp:1.50,pretx:1.02,cotx:1.08,posttx:1.12,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0003}},
+  { key:'MAOB', name:'MAO-B', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Metabolises dopamine. Elevated in Parkinson's and AD. Cinnamon strongly suppresses both MAO-A and MAO-B — a dual-inhibition profile rare in natural products.',
+    m:{ctrl:1.30,sham:1.27,scp:2.03,pretx:1.20,cotx:1.15,posttx:1.08,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:1.20,sham:1.18,scp:1.80,pretx:1.00,cotx:1.13,posttx:1.17,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Serotonin', name:'Serotonin (5-HT)', domain:'Neurotransmitters', unit:'ng/mg protein', dir:'higher_better',
+    clinical:'Mood, cognition, and sleep regulation. Depleted in depression, AD, and chronic stress. Cinnamon MAO-A inhibition preserves serotonin levels.',
+    m:{ctrl:90.1,sham:88.2,scp:55.1,pretx:87.2,cotx:83.1,posttx:80.2,don:78.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:95.2,sham:93.1,scp:60.2,pretx:90.1,cotx:88.2,posttx:85.1,don:82.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'Glutamate', name:'Glutamate', domain:'Neurotransmitters', unit:'µmol/g tissue', dir:'lower_better',
+    clinical:'Excitotoxic at high levels. Elevated in the SCP model — contributes to neuronal death. Cinnamon reduces excitotoxic burden across all treatment windows.',
+    m:{ctrl:10.0,sham:10.0,scp:20.0,pretx:12.0,cotx:12.5,posttx:11.7,don:14.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.5,sham:9.5,scp:18.0,pretx:10.5,cotx:11.5,posttx:11.0,don:12.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'SOD', name:'Superoxide Dismutase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
+    clinical:'Primary superoxide scavenger. Depleted in oxidative stress including AD and hypertension. Restored by Nrf2 activation — cinnamon's core mechanism.',
+    m:{ctrl:9.1,sham:9.1,scp:3.5,pretx:8.8,cotx:8.5,posttx:8.4,don:7.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.5,sham:9.2,scp:5.5,pretx:9.0,cotx:8.7,posttx:8.5,don:7.8,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'CAT', name:'Catalase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
+    clinical:'Detoxifies hydrogen peroxide. Works with SOD in the antioxidant cascade. Both SOD and CAT are Nrf2/ARE target genes activated by cinnamaldehyde.',
+    m:{ctrl:19.8,sham:19.6,scp:6.5,pretx:17.4,cotx:16.0,posttx:15.0,don:14.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:20.2,sham:20.0,scp:10.4,pretx:18.5,cotx:17.0,posttx:16.4,don:14.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'GSH', name:'Glutathione', domain:'Oxidative', unit:'µmol/mg protein', dir:'higher_better',
+    clinical:'Key endogenous antioxidant tripeptide. Severely depleted in AD, stroke, and chronic disease. A primary Nrf2/ARE target — cinnamon rescues GSH significantly.',
+    m:{ctrl:8.85,sham:8.81,scp:2.83,pretx:7.68,cotx:7.20,posttx:6.98,don:6.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.04,sham:9.00,scp:4.80,pretx:8.50,cotx:8.00,posttx:7.85,don:7.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MDA', name:'Malondialdehyde', domain:'Oxidative', unit:'nmol/mg', dir:'lower_better',
+    clinical:'Lipid peroxidation marker — indicator of oxidative damage. Trending upward in SCP but high variability (ns). Reflects heterogeneous oxidative damage.',
+    m:{ctrl:0.96,sham:0.95,scp:2.50,pretx:1.20,cotx:1.30,posttx:1.35,don:1.45,p_pretx:0.08,p_cotx:0.12,p_posttx:0.15,p_don:0.18},
+    f:{ctrl:0.91,sham:0.90,scp:1.90,pretx:1.00,cotx:1.18,posttx:1.25,don:1.35,p_pretx:0.10,p_cotx:0.14,p_posttx:0.16,p_don:0.20}},
+  { key:'NO', name:'Nitric Oxide', domain:'Oxidative', unit:'µmol/L', dir:'lower_better',
+    clinical:'At elevated levels causes nitrosative stress. Elevated in hypertension and neuroinflammation. Significantly increased in SCP; Pre-Tx suppressed effectively.',
+    m:{ctrl:32.1,sham:30.2,scp:72.3,pretx:38.2,cotx:43.1,posttx:40.2,don:48.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:30.1,sham:29.2,scp:60.2,pretx:33.1,cotx:36.2,posttx:38.1,don:44.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MPO', name:'Myeloperoxidase', domain:'Oxidative', unit:'U/mg', dir:'lower_better',
+    clinical:'Neutrophil-derived enzyme — indicator of neuroinflammation and vascular damage. High variability in our model (ns); useful as a supplementary marker.',
+    m:{ctrl:0.91,sham:0.90,scp:2.25,pretx:1.05,cotx:1.18,posttx:1.20,don:1.50,p_pretx:0.09,p_cotx:0.11,p_posttx:0.13,p_don:0.16},
+    f:{ctrl:0.86,sham:0.85,scp:1.70,pretx:0.95,cotx:1.00,posttx:1.15,don:1.30,p_pretx:0.11,p_cotx:0.14,p_posttx:0.17,p_don:0.19}},
+  { key:'NOR', name:'NOR Discrimination Index', domain:'Behavioral', unit:'index (−1 to 1)', dir:'higher_better',
+    clinical:'Measures recognition memory. Negative values = severe impairment (SCP males −0.15). Pre-Tx restored to 0.64 — near-complete cognitive recovery.',
+    m:{ctrl:0.630,sham:0.620,scp:-0.149,pretx:0.643,cotx:0.614,posttx:0.584,don:0.552,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:0.656,sham:0.631,scp:0.101,pretx:0.652,cotx:0.631,posttx:0.602,don:0.571,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'EscapeLatency', name:'Escape Latency (MWM)', domain:'Behavioral', unit:'seconds', dir:'lower_better',
+    clinical:'Morris Water Maze spatial memory. SCP males: 70s (vs 29s Control). Pre-Tx reduced to 32s — near-complete recovery. Females less impaired (SCP: 52s).',
+    m:{ctrl:29.0,sham:28.4,scp:70.3,pretx:32.0,cotx:38.5,posttx:42.6,don:45.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:27.0,sham:26.6,scp:52.2,pretx:29.1,cotx:34.2,posttx:38.1,don:41.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Pathlength', name:'Pathlength (MWM)', domain:'Behavioral', unit:'cm', dir:'lower_better',
+    clinical:'Swimming distance to platform — spatial navigation efficiency. SCP males: 1208cm vs 450cm Control. Pre-Tx: 504cm. Reflects hippocampal function.',
+    m:{ctrl:450,sham:454,scp:1208,pretx:504,cotx:603,posttx:653,don:708,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:423,sham:428,scp:888,pretx:468,cotx:558,posttx:598,don:658,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Ymaze', name:'Y-Maze Alternation', domain:'Behavioral', unit:'%', dir:'higher_better',
+    clinical:'Spontaneous alternation — working memory. SCP males: 42% (vs 75% Control). Reflects short-term hippocampal-dependent memory. Pre-Tx: 73.5%.',
+    m:{ctrl:75.4,sham:73.4,scp:42.1,pretx:73.5,cotx:70.0,posttx:68.2,don:66.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:76.2,sham:75.1,scp:55.0,pretx:75.2,cotx:72.1,posttx:70.2,don:68.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Grooming', name:'Sucrose Splash Grooming', domain:'Behavioral', unit:'seconds', dir:'higher_better',
+    clinical:'Anhedonia/depression-like measure. Reduced grooming = motivational deficit. SCP males: 75.5s (vs 156s Control). Indicates hedonic impairment in AD model.',
+    m:{ctrl:156.2,sham:155.2,scp:75.5,pretx:150.4,cotx:140.3,posttx:135.9,don:128.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:162.2,sham:160.2,scp:105.4,pretx:155.0,cotx:145.2,posttx:140.1,don:133.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'NisslCount', name:'Neuronal Cell Density (Nissl)', domain:'Histology', unit:'cells/field', dir:'higher_better',
+    clinical:'Hippocampal CA1-CA4 neuronal count. SCP males: 209 (−66% vs Control 605). Pre-Tx: 600 — near-complete neuroprotection. Females: 330 in SCP.',
+    m:{ctrl:605,sham:603,scp:209,pretx:600,cotx:579,posttx:591,don:546,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:615,sham:612,scp:330,pretx:615,cotx:600,posttx:610,don:570,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}}
+];
+
+function cinnamonStars(p) {
+  if (!p && p !== 0) return '—';
+  if (p < 0.0001) return '****';
+  if (p < 0.001)  return '***';
+  if (p < 0.01)   return '**';
+  if (p < 0.05)   return '*';
+  return 'ns';
+}
+
+function cinnamonRecovery(pretx, scp, ctrl, dir) {
+  if (ctrl === scp) return 0;
+  let raw = (pretx - scp) / (ctrl - scp) * 100;
+  return Math.min(120, Math.max(-20, parseFloat(raw.toFixed(1))));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CINNAMON PANEL FUNCTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+let _cinnTab = 'all';
+
+function renderCinnamonGrid(domain) {
+  const grid = document.getElementById('cinn-grid');
+  if (!grid) return;
+  const list = domain === 'all' ? CINNAMON_EVIDENCE : CINNAMON_EVIDENCE.filter(b => b.domain === domain);
+
+  grid.innerHTML = list.map(bm => {
+    const mRec = cinnamonRecovery(bm.m.pretx, bm.m.scp, bm.m.ctrl, bm.dir);
+    const fRec = cinnamonRecovery(bm.f.pretx, bm.f.scp, bm.f.ctrl, bm.dir);
+    const mW = Math.min(100, Math.max(0, mRec));
+    const fW = Math.min(100, Math.max(0, fRec));
+    const mStars = cinnamonStars(bm.m.p_pretx);
+    const fStars = cinnamonStars(bm.f.p_pretx);
+    const dirLabel = bm.dir === 'higher_better'
+      ? '<span class="dir-b hi">↑ better</span>'
+      : '<span class="dir-b lo">↓ better</span>';
+    function recColor(p) {
+      return p >= 90 ? '#27AE60' : p >= 70 ? '#E8A545' : p >= 50 ? '#D4742A' : '#E07570';
+    }
+    function fmt(v, d=2) { return (v===null||v===undefined) ? '—' : Number(v).toFixed(d); }
+    return `
+<div class="cinn-card">
+  <div class="cinn-card-top">
+    <span class="cinn-card-name">${bm.name}</span>
+    ${dirLabel}
+  </div>
+  <div class="cinn-unit">${bm.unit} &nbsp;·&nbsp; <em>${bm.domain}</em></div>
+  <div class="cinn-clin">${bm.clinical}</div>
+  <div class="cinn-rec-lbl">Pre-Treatment Recovery vs SCP (best strategy)</div>
+  <div class="cinn-bar-row">
+    <span class="cinn-sex" style="color:#5BA4D4;">♂</span>
+    <div class="cinn-bar-bg"><div class="cinn-bar-fill m" style="width:${mW}%"></div></div>
+    <span class="cinn-pct" style="color:${recColor(mRec)}">${mRec}%</span>
+    <span class="cinn-stars">${mStars}</span>
+  </div>
+  <div class="cinn-bar-row">
+    <span class="cinn-sex" style="color:#E07570;">♀</span>
+    <div class="cinn-bar-bg"><div class="cinn-bar-fill f" style="width:${fW}%"></div></div>
+    <span class="cinn-pct" style="color:${recColor(fRec)}">${fRec}%</span>
+    <span class="cinn-stars">${fStars}</span>
+  </div>
+  <div class="cinn-means">
+    <div class="cinn-mc"><div class="mg">Control</div><div class="mv"><span class="mx">♂${fmt(bm.m.ctrl)}</span> / <span class="fx">♀${fmt(bm.f.ctrl)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">SCP (disease)</div><div class="mv"><span class="mx">♂${fmt(bm.m.scp)}</span> / <span class="fx">♀${fmt(bm.f.scp)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">Pre-Tx ✦ Best</div><div class="mv"><span class="mx">♂${fmt(bm.m.pretx)}</span> / <span class="fx">♀${fmt(bm.f.pretx)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">Donepezil (ref)</div><div class="mv"><span class="mx">♂${fmt(bm.m.don)}</span> / <span class="fx">♀${fmt(bm.f.don)}</span></div></div>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function openCinnamonPanel() {
+  const panel = document.getElementById('cinn-panel');
+  if (!panel) return;
+  panel.classList.add('active');
+  // Navigate to herbs page if not there
+  if (typeof showPage === 'function') showPage('herbs');
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    renderCinnamonGrid(_cinnTab);
+  }, 200);
+}
+
+// Hook into herb gallery — watch for cinnamon cards being clicked
+function initCinnamonPanelTrigger() {
+  const panel = document.getElementById('cinn-panel');
+  if (!panel) return;
+
+  // Tab navigation
+  const tabsEl = document.getElementById('cinn-tabs');
+  if (tabsEl) {
+    tabsEl.addEventListener('click', e => {
+      const tab = e.target.closest('.cinn-tab');
+      if (!tab) return;
+      tabsEl.querySelectorAll('.cinn-tab').forEach(t => t.classList.remove('ct-active'));
+      tab.classList.add('ct-active');
+      _cinnTab = tab.dataset.d;
+      renderCinnamonGrid(_cinnTab);
+    });
+  }
+
+  // Auto-open: if URL hash is #cinnamon or button clicked from researcher
+  if (window.location.hash === '#cinnamon') openCinnamonPanel();
+
+  // If herbs page already loaded, render grid immediately
+  renderCinnamonGrid('all');
+}
+
+function downloadCinnamonCSV() {
+  const headers = ['biomarker','domain','unit','direction',
+    'm_ctrl','m_scp','m_pretx','m_cotx','m_posttx','m_don',
+    'f_ctrl','f_scp','f_pretx','f_cotx','f_posttx','f_don',
+    'm_pretx_p','f_pretx_p'];
+  const rows = CINNAMON_EVIDENCE.map(b => [
+    b.name, b.domain, b.unit, b.dir,
+    b.m.ctrl, b.m.scp, b.m.pretx, b.m.cotx, b.m.posttx, b.m.don,
+    b.f.ctrl, b.f.scp, b.f.pretx, b.f.cotx, b.f.posttx, b.f.don,
+    b.m.p_pretx, b.f.p_pretx
+  ]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'Cinnamon_Evidence_ANHRL_UniIlorin.csv';
+  a.click();
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PAIN STUDY — STROKE RISK INTEGRATION
+   Feeds pain form vitals into stroke prediction API after save
+   ═══════════════════════════════════════════════════════════════ */
+
+async function runPainStrokeRisk(payload) {
+  // Build a stroke-model-compatible payload from pain form data
+  const strokePayload = {
+    age:              payload.age || 40,
+    gender:           payload.sex === 'Male' ? 'Male' : payload.sex === 'Female' ? 'Female' : 'Male',
+    bmi:              25,  // not collected in pain form — use default
+    hypertension:     (payload.systolic_bp && payload.systolic_bp >= 140) ? 1 : 0,
+    heart_disease:    0,
+    avg_glucose_level: payload.glucose_level || 100,
+    systolic_bp:      payload.systolic_bp || 120,
+    diastolic_bp:     payload.diastolic_bp || 80,
+    stress_level:     payload.stress_level || 0,
+    sleep_hours:      payload.sleep_quality ? payload.sleep_quality + 4 : 6,
+    smoking_status:   'Never smoked',
+    physical_activity: payload.physical_activity || 'Moderate',
+    depression_level: 0,
+    ptsd: 0,
+    salt_intake: 'Moderate',
+    hypertension_treatment: 'None',
+    noise_exposure: 'None',
+    diabetes: 'None',
+    work_type: 'Private',
+    marital_status: 'Single',
+    residence_type: 'Urban',
+    blood_type: 'O+',
+    genotype: 'AA',
+    country: payload.region || '',
+    nutrition_score: null,
+    salt_risk_score: null
+  };
+
+  const resultEl = document.getElementById('ps-stroke-result');
+  const scoreEl  = document.getElementById('psr-score-text');
+  const barEl    = document.getElementById('psr-bar');
+  const catEl    = document.getElementById('psr-category');
+  const factorsEl= document.getElementById('psr-factors');
+
+  if (!resultEl) return;
+  resultEl.classList.add('visible');
+  scoreEl.textContent  = 'Calculating…';
+  catEl.textContent    = '';
+  factorsEl.textContent= '';
+  barEl.style.width    = '0%';
+
+  try {
+    const res = await fetch(API_BASE + '/predict/stroke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(strokePayload)
+    });
+    const data = await res.json();
+    const prob = data.probability ?? data.risk_score ?? data.score ?? null;
+
+    if (prob !== null) {
+      const pct = Math.round(prob * 100);
+      const isHigh = pct >= 60;
+      const isMed  = pct >= 30;
+      const color  = isHigh ? '#EF4444' : isMed ? '#F59E0B' : '#22C55E';
+      const cat    = isHigh ? '⚠️ Elevated Risk' : isMed ? '⚡ Moderate Risk' : '✅ Lower Risk';
+
+      scoreEl.textContent     = `${pct}% estimated stroke risk`;
+      scoreEl.style.color     = color;
+      barEl.style.width       = `${pct}%`;
+      barEl.style.background  = color;
+      catEl.textContent       = cat;
+      catEl.style.color       = color;
+
+      // Build contributing factors text
+      const factors = [];
+      if (payload.systolic_bp >= 140) factors.push('Elevated systolic BP (' + payload.systolic_bp + ' mmHg)');
+      if (payload.stress_level >= 7)  factors.push('High stress level (' + payload.stress_level + '/10)');
+      if (payload.glucose_level >= 126) factors.push('Elevated glucose (' + payload.glucose_level + ' mg/dL)');
+      if (payload.sleep_quality <= 2) factors.push('Poor sleep quality (' + payload.sleep_quality + '/5)');
+      if (payload.pain_intensity >= 7) factors.push('High pain intensity (' + payload.pain_intensity + '/10)');
+      if (payload.headache_frequency === 'Daily') factors.push('Daily headaches');
+      if (payload.analgesic_use_frequency === 'Daily') factors.push('Daily analgesic use');
+
+      factorsEl.innerHTML = factors.length
+        ? '<strong style="color:#7a9cb8;">Contributing vascular factors detected:</strong><br>' + factors.map(f => '• ' + f).join('<br>')
+        : '<span style="color:#22C55E;">No major vascular risk flags detected in this entry.</span>';
+
+      // Save risk score back to Supabase pain_stroke_study record
+      // (update the last inserted row with the predicted risk)
+      if (supa) {
+        try {
+          await supa.from('pain_stroke_study')
+            .update({ predicted_stroke_risk: prob, risk_category: cat.replace(/[⚠️⚡✅]/g,'').trim() })
+            .eq('participant_name', payload.participant_name)
+            .order('created_at', { ascending: false })
+            .limit(1);
+        } catch(_) { /* non-critical — don't surface this error */ }
+      }
+    } else {
+      scoreEl.textContent = 'Risk score unavailable.';
+    }
+  } catch (err) {
+    scoreEl.textContent = 'Could not connect to risk model.';
+    scoreEl.style.color = '#9E7D5A';
+    factorsEl.textContent = err.message;
+  }
+}
+
+// Initialise everything on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(initCinnamonPanelTrigger, 600);
+});
+
+</script>
 </body>
 </html>
