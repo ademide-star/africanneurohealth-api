@@ -6,20 +6,20 @@
 <meta name="description" content="African NeuroHealth Intelligence — AI stroke & dementia risk prediction for Africa">
 <title>African NeuroHealth Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
 :root{
-  --forest:#081F14;--deep:#0A2B1C;--emerald:#1A6B3C;--jade:#2D9B5A;--mint:#4ECB82;
-  --gold:#D4A017;--amber:#F0C040;--white:#FFFFFF;--smoke:rgba(255,255,255,0.75);
+  --forest:#070b16;--deep:#0d1428;--emerald:#1A6B3C;--jade:#2D9B5A;--mint:#4ECB82;
+  --gold:#c9a84c;--amber:#f0cf72;--white:#f8fafc;--smoke:rgba(255,255,255,0.75);
   --mist:rgba(255,255,255,0.45);--ghost:rgba(255,255,255,0.12);
-  --glass:rgba(255,255,255,0.055);--border:rgba(212,160,23,0.22);--glow:rgba(212,160,23,0.12);
+  --glass:rgba(255,255,255,0.055);--border:rgba(201,168,76,0.22);--glow:rgba(201,168,76,0.12);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{font-family:'Outfit',sans-serif;background:var(--forest);color:var(--white);overflow-x:hidden;line-height:1.6;}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse 90% 60% at 15% 5%,rgba(45,155,90,.13) 0%,transparent 55%),
-             radial-gradient(ellipse 60% 50% at 85% 85%,rgba(212,160,23,.07) 0%,transparent 50%),var(--forest);}
+  background:radial-gradient(ellipse 90% 60% at 15% 5%,rgba(201,168,76,.10) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 50% at 85% 85%,rgba(201,168,76,.06) 0%,transparent 50%),var(--forest);}
 .z1{position:relative;z-index:1;}
 .wrap{max-width:1240px;margin:0 auto;padding:0 2rem;}
 .page{display:none;}.page.active{display:block;}
@@ -29,13 +29,13 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;}
 /* CARD */
 .card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.75rem;transition:all .3s;}
-.card:hover{border-color:rgba(212,160,23,.4);transform:translateY(-3px);}
-.card-gold{background:linear-gradient(135deg,rgba(212,160,23,.1),rgba(45,155,90,.06));border-color:var(--border);}
+.card:hover{border-color:rgba(201,168,76,.4);transform:translateY(-3px);}
+.card-gold{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(45,155,90,.06));border-color:var(--border);}
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;border:none;cursor:pointer;
   font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;text-decoration:none;transition:all .25s;white-space:nowrap;}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--amber));color:var(--forest);box-shadow:0 4px 16px rgba(212,160,23,.3);}
-.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,160,23,.5);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--amber));color:var(--forest);box-shadow:0 4px 16px rgba(201,168,76,.3);}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,168,76,.5);}
 .btn-outline{background:transparent;color:var(--white);border:1.5px solid rgba(255,255,255,.25);}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold);background:var(--glow);}
 .btn-green{background:linear-gradient(135deg,var(--emerald),var(--jade));color:var(--white);}
@@ -44,23 +44,23 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* TAGS */
 .tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:100px;}
 .tag-green{background:rgba(78,203,130,.12);color:var(--mint);border:1px solid rgba(78,203,130,.2);}
-.tag-gold{background:rgba(212,160,23,.12);color:var(--gold);border:1px solid rgba(212,160,23,.2);}
+.tag-gold{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
 .tag-red{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
 .tag-blue{background:rgba(59,130,246,.12);color:#60A5FA;border:1px solid rgba(59,130,246,.2);}
 .tag-purple{background:rgba(139,92,246,.12);color:#A78BFA;border:1px solid rgba(139,92,246,.2);}
 /* TYPOGRAPHY */
-.headline{font-family:\'Playfair Display\',serif;font-weight:900;line-height:1.08;}
-.mono{font-family:\'Space Mono\',monospace;}
-.section-label{display:block;font-family:\'Space Mono\',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;}
+.headline{font-family:'Playfair Display',serif;font-weight:900;line-height:1.08;}
+.mono{font-family:'Space Mono',monospace;}
+.section-label{display:block;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;}
 .text-muted{color:var(--mist);}
 .text-gold{color:var(--gold);}
 .text-mint{color:var(--mint);}
 /* NAV */
 #navbar{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;
-  background:rgba(8,31,20,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+  background:rgba(7,11,22,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
 .nav-brand{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;}
-.nav-logo-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 14px rgba(212,160,23,.35);}
-.nav-brand-text{font-family:\'Playfair Display\',serif;font-size:.95rem;font-weight:700;line-height:1.2;}
+.nav-logo-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 14px rgba(201,168,76,.35);}
+.nav-brand-text{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;line-height:1.2;}
 .nav-brand-text em{color:var(--gold);font-style:normal;}
 .nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none;}
 .nav-links a{color:rgba(255,255,255,.65);text-decoration:none;font-size:.84rem;font-weight:500;transition:color .2s;cursor:pointer;}
@@ -75,31 +75,31 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .hero-title{font-size:clamp(2.8rem,5.5vw,4.6rem);margin-bottom:1.5rem;}
 .hero-title .g{color:var(--gold);}
-.hero-title .m{color:var(--mint);}
+.hero-title .m{color:var(--white);}
 .hero-desc{font-size:1.05rem;color:var(--smoke);max-width:500px;margin-bottom:2.5rem;line-height:1.85;}
 .hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem;}
 .hero-stats{display:flex;gap:2.5rem;}
-.hero-stat-num{font-family:\'Space Mono\',monospace;font-size:1.8rem;font-weight:700;color:var(--gold);display:block;}
+.hero-stat-num{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;color:var(--gold);display:block;}
 .hero-stat-lbl{font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.06em;}
 /* Hero visual */
 .hero-visual{position:relative;}
 .brain-card-outer{background:var(--glass);border:1px solid var(--border);border-radius:24px;padding:2.5rem;backdrop-filter:blur(16px);position:relative;overflow:hidden;}
-.brain-ring{width:160px;height:160px;border-radius:50%;border:2px solid rgba(212,160,23,.25);margin:0 auto 2rem;display:flex;align-items:center;justify-content:center;position:relative;animation:rotateSlow 22s linear infinite;}
+.brain-ring{width:160px;height:160px;border-radius:50%;border:2px solid rgba(201,168,76,.25);margin:0 auto 2rem;display:flex;align-items:center;justify-content:center;position:relative;animation:rotateSlow 22s linear infinite;}
 @keyframes rotateSlow{to{transform:rotate(360deg);}}
 .brain-ring::before{content:'';position:absolute;inset:10px;border-radius:50%;border:1px solid rgba(78,203,130,.2);animation:rotateSlow 14s linear infinite reverse;}
 .brain-logo-img{width:100px;height:100px;border-radius:50%;object-fit:cover;animation:rotateSlow 22s linear infinite reverse;}
 .mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;}
-.mini-m{background:rgba(8,31,20,.65);border:1px solid rgba(78,203,130,.15);border-radius:10px;padding:.85rem;text-align:center;}
-.mini-m-val{font-family:\'Space Mono\',monospace;font-size:1.15rem;color:var(--mint);display:block;font-weight:700;}
+.mini-m{background:rgba(7,11,22,.65);border:1px solid rgba(78,203,130,.15);border-radius:10px;padding:.85rem;text-align:center;}
+.mini-m-val{font-family:'Space Mono',monospace;font-size:1.15rem;color:var(--mint);display:block;font-weight:700;}
 .mini-m-lbl{font-size:.65rem;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;}
 .float-pill{position:absolute;background:linear-gradient(135deg,var(--emerald),var(--deep));border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:.73rem;font-weight:700;color:var(--gold);white-space:nowrap;animation:floatUp 4s ease-in-out infinite;}
 .fp1{top:-18px;right:24px;animation-delay:0s;}.fp2{bottom:24px;left:-16px;animation-delay:1.8s;}
 @keyframes floatUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 /* SECTION */
 .section{padding:100px 0;}
-.section-title{font-family:\'Playfair Display\',serif;font-size:clamp(1.9rem,3.2vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:.75rem;}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,3.2vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:.75rem;}
 .section-sub{font-size:1rem;color:var(--smoke);line-height:1.8;max-width:580px;}
-.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,.2),transparent);}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.2),transparent);}
 /* PILLARS */
 .pillars-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;}
 .pillar{background:var(--glass);border:1px solid var(--border);border-radius:18px;padding:2rem 1.5rem;text-align:center;transition:all .35s;position:relative;overflow:hidden;}
@@ -109,15 +109,15 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .pillar:nth-child(3)::after{background:linear-gradient(90deg,var(--jade),var(--mint));}
 .pillar:nth-child(4)::after{background:linear-gradient(90deg,var(--gold),var(--amber));}
 .pillar:hover::after{transform:scaleX(1);}
-.pillar:hover{border-color:rgba(212,160,23,.4);transform:translateY(-6px);}
+.pillar:hover{border-color:rgba(201,168,76,.4);transform:translateY(-6px);}
 .pillar-icon{width:60px;height:60px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;margin:0 auto 1.25rem;}
-.pillar h3{font-family:\'Playfair Display\',serif;font-size:1.1rem;margin-bottom:.65rem;}
+.pillar h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:.65rem;}
 .pillar p{font-size:.82rem;color:var(--mist);line-height:1.7;}
 /* STATS */
 .stats-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:3rem;}
 .stat-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:center;position:relative;overflow:hidden;}
 .stat-card::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:55%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-.stat-num{font-family:\'Space Mono\',monospace;font-size:2.6rem;font-weight:700;color:var(--gold);display:block;}
+.stat-num{font-family:'Space Mono',monospace;font-size:2.6rem;font-weight:700;color:var(--gold);display:block;}
 .stat-lbl{font-size:.76rem;color:var(--mist);text-transform:uppercase;letter-spacing:.08em;}
 /* PORTALS */
 .portals-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
@@ -127,17 +127,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .portal-icon{width:54px;height:54px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
 .portal-card.wide .portal-icon{width:70px;height:70px;font-size:2rem;}
 .p-label{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mint);display:block;margin-bottom:.45rem;}
-.portal-card h3{font-family:\'Playfair Display\',serif;font-size:1.25rem;margin-bottom:.65rem;}
+.portal-card h3{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:.65rem;}
 .portal-card.wide h3{font-size:1.5rem;}
 .portal-card p{font-size:.84rem;color:var(--smoke);line-height:1.7;margin-bottom:1.25rem;}
 .portal-tags{display:flex;flex-wrap:wrap;gap:.5rem;}
 .ptag{font-size:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:3px 10px;color:var(--mist);}
-.portal-arrow{position:absolute;top:1.5rem;right:1.5rem;width:30px;height:30px;border-radius:50%;background:rgba(212,160,23,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;transition:all .3s;}
+.portal-arrow{position:absolute;top:1.5rem;right:1.5rem;width:30px;height:30px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;transition:all .3s;}
 .portal-card:hover .portal-arrow{background:var(--gold);color:var(--forest);transform:translate(2px,-2px);}
 /* MAP */
 .map-controls{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
 .map-btn{background:var(--glass);border:1px solid var(--border);color:var(--smoke);padding:7px 16px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .25s;}
 .map-btn:hover,.map-btn.active{background:var(--glow);border-color:var(--gold);color:var(--gold);}
+/* dark look for standard OSM tiles */
+.dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.5);}
 #map-el{height:460px;border-radius:16px;border:1px solid var(--border);overflow:hidden;}
 .map-legend{display:flex;gap:1.5rem;margin-top:1.25rem;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--mist);}
@@ -145,7 +147,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* PUBLICATIONS */
 .pub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
 .pub-card{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:1.5rem;transition:all .3s;}
-.pub-card:hover{border-color:rgba(212,160,23,.3);transform:translateY(-3px);}
+.pub-card:hover{border-color:rgba(201,168,76,.3);transform:translateY(-3px);}
 .pub-journal{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:block;}
 .pub-card h4{font-size:.88rem;font-weight:600;line-height:1.5;margin-bottom:.65rem;}
 .pub-card p{font-size:.77rem;color:var(--mist);margin-bottom:1rem;line-height:1.6;}
@@ -156,27 +158,27 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .contact-item{display:flex;align-items:center;gap:1rem;font-size:.88rem;color:var(--smoke);}
 .c-icon{width:36px;height:36px;background:var(--glow);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
 .contact-form{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:2.5rem;}
-.contact-form h3{font-family:\'Playfair Display\',serif;font-size:1.3rem;margin-bottom:1.75rem;}
+.contact-form h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:1.75rem;}
 /* FORM ELEMENTS */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
 .fg{margin-bottom:1.25rem;}
 .fg label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mist);margin-bottom:.45rem;}
-.fg input,.fg select,.fg textarea{width:100%;background:rgba(8,31,20,.5);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.9rem;padding:10px 14px;outline:none;transition:border-color .25s;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(7,11,22,.5);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.9rem;padding:10px 14px;outline:none;transition:border-color .25s;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
 .fg select option{background:var(--deep);}
 .fg textarea{resize:vertical;min-height:100px;}
 input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:rgba(255,255,255,.12);border-radius:3px;outline:none;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 8px rgba(212,160,23,.5);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 8px rgba(201,168,76,.5);}
 /* ASSESSMENT PAGES */
 .asmt-section{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:1.5rem;}
-.asmt-section h3{font-family:\'Playfair Display\',serif;font-size:1.15rem;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.07);}
+.asmt-section h3{font-family:'Playfair Display',serif;font-size:1.15rem;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.07);}
 .risk-badge{border-radius:10px;padding:1rem 1.5rem;text-align:center;font-weight:700;font-size:1.1rem;margin-bottom:1.25rem;}
 .risk-high{background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);}
 .risk-medium{background:rgba(245,158,11,.15);color:#F59E0B;border:1px solid rgba(245,158,11,.3);}
 .risk-low{background:rgba(78,203,130,.15);color:var(--mint);border:1px solid rgba(78,203,130,.3);}
 .result-panel{position:sticky;top:88px;}
 .result-card{background:var(--glass);border:1px solid var(--border);border-radius:18px;padding:1.75rem;margin-bottom:1rem;}
-.result-card h4{font-family:\'Playfair Display\',serif;font-size:1.05rem;margin-bottom:1.25rem;}
+.result-card h4{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:1.25rem;}
 .gauge-wrap{width:100%;max-width:280px;margin:0 auto;}
 .gauge-svg{width:100%;}
 .rf-item{display:flex;align-items:center;gap:.75rem;font-size:.82rem;color:var(--smoke);margin-bottom:.6rem;}
@@ -188,22 +190,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 /* LANGUAGE SELECTOR */
 .lang-bar{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
 .lang-bar label{font-size:.78rem;color:var(--mist);font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
-.lang-bar select{background:rgba(8,31,20,.6);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.88rem;padding:7px 12px;outline:none;}
+.lang-bar select{background:rgba(7,11,22,.6);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.88rem;padding:7px 12px;outline:none;}
 /* MEMORY GAME */
 .mem-board{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;max-width:520px;margin:0 auto 2rem;}
 .mem-card{aspect-ratio:1;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,var(--emerald),var(--deep));border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;transition:all .3s;user-select:none;position:relative;overflow:hidden;}
 .mem-card .face{display:none;font-size:2rem;}
 .mem-card .back{font-size:1.4rem;color:var(--jade);}
-.mem-card.flipped{background:rgba(212,160,23,.12);border-color:var(--gold);}
+.mem-card.flipped{background:rgba(201,168,76,.12);border-color:var(--gold);}
 .mem-card.flipped .face{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
 .mem-card.flipped .back{display:none;}
 .mem-card.matched{background:rgba(78,203,130,.12);border-color:var(--mint);cursor:default;}
 .mem-card.matched .face{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
 .mem-card.matched .back{display:none;}
 /* WORD GAME */
-.word-display{background:linear-gradient(135deg,rgba(212,160,23,.15),rgba(45,155,90,.1));border:1px solid var(--gold);border-radius:16px;padding:2.5rem;text-align:center;margin:1.5rem 0;}
+.word-display{background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(45,155,90,.1));border:1px solid var(--gold);border-radius:16px;padding:2.5rem;text-align:center;margin:1.5rem 0;}
 .word-display .words{font-size:1.8rem;font-weight:700;color:var(--amber);letter-spacing:.1em;line-height:1.6;}
-.countdown{font-family:\'Space Mono\',monospace;font-size:3rem;color:var(--mint);margin-top:1rem;}
+.countdown{font-family:'Space Mono',monospace;font-size:3rem;color:var(--mint);margin-top:1rem;}
 /* TABS */
 .tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;}
 .tab-btn{background:none;border:none;color:var(--mist);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:500;padding:.75rem 1.25rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;margin-bottom:-1px;}
@@ -216,16 +218,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .data-table tr:hover td{background:rgba(255,255,255,.025);}
 /* ADMIN */
 .admin-stat{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
-.admin-stat-num{font-family:\'Space Mono\',monospace;font-size:1.8rem;color:var(--gold);font-weight:700;}
+.admin-stat-num{font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--gold);font-weight:700;}
 .admin-stat-lbl{font-size:.75rem;color:var(--mist);margin-top:.25rem;}
 /* MODALS */
-.modal-bg{position:fixed;inset:0;background:rgba(8,31,20,.88);backdrop-filter:blur(18px);z-index:1100;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-bg{position:fixed;inset:0;background:rgba(7,11,22,.88);backdrop-filter:blur(18px);z-index:1100;display:none;align-items:center;justify-content:center;padding:1rem;}
 .modal-bg.open{display:flex;}
-.modal{background:linear-gradient(135deg,rgba(26,107,60,.2),rgba(8,31,20,.97));border:1px solid var(--border);border-radius:24px;padding:3rem;max-width:560px;width:100%;position:relative;animation:scaleIn .3s ease both;}
+.modal{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(7,11,22,.97));border:1px solid var(--border);border-radius:24px;padding:3rem;max-width:560px;width:100%;position:relative;animation:scaleIn .3s ease both;}
 @keyframes scaleIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
 .modal-close{position:absolute;top:1.25rem;right:1.25rem;background:var(--ghost);border:none;color:var(--smoke);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .modal-close:hover{background:var(--glow);color:var(--gold);}
-.modal h2{font-family:\'Playfair Display\',serif;font-size:1.7rem;margin-bottom:.75rem;}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.7rem;margin-bottom:.75rem;}
 .modal p{font-size:.9rem;color:var(--smoke);line-height:1.7;margin-bottom:2rem;}
 .modal-opts{display:flex;flex-direction:column;gap:.75rem;}
 .modal-opt{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;cursor:pointer;text-align:left;transition:all .25s;color:var(--white);font-family:'Outfit',sans-serif;width:100%;}
@@ -233,9 +235,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .modal-opt strong{display:block;font-size:.93rem;margin-bottom:2px;}
 .modal-opt span{font-size:.77rem;color:var(--mist);}
 /* TOAST */
-#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,var(--emerald),var(--jade));border:1px solid rgba(212,160,23,.3);color:var(--white);padding:11px 26px;border-radius:100px;font-size:.84rem;font-weight:500;z-index:2000;opacity:0;transition:all .4s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;}
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,var(--emerald),var(--jade));border:1px solid rgba(201,168,76,.3);color:var(--white);padding:11px 26px;border-radius:100px;font-size:.84rem;font-weight:500;z-index:2000;opacity:0;transition:all .4s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;}
 /* FOOTER */
-footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);padding:4rem 2rem 2rem;position:relative;z-index:1;}
+footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);padding:4rem 2rem 2rem;position:relative;z-index:1;}
 .footer-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:3rem;}
 .footer-brand p{font-size:.84rem;color:var(--mist);line-height:1.7;margin-top:1rem;max-width:290px;}
 .footer-col h5{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;}
@@ -248,7 +250,7 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
 .stack-badge{font-size:.68rem;border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:3px 10px;color:rgba(255,255,255,.4);}
 /* SCROLL IND */
 .scroll-ind{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;}
-.scroll-arrow{width:22px;height:22px;border-right:1.5px solid rgba(212,160,23,.4);border-bottom:1.5px solid rgba(212,160,23,.4);transform:rotate(45deg);animation:scrollBounce 1.6s ease-in-out infinite;}
+.scroll-arrow{width:22px;height:22px;border-right:1.5px solid rgba(201,168,76,.4);border-bottom:1.5px solid rgba(201,168,76,.4);transform:rotate(45deg);animation:scrollBounce 1.6s ease-in-out infinite;}
 @keyframes scrollBounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(6px)}}
 .scroll-ind span{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);}
 /* BACK BTN */
@@ -285,116 +287,7 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
 /* RTL support */
 .rtl{direction:rtl;text-align:right;}
 
-/* ══ HUGGING FACE OVERLAY ══ */
-#hf-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1500;
-  display: none;
-  flex-direction: column;
-  background: var(--forest);
-}
-#hf-overlay.open { display: flex; }
-
-#hf-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  height: 56px;
-  background: rgba(8,31,20,.95);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.hf-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.hf-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  background: var(--glass);
-  border: 1px solid var(--border);
-  color: var(--smoke);
-  padding: 7px 16px;
-  border-radius: 8px;
-  font-family: 'Outfit', sans-serif;
-  font-size: .84rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-}
-.hf-back-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-.hf-model-badge {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  background: rgba(255,230,100,.08);
-  border: 1px solid rgba(255,230,100,.2);
-  border-radius: 8px;
-  padding: 5px 12px;
-  font-size: .78rem;
-  font-weight: 600;
-  color: var(--amber);
-}
-.hf-model-badge svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--amber);
-}
-
-.hf-pub-badge {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  font-size: .75rem;
-  color: var(--mint);
-  background: rgba(78,203,130,.08);
-  border: 1px solid rgba(78,203,130,.18);
-  border-radius: 8px;
-  padding: 5px 12px;
-}
-
-#hf-iframe-wrap {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-#hf-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: var(--forest);
-}
-.hf-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  background: var(--forest);
-  z-index: 1;
-  transition: opacity .5s;
-}
-.hf-loading.hide { opacity: 0; pointer-events: none; }
-.hf-spinner {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 3px solid rgba(212,160,23,.15);
-  border-top-color: var(--gold);
-  animation: spin .9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.hf-loading p { color: var(--smoke); font-size: .95rem; text-align: center; }
-.hf-loading small { color: var(--mist); font-size: .8rem; }
-
-.lang-switcher-nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(212,160,23,.3);border-radius:8px;padding:4px 10px;}
+.lang-switcher-nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:4px 10px;}
 .lang-globe{font-size:1rem;}
 .lang-switcher-nav select{background:transparent;border:none;color:var(--white);font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;outline:none;cursor:pointer;padding:2px 4px;}
 .lang-switcher-nav select option{background:var(--deep);color:var(--white);}
@@ -405,11 +298,11 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
 <!-- NAV -->
 <nav id="navbar">
   <div class="nav-brand" onclick="showPage('home')">
-    <svg class="nav-logo-img" viewBox="0 0 64 64" style="width:42px;height:42px;display:block;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL Logo"><defs><linearGradient id="anhrlG1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#D4A017"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a2418" stroke="url(#anhrlG1)" stroke-width="2"/><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG1)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="29" cy="25" r="1.5" fill="#D4A017"/><circle cx="33" cy="32" r="1.5" fill="#4ECB82"/><circle cx="29" cy="39" r="1.5" fill="#D4A017"/></svg>
+    <svg class="nav-logo-img" viewBox="0 0 64 64" style="width:42px;height:42px;display:block;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL Logo"><defs><linearGradient id="anhrlG1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a2418" stroke="url(#anhrlG1)" stroke-width="2"/><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG1)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="29" cy="25" r="1.5" fill="#c9a84c"/><circle cx="33" cy="32" r="1.5" fill="#4ECB82"/><circle cx="29" cy="39" r="1.5" fill="#c9a84c"/></svg>
     <div class="nav-brand-text">African <em>NeuroHealth</em><br><span data-i18n="navSubtitle">Intelligence</span></div>
   </div>
   <ul class="nav-links">
-    <li><a onclick="gotoSection('about')" data-i18n="navAbout">About</a></li>
+    <li><a onclick="gotoSection('about')" data-i18n="navAbout">What We Do</a></li>
     <li><a onclick="gotoSection('pillars')" data-i18n="navResearch">Research</a></li>
     <li><a onclick="gotoSection('neuromap')" data-i18n="navMap">NeuroMap</a></li>
     <li><a onclick="gotoSection('publications')" data-i18n="navPubs">Publications</a></li>
@@ -428,11 +321,11 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
         <option value="sw">SW — Swahili</option>
       </select>
     </div>
+    <button class="btn btn-gold" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
+    <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="openLoginModal('researcher')">Researcher Login</button>
     <a href="https://neuromatrixbiosystems.com" target="_blank" class="btn btn-outline btn-sm" style="font-size:.75rem;padding:6px 14px;">NeuroMatrix ↗</a>
     <button class="btn btn-outline btn-sm" onclick="showPage('herbs')">🌿 Herbal Remedies</button>
     <button class="btn btn-outline btn-sm" onclick="showPage('painstudy')">🩹 Pain-Stroke Study</button>
-    <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="openLoginModal('researcher')">Researcher Login</button>
-    <button class="btn btn-gold btn-sm" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
   </div></nav>
 
 <!-- ══ PAGE HOME ══ -->
@@ -444,10 +337,10 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
     <div>
       <div class="hero-pill fade-up"><div class="hero-dot"></div><span data-i18n="heroPill">African NeuroHealth Research Lab ·GRASP/NIH/DSI</span></div>
       <h1 class="headline hero-title fade-up fade-up-1">African<br><span class="g">NeuroHealth</span><br><span class="m">Intelligence</span></h1>
-      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">AI-powered stroke and dementia risk prediction, community health intelligence, and translational neuroscience research — built for Africa, by Africa.</span></p>
+      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">AI-powered stroke and cognitive-symptom screening, community health intelligence, and translational neuroscience research — built for Africa, by Africa.</span></p>
       <div class="hero-ctas fade-up fade-up-3">
         <button class="btn btn-gold" onclick="openAssessModal()" data-i18n="heroStartBtn">🩺 Start Assessment</button>
-        <button class="btn btn-outline" onclick="gotoSection('about')" data-i18n="heroAboutBtn">📖 About the Lab</button>
+        <button class="btn btn-outline" onclick="gotoSection('about')" data-i18n="heroAboutBtn">📖 What This App Does</button>
       </div>
       <div class="hero-stats fade-up fade-up-4">
         <div><span class="hero-stat-num" data-count="6">0</span><span class="hero-stat-num">+</span><span class="hero-stat-lbl" data-i18n="statLang">Languages</span></div>
@@ -460,7 +353,7 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
       <div class="float-pill fp2" data-i18n="floatPill2">🌍 54 African Countries</div>
       <div class="brain-card-outer">
         <div class="brain-ring">
-<svg class="brain-logo-img" viewBox="0 0 200 200" style="width:140px;height:140px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#D4A017"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M70 70c0-13 9-22 22-22s22 9 22 22v9c6 0 12 6 12 13s-6 13-12 13v9c0 13-9 22-22 22s-22-9-22-22c-10 0-17-7-17-16s7-16 17-16v-10z" fill="none" stroke="url(#anhrlG2)" stroke-width="6" stroke-linejoin="round"/><circle cx="90" cy="80" r="4" fill="#D4A017"/><circle cx="105" cy="100" r="4" fill="#4ECB82"/><circle cx="90" cy="120" r="4" fill="#D4A017"/><text x="100" y="170" text-anchor="middle" fill="#D4A017" font-family="sans-serif" font-size="18" font-weight="700">ANHRL</text></svg>
+<svg class="brain-logo-img" viewBox="0 0 200 200" style="width:140px;height:140px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M70 70c0-13 9-22 22-22s22 9 22 22v9c6 0 12 6 12 13s-6 13-12 13v9c0 13-9 22-22 22s-22-9-22-22c-10 0-17-7-17-16s7-16 17-16v-10z" fill="none" stroke="url(#anhrlG2)" stroke-width="6" stroke-linejoin="round"/><circle cx="90" cy="80" r="4" fill="#c9a84c"/><circle cx="105" cy="100" r="4" fill="#4ECB82"/><circle cx="90" cy="120" r="4" fill="#c9a84c"/><text x="100" y="170" text-anchor="middle" fill="#c9a84c" font-family="sans-serif" font-size="18" font-weight="700">ANHRL</text></svg>
         </div>
         <div class="mini-metrics">
           <div class="mini-m"><span class="mini-m-val">94%</span><span class="mini-m-lbl">Stroke Acc.</span></div>
@@ -478,28 +371,28 @@ footer{background:rgba(8,31,20,.8);border-top:1px solid rgba(212,160,23,.15);pad
   <div class="wrap">
     <div class="grid2" style="gap:5rem;align-items:start;">
       <div>
-        <span class="section-label" data-i18n="aboutLabel">// About the Lab</span>
-        <h2 class="section-title" data-i18n="aboutTitle">Where African Neuroscience<br>Meets Artificial Intelligence</h2>
+        <span class="section-label" data-i18n="aboutLabel">// What This App Does</span>
+        <h2 class="section-title" data-i18n="aboutTitle">AI-Powered Brain Health Screening,<br>Built for African Communities</h2>
         <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP1">
-The <strong>African NeuroHealth Dashboard</strong> is a culturally attuned, context-aware digital health platform developed to assess neuro-health risks within African populations. It integrates conventional biomedical indicators with locally relevant environmental exposures, lifestyle behaviors, dietary patterns, traditional medicine use, and sociocultural determinants to provide comprehensive, personalized, and precision-driven neuro-health risk assessments.
+The <strong>African NeuroHealth Dashboard</strong> is a free, AI-driven platform that estimates stroke risk and screens for self-reported cognitive symptoms in minutes. Our machine learning models — externally validated on an independent African cohort — combine biomedical measurements, lifestyle habits, environmental exposures, and cognitive testing to give you a personalised risk score with clear, actionable next steps.
 </p>
 
 <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP2">
-The platform incorporates environmental exposures such as noise and air pollution, evaluates dietary habits including traditional African nutrition, assesses sleep quality and hydration status, documents the use of herbal and traditional remedies, measures psychosocial stressors unique to African settings, and captures ethnocultural identity to enhance population-specific precision health insights.
+Beyond risk prediction, the platform includes a nutrition tracker, a stress assessment built around African stress domains, a memory recall game, and an instant PDF report generated in your language — English, Yorùbá, Hausa, Igbo, French, Arabic, or Swahili. No login is required to get started.
 </p>
 
 <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP3">
-Designed to support research, clinical decision-making, and community health screening, the African NeuroHealth Dashboard leverages artificial intelligence and data-driven analytics to facilitate early identification of individuals at risk for stroke, cognitive impairment, and other neurological disorders across African communities.
+For researchers, the same platform doubles as live research infrastructure: upload and export datasets, visualise stroke and dementia hotspots across Africa on NeuroMap, and browse a documented ethnobotanical database of herbal remedies — all built on real field data collected through community assessments.
 </p>
 <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP4">
 <strong>Developed by:</strong> Adebimpe-John Omolola E<br>
 <strong>Principal Investigator:</strong> Prof. Mayowa Owolabi<br>
 <strong>Collaborative Program:</strong> GRASP / NIH / DSI Collaborative Program
 </p>
-        <div class="card card-gold"><p style="font-style:italic;font-size:.92rem;color:var(--smoke);" data-i18n="aboutQuote">"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." <br><strong style="color:var(--gold);">— Adebimpe-John O.E., PhD.&amp; SACOTECH, Omu-Ijebu</strong></p></div>
+        <div class="card card-gold"><p style="font-style:italic;font-size:.92rem;color:var(--smoke);" data-i18n="aboutQuote">"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." <br><strong style="color:var(--gold);">— Adebimpe-John O.E., PhD.&amp; African NeuroHealth Research Lab</strong></p></div>
 
         <!-- ANHRL Page Link -->
-        <div style="margin-top:1.5rem;background:linear-gradient(135deg,rgba(212,160,23,.1),rgba(45,155,90,.08));border:1px solid rgba(212,160,23,.25);border-radius:14px;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+        <div style="margin-top:1.5rem;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(45,155,90,.08));border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
           <div>
             <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem;">About the Lab</div>
             <div style="font-weight:600;font-size:.95rem;margin-bottom:.3rem;">African NeuroHealth Research Lab (ANHRL)</div>
@@ -513,7 +406,7 @@ Designed to support research, clinical decision-making, and community health scr
       <div style="display:flex;flex-direction:column;gap:1.25rem;">
         <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
           <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏛️</div>
-          <div><strong data-i18n="feat1Title">SACOETEC · Omu-Ijebu, Ogun State, Nigeria</strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;">Supported by GRASP/NIH/DSI Africa.</p></div>
+          <div><strong data-i18n="feat1Title">ANHRL · African Neurohealth Lab </strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;">Supported by GRASP/NIH/DSI Africa.</p></div>
         </div>
         <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
           <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🌿</div>
@@ -545,13 +438,13 @@ Designed to support research, clinical decision-making, and community health scr
       <div class="pillar"><div class="pillar-icon" style="background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.2);">🫀</div><h3 data-i18n="p1Title">Stroke Prevention</h3><p data-i18n="p1Desc">Geospatial mapping of stroke hotspots, hypertension-driven risk modelling, and cardiometabolic profiling across Nigeria and sub-Saharan Africa.</p><div style="margin-top:1rem;"><span class="tag tag-red">Clinical AI</span></div></div>
       <div class="pillar"><div class="pillar-icon" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.2);">🧬</div><h3>Dementia & Alzheimer's</h3><p data-i18n="p2Desc">Early detection algorithms integrating MMSE, biomarkers, lifestyle factors, and sex-dependent cognitive trajectories in African cohorts.</p><div style="margin-top:1rem;"><span class="tag tag-purple">Computational</span></div></div>
       <div class="pillar"><div class="pillar-icon" style="background:rgba(45,155,90,.15);border:1px solid rgba(45,155,90,.25);">🌿</div><h3 data-i18n="p3Title">Herbal Therapeutics</h3><p data-i18n="p3Desc">Systematic reviews and preclinical trials — Saigon cinnamon, Aframomum melegueta, and African botanicals for neuroprotection.</p><div style="margin-top:1rem;"><span class="tag tag-green">Translational</span></div></div>
-      <div class="pillar"><div class="pillar-icon" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.2);">⚡</div><h3 data-i18n="p4Title">AI Health Intelligence</h3><p data-i18n="p4Desc">Federated ML, neural network activity modelling, and dataset tools designed for low-resource African research settings.</p><div style="margin-top:1rem;"><span class="tag tag-gold">Infrastructure</span></div></div>
+      <div class="pillar"><div class="pillar-icon" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);">⚡</div><h3 data-i18n="p4Title">AI Health Intelligence</h3><p data-i18n="p4Desc">Federated ML, neural network activity modelling, and dataset tools designed for low-resource African research settings.</p><div style="margin-top:1rem;"><span class="tag tag-gold">Infrastructure</span></div></div>
     </div>
   </div>
 </section>
 
 <!-- STATS -->
-<section id="stats" class="section" style="background:rgba(8,31,20,.4);border-top:1px solid rgba(212,160,23,.08);border-bottom:1px solid rgba(212,160,23,.08);">
+<section id="stats" class="section" style="background:rgba(7,11,22,.4);border-top:1px solid rgba(201,168,76,.08);border-bottom:1px solid rgba(201,168,76,.08);">
   <div class="wrap">
     <div style="text-align:center;margin-bottom:3.5rem;">
       <span class="section-label" data-i18n="statsLabel">// Platform Statistics</span>
@@ -559,10 +452,10 @@ Designed to support research, clinical decision-making, and community health scr
       <p class="section-sub" style="margin:0 auto;" data-i18n="statsSub">Live aggregate metrics across all assessments, predictions, and research records.</p>
     </div>
     <div class="stats-cards">
-      <div class="stat-card"><span class="stat-num"><span data-count="1247">0</span></span><span class="stat-lbl" data-i18n="statsStroke">Stroke Assessments</span></div>
-      <div class="stat-card"><span class="stat-num"><span data-count="983">0</span></span><span class="stat-lbl" data-i18n="statsDementia">Dementia Screenings</span></div>
-      <div class="stat-card"><span class="stat-num"><span data-count="36">0</span></span><span class="stat-lbl" data-i18n="statsStates">Nigerian States</span></div>
-      <div class="stat-card"><span class="stat-num"><span data-count="12">0</span>+</span><span class="stat-lbl" data-i18n="statsPubs">Publications</span></div>
+      <div class="stat-card"><span class="stat-num"><span id="stat-stroke" data-count="2600">0</span></span><span class="stat-lbl" data-i18n="statsStroke">Stroke Assessments</span></div>
+      <div class="stat-card"><span class="stat-num"><span id="stat-dementia" data-count="2400">0</span></span><span class="stat-lbl" data-i18n="statsDementia">Dementia Screenings</span></div>
+      <div class="stat-card"><span class="stat-num"><span id="stat-states" data-count="36">0</span></span><span class="stat-lbl" data-i18n="statsStates">Nigerian States</span></div>
+      <div class="stat-card"><span class="stat-num"><span id="stat-pubs" data-count="12">0</span>+</span><span class="stat-lbl" data-i18n="statsPubs">Publications</span></div>
     </div>
     <div id="plotly-chart" style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem;"></div>
   </div>
@@ -595,7 +488,7 @@ Designed to support research, clinical decision-making, and community health scr
         <div class="portal-arrow">→</div>
       </div>
       <div class="portal-card" onclick="openLoginModal('admin')" style="cursor:pointer;">
-        <div class="portal-icon" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.2);">⚙️</div>
+        <div class="portal-icon" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);">⚙️</div>
         <span class="p-label" data-i18n="portalAdmLabel">Administrators only</span>
         <h3 data-i18n="portalAdmTitle">Admin Portal</h3>
         <p data-i18n="portalAdmDesc">Manage users, permissions, AI model versions, survey records, notifications, and platform-wide reports.</p>
@@ -607,25 +500,25 @@ Designed to support research, clinical decision-making, and community health scr
 </section>
 
 <!-- NEUROMAP -->
-<section id="neuromap" class="section" style="background:rgba(8,31,20,.45);">
+<section id="neuromap" class="section" style="background:rgba(7,11,22,.45);">
   <div class="wrap">
     <span class="section-label" data-i18n="mapLabel">// NeuroMap Africa</span>
     <h2 class="section-title" style="margin-bottom:.5rem;" data-i18n="mapTitle">Interactive Brain Health Geography of Africa</h2>
     <p class="section-sub" style="margin-bottom:2rem;" data-i18n="mapDesc">Stroke hotspots, dementia prevalence, herbal medicine use, pollution overlays, sex-stratified data — across Nigeria and 54 African nations.</p>
     <div class="map-controls">
-      <button class="map-btn active" onclick="setMapLayer(this)">🫀 Stroke Hotspots</button>
-      <button class="map-btn" onclick="setMapLayer(this)">🧠 Dementia Zones</button>
-      <button class="map-btn" onclick="setMapLayer(this)">🌿 Herbal Use</button>
-      <button class="map-btn" onclick="setMapLayer(this)">💨 Pollution</button>
-      <button class="map-btn" onclick="setMapLayer(this)">⚥ Sex Differences</button>
+      <button class="map-btn active" data-layer="stroke" onclick="setMapLayer(this)">🫀 Stroke Hotspots</button>
+      <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Dementia Zones</button>
+      <button class="map-btn" data-layer="herbal" onclick="setMapLayer(this)">🌿 Herbal Use</button>
+      <button class="map-btn" data-layer="pollution" onclick="setMapLayer(this)">💨 Pollution</button>
+      <button class="map-btn" data-layer="sex" onclick="setMapLayer(this)">⚥ Sex Differences</button>
     </div>
     <div id="map-el"></div>
     <div class="map-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div>High Risk</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div>Moderate Risk</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#10B981;"></div>Low Risk</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3B82F6;"></div>Research Site</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#D4A017;border:1px solid #fff;"></div>Data Collection</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div>Highest third of LGAs</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div>Middle third</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#10B981;"></div>Lowest third</div>
+      <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px dashed #3B82F6;"></div>Field survey LGA (dashed outline)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c9a84c;border:1px solid #fff;"></div>Data Collection</div>
     </div>
   </div>
 </section>
@@ -656,8 +549,8 @@ Designed to support research, clinical decision-making, and community health scr
         <h2 class="section-title" data-i18n="contactTitle">Connect With Our Lab</h2>
         <p class="section-sub" data-i18n="contactDesc">Whether you're a funder, collaborator, healthcare institution, or community partner — we welcome conversations that advance African brain health.</p>
         <div class="contact-items">
-          <div class="contact-item"><div class="c-icon">🏛️</div>Biological Science Dept.,SACOTECH, Omu-Ijebu, Ogun State, Nigeria</div>
-          <div class="contact-item"><div class="c-icon">📧</div><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f3929d9b819fb3869d9a9f9c819a9ddd969786dd9d94">[email&#160;protected]</a></div>
+          <div class="contact-item"><div class="c-icon">🏛️</div>African NeuroHealth Lab (ANHRL)</div>
+          <div class="contact-item"><div class="c-icon">📧</div><a href="mailto:africanneurohealth@gmail.com">africanneurohealth@gmail.com</a></div>
           <div class="contact-item"><div class="c-icon">🌐</div>neuromatrixbiosystems.com</div>
           <div class="contact-item"><div class="c-icon">🤝</div>GRASP · NIH · DSI Africa.</div>
         </div>
@@ -686,7 +579,7 @@ Designed to support research, clinical decision-making, and community health scr
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
-<div class="nav-brand"><svg class="nav-logo-img" viewBox="0 0 64 64" style="width:42px;height:42px;display:block;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL Logo"><defs><linearGradient id="anhrlG1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#D4A017"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a2418" stroke="url(#anhrlG1)" stroke-width="2"/><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG1)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="29" cy="25" r="1.5" fill="#D4A017"/><circle cx="33" cy="32" r="1.5" fill="#4ECB82"/><circle cx="29" cy="39" r="1.5" fill="#D4A017"/></svg><div class="nav-brand-text">African <em>NeuroHealth</em><br>Intelligence</div></div>
+<div class="nav-brand"><svg class="nav-logo-img" viewBox="0 0 64 64" style="width:42px;height:42px;display:block;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL Logo"><defs><linearGradient id="anhrlG1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a2418" stroke="url(#anhrlG1)" stroke-width="2"/><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG1)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="29" cy="25" r="1.5" fill="#c9a84c"/><circle cx="33" cy="32" r="1.5" fill="#4ECB82"/><circle cx="29" cy="39" r="1.5" fill="#c9a84c"/></svg><div class="nav-brand-text">African <em>NeuroHealth</em><br>Intelligence</div></div>
       <p data-i18n="footerTagline">AI-powered neuroscience research and community health intelligence platform. Built for Africa, by Africa.</p>
     </div>
     <div class="footer-col"><h5 data-i18n="footerPlatform">Platform</h5><ul>
@@ -708,7 +601,7 @@ Designed to support research, clinical decision-making, and community health scr
     </ul></div>
   </div>
   <div class="footer-bottom">
-    <p data-i18n="footerCopy">© 2026 African NeuroHealth Research Lab ·SACOTECH GRASP/NIH/DSI· NeuroMatrix Biosystems</p>
+    <p data-i18n="footerCopy">© 2026 African NeuroHealth Research Lab ·ANHRL GRASP/NIH/DSI· NeuroMatrix Biosystems</p>
     <div class="stack-badges"><span class="stack-badge">Supabase</span><span class="stack-badge">Leaflet</span><span class="stack-badge">Plotly</span><span class="stack-badge">jsPDF</span><span class="stack-badge">HTML5</span></div>
   </div>
 </footer>
@@ -804,43 +697,6 @@ Designed to support research, clinical decision-making, and community health scr
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
 
-  <!-- Model mode selector -->
-  <div style="background:linear-gradient(135deg,rgba(212,160,23,.12),rgba(45,155,90,.08));border:1px solid rgba(212,160,23,.25);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-    <div>
-      <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem;">Assessment Mode</div>
-      <div style="font-size:.85rem;color:var(--smoke);">Quick form below, or use the <strong style="color:var(--gold);">published peer-reviewed AI model</strong></div>
-    </div>
-    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-      <button id="stroke-btn-form" class="btn btn-gold btn-sm" onclick="setAssessMode('stroke','form')">📋 Quick Form</button>
-      <button id="stroke-btn-hf" class="btn btn-outline btn-sm" onclick="setAssessMode('stroke','hf')">🤖 Published AI Model</button>
-    </div>
-  </div>
-
-  <!-- HF Published Model Embed -->
-  <div id="stroke-hf-embed" style="display:none;margin-bottom:2rem;">
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
-      <div style="background:linear-gradient(135deg,var(--emerald),var(--jade));padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700;font-size:1rem;">🤖 African NeuroHealth AI — Published Model</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.85);margin-top:.2rem;">Your peer-reviewed model · huggingface.co/spaces/ademideola/african-neurohealth</div>
-        </div>
-        <a href="https://huggingface.co/spaces/ademideola/african-neurohealth" target="_blank" class="btn btn-sm" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;font-size:.75rem;border-radius:6px;text-decoration:none;">Open Full Space ↗</a>
-      </div>
-      <iframe
-        id="stroke-hf-iframe"
-        src="about:blank"
-        data-src="https://ademideola-african-neurohealth.hf.space/?embed=true&embed_options=hide_footer,light_theme"
-        style="width:100%;height:780px;border:none;display:block;background:var(--forest);"
-        allow="microphone; camera"
-        title="African NeuroHealth AI Published Model">
-      </iframe>
-      <div style="padding:.85rem 1.5rem;background:rgba(8,31,20,.5);font-size:.75rem;color:var(--mist);line-height:1.6;">
-        ⚡ <strong style="color:var(--gold);">This is your actual published AI model</strong> from peer-reviewed research — Gradient Boosting (Stroke) and Random Forest (Dementia). If sleeping, allow 30–60 seconds to wake.
-        &nbsp;·&nbsp; <a href="https://huggingface.co/spaces/ademideola/african-neurohealth" target="_blank" style="color:var(--mint);">View on Hugging Face ↗</a>
-      </div>
-    </div>
-  </div>
-
   <!-- Quick Form (default) -->
   <div id="stroke-form-wrap">
   <div class="lang-bar">
@@ -881,7 +737,7 @@ Designed to support research, clinical decision-making, and community health scr
         </div>
         <div class="fg"><label>BMI (auto-calculated)</label>
           <div style="display:flex;align-items:center;gap:1rem;">
-            <input type="text" id="s-bmi" readonly style="max-width:80px;background:rgba(212,160,23,.1);">
+            <input type="text" id="s-bmi" readonly style="max-width:80px;background:rgba(201,168,76,.1);">
             <span id="s-bmi-cat" style="font-weight:700;color:var(--mint);font-size:.82rem;">Normal</span>
           </div>
         </div>
@@ -954,7 +810,7 @@ Designed to support research, clinical decision-making, and community health scr
             <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="18" stroke-linecap="round"/>
             <path id="gauge-s-fill" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gG1)" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 251"/>
             <defs><linearGradient id="gG1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10B981"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#EF4444"/></linearGradient></defs>
-            <text id="gauge-s-pct" x="100" y="92" text-anchor="middle" font-family="Space Mono,monospace" font-size="20" font-weight="700" fill="#D4A017">0%</text>
+            <text id="gauge-s-pct" x="100" y="92" text-anchor="middle" font-family="Space Mono,monospace" font-size="20" font-weight="700" fill="#c9a84c">0%</text>
             <text x="22" y="114" font-family="Outfit,sans-serif" font-size="9" fill="rgba(255,255,255,.4)">Low</text>
             <text x="166" y="114" font-family="Outfit,sans-serif" font-size="9" fill="rgba(255,255,255,.4)">High</text>
           </svg>
@@ -979,43 +835,6 @@ Designed to support research, clinical decision-making, and community health scr
 <div id="page-dementia" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
-
-  <!-- Model mode selector -->
-  <div style="background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(45,155,90,.08));border:1px solid rgba(139,92,246,.25);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-    <div>
-      <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#A78BFA;margin-bottom:.35rem;">Assessment Mode</div>
-      <div style="font-size:.85rem;color:var(--smoke);">Quick form below, or use the <strong style="color:var(--gold);">published peer-reviewed AI model</strong></div>
-    </div>
-    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-      <button id="dementia-btn-form" class="btn btn-gold btn-sm" onclick="setAssessMode('dementia','form')">📋 Quick Form</button>
-      <button id="dementia-btn-hf" class="btn btn-outline btn-sm" onclick="setAssessMode('dementia','hf')">🤖 Published AI Model</button>
-    </div>
-  </div>
-
-  <!-- HF Published Model Embed (shared space — both stroke and dementia) -->
-  <div id="dementia-hf-embed" style="display:none;margin-bottom:2rem;">
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
-      <div style="background:linear-gradient(135deg,#5B21B6,#7C3AED);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700;font-size:1rem;">🤖 African NeuroHealth AI — Published Dementia Model</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.85);margin-top:.2rem;">Your peer-reviewed model · huggingface.co/spaces/ademideola/african-neurohealth</div>
-        </div>
-        <a href="https://huggingface.co/spaces/ademideola/african-neurohealth" target="_blank" class="btn btn-sm" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;font-size:.75rem;border-radius:6px;text-decoration:none;">Open Full Space ↗</a>
-      </div>
-      <iframe
-        id="dementia-hf-iframe"
-        src="about:blank"
-        data-src="https://ademideola-african-neurohealth.hf.space/?embed=true&embed_options=hide_footer,light_theme"
-        style="width:100%;height:780px;border:none;display:block;background:var(--forest);"
-        allow="microphone; camera"
-        title="African NeuroHealth AI Published Dementia Model">
-      </iframe>
-      <div style="padding:.85rem 1.5rem;background:rgba(8,31,20,.5);font-size:.75rem;color:var(--mist);line-height:1.6;">
-        ⚡ <strong style="color:var(--gold);">This is your published Random Forest dementia model</strong> from peer-reviewed research (Accuracy: 91.6%). Allow 30–60 seconds if waking from sleep.
-        &nbsp;·&nbsp; <a href="https://huggingface.co/spaces/ademideola/african-neurohealth" target="_blank" style="color:var(--mint);">View on Hugging Face ↗</a>
-      </div>
-    </div>
-  </div>
 
   <!-- Quick Form (default) -->
   <div id="dementia-form-wrap">
@@ -1045,7 +864,7 @@ Designed to support research, clinical decision-making, and community health scr
         </div>
         <div class="fg"><label>BMI</label>
           <div style="display:flex;align-items:center;gap:1rem;">
-            <input type="text" id="d-bmi" readonly style="max-width:80px;background:rgba(212,160,23,.1);">
+            <input type="text" id="d-bmi" readonly style="max-width:80px;background:rgba(201,168,76,.1);">
             <span id="d-bmi-cat" style="font-weight:700;color:var(--mint);font-size:.82rem;">Normal</span>
           </div>
         </div>
@@ -1097,6 +916,35 @@ Designed to support research, clinical decision-making, and community health scr
         <div class="fg"><label>Sleep Quality (0-10): <span id="d-sleep-val" style="color:var(--gold);font-weight:700;">6</span></label><input type="range" id="d-sleep" min="0" max="10" value="6" oninput="document.getElementById('d-sleep-val').textContent=this.value"></div>
         <div class="fg"><label>Stress Level (0-10): <span id="d-stress-val" style="color:var(--gold);font-weight:700;">4</span></label><input type="range" id="d-stress" min="0" max="10" value="4" oninput="document.getElementById('d-stress-val').textContent=this.value"></div>
         <div class="fg"><label>Pollution Score (0-100): <span id="d-poll-val" style="color:var(--gold);font-weight:700;">20</span></label><input type="range" id="d-poll" min="0" max="100" value="20" oninput="document.getElementById('d-poll-val').textContent=this.value"></div>
+      <div class="asmt-section">
+        <h3>Community &amp; Lifestyle Predictors</h3>
+        <p style="font-size:.8rem;color:var(--mist);margin-bottom:1rem;">These additional fields are used by the self-reported cognitive-symptom model. Choose the closest accurate response.</p>
+        <div class="form-row">
+          <div class="fg"><label>Sleep Hours per Night</label><input type="number" id="d-cog-sleep-hours" min="0" max="24" step="0.5" value="7"></div>
+          <div class="fg"><label>Resting Heart Rate (bpm)</label><input type="number" id="d-cog-heart-rate" min="30" max="220" value="72"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Chronic Pain Level</label><select id="d-cog-chronic-pain"><option value="NO">No chronic pain</option><option value="L">Low</option><option value="M">Moderate</option><option value="H">High</option></select></div>
+          <div class="fg"><label>Occupational Hazard Exposure</label><select id="d-cog-occupation-hazard"><option value="NO">No</option><option value="YES">Yes</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Access to Healthcare</label><select id="d-cog-health-access"><option value="YES">Yes</option><option value="NO">No</option></select></div>
+          <div class="fg"><label>Hypertension Treatment</label><select id="d-cog-htn-treatment"><option value="Not applicable">Not applicable</option><option value="Combined herbal + drugs">Combined herbal + drugs</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Fruit Intake Score (0-5)</label><select id="d-cog-fruit"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+          <div class="fg"><label>Vegetable Intake Score (1-5)</label><select id="d-cog-vegetable"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Daily Hydration (litres)</label><input type="number" id="d-cog-hydration" min="0" max="10" step="0.25" value="2"></div>
+          <div class="fg"><label>Total Salt Intake Score (0-22)</label><input type="number" id="d-cog-salt-score" min="0" max="22" value="8"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Usual Lifestyle / Food Choice</label><select id="d-cog-lifestyle"><option>Balanced Diet</option><option>Fast Food</option><option selected>Homemade Food</option><option>Homemade Food, Local Street Food</option><option>Homemade Food, Organic Food</option><option>Local Street Food</option><option>Organic Food</option></select></div>
+          <div class="fg"><label>Ogun Study Zone</label><select id="d-cog-zone"><option>Egba Zone</option><option selected>Ijebu Zone</option><option>Remo Zone</option></select></div>
+        </div>
+      </div>
+
         <!-- ===== CULTURALLY ADAPTED MMSE ASSESSMENT (African Context) ===== -->
         <div id="mmse-cultural-section" class="fg" style="margin-top:.5rem;">
           <label style="font-family:'Playfair Display',serif;font-size:.95rem;">MMSE Assessment (Adapted for African Context)</label>
@@ -1132,17 +980,17 @@ Designed to support research, clinical decision-making, and community health scr
         </div>
         <div class="fg"><label>Behavioral Problems</label><select id="d-behav"><option value="0">No</option><option value="1">Yes</option></select></div>
       </div>
-      <button class="btn btn-gold btn-full" style="font-size:1rem;padding:16px;" id="btn-run-dementia" onclick="runDementiaAssessment()">&#x1F9EC; Run Dementia Risk Assessment</button>
+      <button class="btn btn-gold btn-full" style="font-size:1rem;padding:16px;" id="btn-run-dementia" onclick="runDementiaAssessment()">&#x1F9EC; Run Cognitive Symptom Screening</button>
     </div>
     <div style="position:sticky;top:88px;">
       <div class="result-card" id="dementia-result-card" style="display:none;">
-        <h4>&#x1F9EC; Dementia Risk Analysis</h4>
+        <h4>&#x1F9EC; Cognitive Symptom Screening Result</h4>
         <div style="max-width:260px;margin:0 auto;">
           <svg viewBox="0 0 200 120" style="width:100%;">
             <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="18" stroke-linecap="round"/>
             <path id="gauge-d-fill" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gG2)" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 251"/>
             <defs><linearGradient id="gG2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10B981"/><stop offset="50%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#EF4444"/></linearGradient></defs>
-            <text id="gauge-d-pct" x="100" y="92" text-anchor="middle" font-family="Space Mono,monospace" font-size="20" font-weight="700" fill="#D4A017">0%</text>
+            <text id="gauge-d-pct" x="100" y="92" text-anchor="middle" font-family="Space Mono,monospace" font-size="20" font-weight="700" fill="#c9a84c">0%</text>
             <text x="22" y="114" font-family="Outfit,sans-serif" font-size="9" fill="rgba(255,255,255,.4)">Low</text>
             <text x="166" y="114" font-family="Outfit,sans-serif" font-size="9" fill="rgba(255,255,255,.4)">High</text>
           </svg>
@@ -1155,7 +1003,7 @@ Designed to support research, clinical decision-making, and community health scr
       </div>
       <div id="dementia-placeholder" class="result-card" style="text-align:center;padding:2.5rem 1.5rem;">
         <div style="font-size:3rem;margin-bottom:1rem;">&#x1F9EC;</div>
-        <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">Complete the form and click Run Assessment to see your dementia risk profile.</p>
+        <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">Complete the form and click Run Assessment to receive a self-reported cognitive-symptom screening estimate. This is not a dementia or Alzheimer’s diagnosis.</p>
       </div>
     </div>
   </div>
@@ -1281,7 +1129,7 @@ Designed to support research, clinical decision-making, and community health scr
       <div class="result-card" id="nutrition-result" style="display:none;">
         <h4>&#x1F957; Nutritional Profile</h4>
         <div style="text-align:center;margin:1.5rem 0;">
-          <div style="font-family:\'Space Mono\',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="nutri-score-num">0</div>
+          <div style="font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="nutri-score-num">0</div>
           <div style="font-size:.8rem;color:var(--mist);">/ 13 Dietary Score</div>
         </div>
         <div class="progress-track" style="margin-bottom:1.5rem;"><div class="progress-fill" id="nutri-progress" style="width:0%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div>
@@ -1327,7 +1175,7 @@ Designed to support research, clinical decision-making, and community health scr
       <div class="result-card" id="stress-result" style="display:none;">
         <h4>&#x1F60C; Stress Profile</h4>
         <div style="text-align:center;margin:1.5rem 0;">
-          <div style="font-family:\'Space Mono\',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="stress-score-num">0</div>
+          <div style="font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="stress-score-num">0</div>
           <div style="font-size:.8rem;color:var(--mist);">/ 32 Total Stress Score</div>
         </div>
         <div class="progress-track" style="margin-bottom:1.5rem;"><div class="progress-fill" id="stress-progress" style="width:0%;background:linear-gradient(90deg,var(--mint),#F59E0B,#EF4444);"></div></div>
@@ -1503,22 +1351,22 @@ Designed to support research, clinical decision-making, and community health scr
   </div>
   <div id="mem-state-start">
     <div class="card card-gold" style="text-align:center;padding:2.5rem;">
-      <h3 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;">Level <span id="mem-level-disp">1</span></h3>
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">Level <span id="mem-level-disp">1</span></h3>
       <p style="color:var(--mist);margin-bottom:1.5rem;">You will see <strong id="mem-word-count">5</strong> words for 5 seconds. Type as many as you remember!</p>
       <button class="btn btn-gold" onclick="startMemoryGame()">&#x1F3AF; Start Memory Exercise</button>
     </div>
   </div>
   <div id="mem-state-showing" style="display:none;">
-    <div style="background:linear-gradient(135deg,rgba(212,160,23,.15),rgba(45,155,90,.1));border:1px solid var(--gold);border-radius:16px;padding:2.5rem;text-align:center;margin:1rem 0;">
+    <div style="background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(45,155,90,.1));border:1px solid var(--gold);border-radius:16px;padding:2.5rem;text-align:center;margin:1rem 0;">
       <div style="font-size:.8rem;color:var(--mist);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.1em;">Memorise these words!</div>
       <div id="mem-words-display" style="font-size:1.7rem;font-weight:700;color:var(--amber);letter-spacing:.1em;line-height:1.7;"></div>
-      <div id="mem-countdown" style="font-family:\'Space Mono\',monospace;font-size:3rem;color:var(--mint);margin-top:1rem;font-weight:700;">5</div>
+      <div id="mem-countdown" style="font-family:'Space Mono',monospace;font-size:3rem;color:var(--mint);margin-top:1rem;font-weight:700;">5</div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="mem-progress" style="width:100%;background:var(--gold);transition:width 1s linear;"></div></div>
   </div>
   <div id="mem-state-recall" style="display:none;">
     <div class="card" style="padding:2rem;">
-      <h3 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;text-align:center;">&#x1F914; Time to Recall!</h3>
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;text-align:center;">&#x1F914; Time to Recall!</h3>
       <p style="color:var(--mist);margin-bottom:1.25rem;text-align:center;">Type the words you remember, separated by commas</p>
       <div class="fg"><label>Your recalled words:</label><textarea id="mem-recall-input" placeholder="word1, word2, word3..." style="min-height:80px;"></textarea></div>
       <button class="btn btn-gold btn-full" onclick="submitMemoryRecall()">&#x2705; Submit Answer</button>
@@ -1526,10 +1374,10 @@ Designed to support research, clinical decision-making, and community health scr
   </div>
   <div id="mem-state-result" style="display:none;">
     <div class="card card-gold" style="text-align:center;padding:2rem;margin-bottom:1.5rem;">
-      <h3 style="font-family:\'Playfair Display\',serif;margin-bottom:1rem;">Result</h3>
-      <div style="font-family:\'Space Mono\',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="mem-score-pct">0%</div>
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:1rem;">Result</h3>
+      <div style="font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--gold);" id="mem-score-pct">0%</div>
       <div id="mem-result-detail" style="margin-top:1rem;font-size:.88rem;color:var(--smoke);line-height:1.7;"></div>
-      <div id="mem-words-reveal" style="margin-top:1rem;background:rgba(8,31,20,.5);border-radius:8px;padding:1rem;font-size:.85rem;color:var(--smoke);text-align:left;"></div>
+      <div id="mem-words-reveal" style="margin-top:1rem;background:rgba(7,11,22,.5);border-radius:8px;padding:1rem;font-size:.85rem;color:var(--smoke);text-align:left;"></div>
       <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
         <button class="btn btn-gold" onclick="nextMemoryLevel()">Next Level &#8594;</button>
         <button class="btn btn-outline" onclick="resetMemoryGame()">&#x1F504; Restart</button>
@@ -1553,7 +1401,7 @@ Designed to support research, clinical decision-making, and community health scr
     validation status reflects current evidence — from traditional use only, through preliminary lab
     findings, to peer-reviewed research.
   </p>
-  <div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.25);border-radius:10px;padding:.9rem 1.1rem;font-size:.8rem;color:var(--smoke);margin-bottom:1.5rem;">
+  <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:.9rem 1.1rem;font-size:.8rem;color:var(--smoke);margin-bottom:1.5rem;">
     ⚠️ This database is for research and educational purposes only. It is not medical advice — consult a
     qualified healthcare provider before using any plant-based remedy, especially alongside other treatment.
   </div>
@@ -1629,8 +1477,8 @@ Designed to support research, clinical decision-making, and community health scr
   </div>
   <div id="rtab-overview" class="tab-panel active">
     <div class="grid4" style="margin-bottom:2rem;">
-      <div class="admin-stat"><div class="admin-stat-num" data-count="1247">0</div><div class="admin-stat-lbl">Stroke Records</div></div>
-      <div class="admin-stat"><div class="admin-stat-num" data-count="983">0</div><div class="admin-stat-lbl">Dementia Records</div></div>
+      <div class="admin-stat"><div class="admin-stat-num" id="rtab-stat-stroke" data-count="2600">0</div><div class="admin-stat-lbl">Stroke Records</div></div>
+      <div class="admin-stat"><div class="admin-stat-num" id="rtab-stat-dementia" data-count="2400">0</div><div class="admin-stat-lbl">Dementia Records</div></div>
       <div class="admin-stat"><div class="admin-stat-num" data-count="543">0</div><div class="admin-stat-lbl">Stress Records</div></div>
       <div class="admin-stat"><div class="admin-stat-num">Live</div><div class="admin-stat-lbl">Supabase DB</div></div>
     </div>
@@ -1683,16 +1531,16 @@ Designed to support research, clinical decision-making, and community health scr
   </div>
   <div id="rtab-analysis" class="tab-panel">
     <div class="grid2" style="gap:2rem;">
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;">Risk Distribution</h4><button class="btn btn-green btn-sm" onclick="loadResearcherChart()">Load Chart</button></div>
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;">Geospatial Analysis</h4><button class="btn btn-green btn-sm" onclick="showPage('home');setTimeout(function(){gotoSection('neuromap')},400)">Open NeuroMap</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">Risk Distribution</h4><button class="btn btn-green btn-sm" onclick="loadResearcherChart()">Load Chart</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">Geospatial Analysis</h4><button class="btn btn-green btn-sm" onclick="showPage('home');setTimeout(function(){gotoSection('neuromap')},400)">Open NeuroMap</button></div>
     </div>
   </div>
   <div id="rtab-export" class="tab-panel">
     <div class="grid2" style="gap:1.5rem;">
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.5rem;">Stroke Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('stroke_predictions')">Export CSV</button></div>
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.5rem;">Dementia Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('alzheimer_predictions')">Export CSV</button></div>
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.5rem;">Stress Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('stress_assessments')">Export CSV</button></div>
-      <div class="card"><h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.5rem;">Nutrition Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('nutrition_tracker')">Export CSV</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.5rem;">Stroke Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('stroke_predictions')">Export CSV</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.5rem;">Dementia Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('alzheimer_predictions')">Export CSV</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.5rem;">Stress Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('stress_assessments')">Export CSV</button></div>
+      <div class="card"><h4 style="font-family:'Playfair Display',serif;margin-bottom:.5rem;">Nutrition Data</h4><button class="btn btn-green btn-sm" style="margin-top:.5rem;" onclick="exportSupabaseCSV('nutrition_tracker')">Export CSV</button></div>
     </div>
   </div>
 </div>
@@ -1732,8 +1580,8 @@ Designed to support research, clinical decision-making, and community health scr
   </div>
   <div id="atab-models" class="tab-panel">
     <div class="grid2" style="gap:1.5rem;">
-      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:\'Playfair Display\',serif;">Stroke Model</h4><span class="tag tag-green">v2.1</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Gradient Boosting · 24 features · 94.2%</p><div class="progress-track"><div class="progress-fill" style="width:94%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
-      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:\'Playfair Display\',serif;">Dementia Model</h4><span class="tag tag-green">v1.8</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Random Forest · 35 features · 91.6%</p><div class="progress-track"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Stroke Model</h4><span class="tag tag-green">v2.1</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Gradient Boosting · 24 features · 94.2%</p><div class="progress-track"><div class="progress-fill" style="width:94%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Dementia Model</h4><span class="tag tag-green">v1.8</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Random Forest · 35 features · 91.6%</p><div class="progress-track"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
     </div>
   </div>
   <div id="atab-livedata" class="tab-panel">
@@ -1902,7 +1750,7 @@ Designed to support research, clinical decision-making, and community health scr
 <div class="modal-bg" id="modal-assess" onclick="closeModal('modal-assess',event)">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modal-assess')">&#x2715;</button>
-<svg viewBox="0 0 64 64" style="width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#D4A017"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG3)" stroke-width="2.2" stroke-linejoin="round"/></svg>
+<svg viewBox="0 0 64 64" style="width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG3)" stroke-width="2.2" stroke-linejoin="round"/></svg>
     <h2>Start Your Assessment</h2>
     <p>Free, confidential, 7 languages. No login required. All records saved securely.</p>
     <div class="modal-opts">
@@ -1930,48 +1778,6 @@ Designed to support research, clinical decision-making, and community health scr
 </div>
 
 
-<!-- ══ HUGGING FACE MODEL OVERLAY ══ -->
-<div id="hf-overlay">
-  <div id="hf-topbar">
-    <div class="hf-topbar-left">
-      <button class="hf-back-btn" onclick="closeHFOverlay()">
-        ← Back to Platform
-      </button>
-      <div class="hf-model-badge">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-        <span id="hf-model-label">AI Assessment · African NeuroHealth Intelligence</span>
-      </div>
-      <div class="hf-pub-badge">
-        🧠 Published Model · Springer 2026
-      </div>
-    </div>
-    <div style="display:flex;gap:.75rem;align-items:center;">
-      <a href="https://huggingface.co/spaces/ademideola/african-neurohealth" 
-         target="_blank"
-         style="font-size:.75rem;color:var(--mist);text-decoration:none;transition:color .2s;"
-         onmouseover="this.style.color='var(--gold)'" 
-         onmouseout="this.style.color='var(--mist)'">
-        Open in Hugging Face ↗
-      </a>
-      <button class="hf-back-btn" onclick="closeHFOverlay()" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#EF4444;">
-        ✕ Close
-      </button>
-    </div>
-  </div>
-  <div id="hf-iframe-wrap">
-    <div class="hf-loading" id="hf-loading">
-      <div class="hf-spinner"></div>
-      <p>Loading AI Assessment Model…</p>
-      <small>Powered by your published Hugging Face Space</small>
-    </div>
-    <iframe id="hf-iframe"
-      src=""
-      title="African NeuroHealth AI Assessment"
-      allow="accelerometer; camera; microphone; clipboard-write; encrypted-media; gyroscope"
-      onload="document.getElementById('hf-loading').classList.add('hide')"
-    ></iframe>
-  </div>
-</div>
 
 <!-- ══ REGISTRATION MODAL ══ -->
 <div class="modal-bg" id="modal-register" onclick="closeModal('modal-register',event)">
@@ -2004,7 +1810,7 @@ Designed to support research, clinical decision-making, and community health scr
         <option>Morocco</option><option>Cameroon</option><option>Zimbabwe</option><option>Other</option>
       </select>
     </div>
-    <div style="background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.15);border-radius:8px;padding:.85rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--mist);line-height:1.6;">
+    <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:.85rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--mist);line-height:1.6;">
       🔒 Your information is stored securely in our research database and used solely for African NeuroHealth research. We do not share your data with third parties.
     </div>
     <button class="btn btn-gold btn-full" onclick="handleRegister()">Start My Assessment &#x2192;</button>
@@ -2016,7 +1822,7 @@ Designed to support research, clinical decision-making, and community health scr
 
 
 <!-- ══ SCRIPTS ══ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -2035,43 +1841,48 @@ const appState = { page: 'home', loginRole: 'researcher' };
 const SUPA_URL = 'https://ejdchikokrqtezhabigb.supabase.co';
 const SUPA_KEY = 'sb_publishable_DxJHpIzuw_b1BKQy-ljQwQ_hWI5bRgY';
 /* ══ ASSESSMENT MODE SWITCHER ══ */
-function setAssessMode(page, mode) {
-  const formWrap = document.getElementById(page + '-form-wrap');
-  const hfEmbed  = document.getElementById(page + '-hf-embed');
-  const btnForm  = document.getElementById(page + '-btn-form');
-  const btnHf    = document.getElementById(page + '-btn-hf');
-  const iframe   = document.getElementById(page + '-hf-iframe');
-  if (mode === 'hf') {
-    if (formWrap) formWrap.style.display = 'none';
-    if (hfEmbed)  hfEmbed.style.display  = 'block';
-    if (btnForm)  btnForm.className = 'btn btn-outline btn-sm';
-    if (btnHf)    btnHf.className   = 'btn btn-gold btn-sm';
-    // Lazy-load: only set src when first opened
-    if (iframe && (iframe.src === 'about:blank' || iframe.src === '')) {
-      iframe.src = iframe.getAttribute('data-src');
-      toast('🤖 Loading your published AI model from Hugging Face...');
-    }
-  } else {
-    if (formWrap) formWrap.style.display = 'block';
-    if (hfEmbed)  hfEmbed.style.display  = 'none';
-    if (btnForm)  btnForm.className = 'btn btn-gold btn-sm';
-    if (btnHf)    btnHf.className   = 'btn btn-outline btn-sm';
-  }
-}
+/* setAssessMode() removed — the Quick Form now calls the published model
+   directly via API_BASE, so there is no separate Hugging Face embed mode. */
 
 let supa = null;
 try {
   if (window.supabase) {
-    supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    supa = window.supabase.createClient(SUPA_URL, SUPA_KEY, { db: { schema: 'public' } });
   }
 } catch(e) { console.warn('Supabase init error:', e); }
 
+const CORE_FIELDS = {
+  stroke_predictions:    ['user_id','age','gender','risk_score','risk_level','country','province','region','ethnicity','assessment_date'],
+  alzheimer_predictions: ['user_id','age','gender','risk_score','risk_level','country','province','region','ethnicity','assessment_date']
+};
 async function saveRecord(table, payload) {
   try {
-    if (!supa) return; // silently skip if Supabase not loaded
-    const { error } = await supa.from(table).insert([payload]);
-    if (error) console.warn('Supabase save error:', error.message);
-  } catch(e) { console.warn('Supabase error:', e); }
+    if (!supa) { console.warn('saveRecord: Supabase not connected'); return false; }
+    let { error } = await supa.from(table).insert([payload]);
+    // If the full record is rejected (e.g. a column is missing), keep at least the core fields
+    if (error && CORE_FIELDS[table]) {
+      console.warn('Full save to ' + table + ' failed (' + error.message + ') — retrying with core fields only');
+      const core = {};
+      CORE_FIELDS[table].forEach(k => { if (payload[k] !== undefined && payload[k] !== null) core[k] = payload[k]; });
+      ({ error } = await supa.from(table).insert([core]));
+    }
+    if (error) {
+      console.warn('Supabase save error (' + table + '):', error.message);
+      toast('⚠️ Could not save record: ' + error.message);
+      return false;
+    }
+    onRecordSaved(table);
+    return true;
+  } catch (e) { console.warn('Supabase error:', e); return false; }
+}
+
+/* After any assessment is stored, refresh the public numbers and the map */
+function onRecordSaved(table) {
+  if (table !== 'stroke_predictions' && table !== 'alzheimer_predictions') return;
+  setTimeout(() => {
+    loadLiveStats();
+    if (typeof neuroMap !== 'undefined' && neuroMap) refreshMapMarkers(window._mapLayer || 'stroke', { silent:true, keepView:true });
+  }, 800);
 }
 
 /* ══════════════════════════════════════════════
@@ -2170,13 +1981,12 @@ const LANG = {
     // NAV
     navResearcher:'Researcher Login', navAssess:'🩺 Start Assessment',
     // HERO
-    heroPill:'African NeuroHealth Research Lab · SACEST · GRASP/NIH/DSI',
-    heroDesc:'AI-powered stroke and dementia risk prediction, community health intelligence, and translational neuroscience research — built for Africa, by Africa.',
-    heroStartBtn:'🩺 Start Assessment', heroAboutBtn:'📖 About the Lab',
+    heroDesc:'AI-powered stroke and cognitive-symptom screening, community health intelligence, and translational neuroscience research — built for Africa, by Africa.',
+    heroStartBtn:'🩺 Start Assessment', heroAboutBtn:'📖 What This App Does',
     statLang:'Languages', statBio:'Biomarkers', statStates:'States Mapped',
     // ABOUT
-    aboutLabel:'// About the Lab',
-    aboutTitle:'Where African Neuroscience\nMeets Artificial Intelligence',
+    aboutLabel:'// What This App Does',
+    aboutTitle:'AI-Powered Brain Health Screening,\nBuilt for African Communities',
     // PILLARS
     pillarsLabel:'// Research Focus Areas',
     pillarsTitle:'Four Pillars of African Brain Health',
@@ -2193,15 +2003,11 @@ const LANG = {
     pubsLabel:'// Selected Publications', pubsTitle:'From the Lab',
     // CONTACT
     contactLabel:'// Get in Touch', contactTitle:'Connect With Our Lab',
-    footerCopy:'© 2026 African NeuroHealth Research Lab · SACEST/SACOTECH · NeuroMatrix Biosystems',
     // ASSESSMENT
-    navAbout:'About', navResearch:'Research', navMap:'NeuroMap', navPubs:'Publications', navContact:'Contact',
+    navAbout:'What We Do', navResearch:'Research', navMap:'NeuroMap', navPubs:'Publications', navContact:'Contact',
     statsLabel:'// Platform Statistics',
-    aboutP1:'The African NeuroHealth Research Lab (ANHRL), housed within the Biological Science Department, Sikiru Adetona College of Education, Science and Technology (SACEST/SACOTECH), Omu-Ijebu, is dedicated to understanding, predicting, and preventing neurological disease across Africa.',
-    aboutP2:'We integrate translational animal models, clinical epidemiology, ethnopharmacology, and machine learning — bridging bench science to community health intelligence.',
-    aboutQuote:'"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." — Adebimpe-John O.E., PhD · SACEST &amp; SACEST/SACOTECH, Omu-Ijebu',
-    feat1Title:'SACEST/SACOTECH, Omu-Ijebu · Nigeria',
-    feat1Desc:'Biological Science Dept. — Sikiru Adetona College of Education, Science & Technology. TETFund AST&D & GRASP/NIH/DSI Africa.',
+    aboutP1:'The African NeuroHealth Dashboard is a free, AI-driven platform that estimates stroke risk and screens for self-reported cognitive symptoms in minutes, combining biomedical, lifestyle, environmental, and cognitive data into a personalised risk score.',
+    aboutP2:'It also includes a nutrition tracker, a stress assessment, a memory game, and an instant PDF report in your language — no login required to get started.',
     feat2Title:'Ethnopharmacology & Herbal Therapeutics',
     feat2Desc:'Systematic investigation of African botanicals — Saigon cinnamon, Aframomum melegueta, and more.',
     feat3Title:'AI Health Intelligence Platform',
@@ -2237,7 +2043,7 @@ const LANG = {
     footerResearch:'Research',
     footerLegal:'Legal',
 stroke_title:'🫀 Stroke Risk Assessment', dementia_title:'🧬 Dementia Risk Assessment',
-    runStroke:'🧠 Run Stroke Risk Assessment', runDementia:'🧬 Run Dementia Risk Assessment',
+    runStroke:'🧠 Run Stroke Risk Assessment', runDementia:'🧬 Run Cognitive Symptom Screening',
     riskFactors:'⚠️ Risk Factors Identified', recommendations:'✅ Recommendations',
     low:'LOW RISK', medium:'MEDIUM RISK', high:'HIGH RISK',
     downloadPDF:'📄 Download PDF Report',
@@ -2255,12 +2061,11 @@ stroke_title:'🫀 Stroke Risk Assessment', dementia_title:'🧬 Dementia Risk A
   },
   yo: {
     navResearcher:'Wọle Oluwadi', navAssess:'🩺 Bẹrẹ Igbelewọn',
-    heroPill:'Yara Iwadi Ilera Ọpọlọ Afirika · UNILORIN · GRASP/NIH/DSI',
     heroDesc:'Asọtẹlẹ ewu ẹjẹ ọpọlọ ati àìsàn ìrántí tí AI ṣe, ìmọ ilera àwùjọ, àti iwadi neuroscience — a kọ fún Afirika, nípasẹ Afirika.',
     heroStartBtn:'🩺 Bẹrẹ Igbelewọn', heroAboutBtn:'📖 Nípa Yara Iwadi',
     statLang:'Àwọn Èdè', statBio:'Àwọn Ami-ara', statStates:'Àwọn Ìpínlẹ̀',
-    aboutLabel:'// Nípa Yara Iwadi',
-    aboutTitle:'Níbi tí Neuroscience Afirika\nPàdé Ìmọ Atọwọdá',
+    aboutLabel:'// Ohun Tí Ohun Èlò Yìí Ń Ṣe',
+    aboutTitle:'Ìdánwò Ilera Ọpọlọ Onípìlẹ̀ AI,\nTí A Kọ́ Fún Àwọn Àgbègbè Afirika',
     pillarsLabel:'// Àwọn Ìdarí Iwadi',
     pillarsTitle:'Ẹsẹ Mẹrin ti Ilera Ọpọlọ Afirika',
     statsTitle:'Tabili Ipa Iwadi', statsSub:'Àwọn ìwọn tí a gba jọ ní gbogbo igbelewọn ati igbasilẹ iwadi.',
@@ -2270,18 +2075,14 @@ stroke_title:'🫀 Stroke Risk Assessment', dementia_title:'🧬 Dementia Risk A
     mapLabel:'// NeuroMap Afirika', mapTitle:'Maapu Ilera Ọpọlọ tí a Ṣe ní Àgbáyé',
     pubsLabel:'// Àwọn Ìtẹ̀jáde Aṣayan', pubsTitle:'Láti Inú Yara Iwadi',
     contactLabel:'// Kàn sí Wa', contactTitle:'Sopọ Pẹlu Yara Iwadi Wa',
-    footerCopy:'© 2026 Yara Iwadi Ilera Ọpọlọ Afirika · Yunifásítì Ìlọrin · NeuroMatrix Biosystems',
-        navAbout:'Nípa',
+        navAbout:'Ohun Tí A Ń Ṣe',
     navResearch:'Iwadi',
     navMap:'NeuroMap',
     navPubs:'Awon Atejade',
     navContact:'Kan Si',
     statsLabel:'// Awon Isiro Pepe',
-    aboutP1:'Egbe Iwadi Ilera Opolo ti Afirika (ANHRL), ti o wa ninu Eka Ijinle Opolo ati Iredodo, Yunifasiti ti Ilorin, je igbediin si oye, asotele, ati idiloowo arun opolo koja Afirika.',
-    aboutP2:'A sepoo awon awosei eranko itumo, ajakale-arun iwosan, ethnopharmacology, ati eko ero — sissepoo imo-jinle labu si oye ilera agbegbe.',
-    aboutQuote:'"Lati turari si imo-jinle — iwadi wa se iwadii awon akojopo egbogi ogbin adayeba pelu awosei isiro lati pese awon oye aabo opolo fun awon eniyan Afirika." — Adebimpe-John O.E.',
-    feat1Title:'SACEST · Omu-Ijebu, Ipinle Ogun, Naijiria',
-    feat1Desc:'Eka Fisioloji — Eka Ijinle Opolo ati Iredodo. Ti o se atileyin nipase TETFund ati GRASP/NIH/DSI Africa.',
+    aboutP1:'Dasibodu African NeuroHealth je pepele ti AI n dari, ti o n sotele ewu eje opolo ati aisan iranti re laarin isejua. Awon awose eko ero wa — ti a ti fowosi ni ode — n so awon ayewo ara, iwa ise emi, ayika, ati imo ori po lati fun o ni ami ewu ti o ba o mu pelu awon igbese ti o tele.',
+    aboutP2:'Yato si asotele ewu, pepele naa tun ni olutopase ounje, ayewo masunmayo, ere iranti, ati ijabo PDF lojukanna ni ede re — ko si aini lati wole lati bere.',
     feat2Title:'Ethnopharmacology ati Itoju Egbogi Ogbin',
     feat2Desc:'Iwadii eto ti awon ogbin Afirika — igi eso cinnamon Saigon, Aframomum melegueta, ati diesi ii.',
     feat3Title:'Pepe Imo Ilera AI',
@@ -2330,12 +2131,11 @@ stroke_title:'🫀 Igbelewọn Ewu Ẹjẹ Ọpọlọ',
   },
   ha: {
     navResearcher:'Shiga Mai Bincike', navAssess:'🩺 Fara Kimanta',
-    heroPill:'Dakin Bincike na Lafiyar Kwakwalwa ta Afirka · UNILORIN · GRASP/NIH/DSI',
     heroDesc:'Hasashen haɗarin bugun jini da cutar hauka ta AI, hankali na lafiyar al\'umma, da binciken neuroscience — an gina don Afirka, daga Afirka.',
     heroStartBtn:'🩺 Fara Kimanta', heroAboutBtn:'📖 Game da Dakin Bincike',
     statLang:'Harsunan', statBio:'Alaman Jiki', statStates:'Jihohin da aka Taswirar',
-    aboutLabel:'// Game da Dakin Bincike',
-    aboutTitle:'Inda Neuroscience ta Afirka\nTa Haɗu da Hankali na Wucin Gadi',
+    aboutLabel:'// Abin Da Wannan Manhaja Ke Yi',
+    aboutTitle:'Duban Lafiyar Kwakwalwa Ta Hanyar AI,\nAn Gina Don Al\'ummomin Afirka',
     pillarsLabel:'// Abubuwan Da Muke Bincike', pillarsTitle:'Ginshiƙai Huɗu na Lafiyar Kwakwalwa ta Afirka',
     statsTitle:'Allon Tasirin Bincike', statsSub:'Ƙididdigan da aka tattara daga duk kimantawa da rikodin bincike.',
     statsStroke:'Kimantawar Bugun Jini', statsDementia:'Gwajin Hauka',
@@ -2344,18 +2144,14 @@ stroke_title:'🫀 Igbelewọn Ewu Ẹjẹ Ọpọlọ',
     mapLabel:'// NeuroMap Afirka', mapTitle:'Taswira Mai Hulɗa ta Lafiyar Kwakwalwa ta Afirka',
     pubsLabel:'// Wallafe-wallafe da aka Zaɓa', pubsTitle:'Daga Dakin Bincike',
     contactLabel:'// Tuntubi Mu', contactTitle:'Haɗa Kai da Dakin Bincike Namu',
-    footerCopy:'© 2026 Dakin Bincike na Lafiyar Kwakwalwa ta Afirka · Jami\'ar Ilorin · NeuroMatrix Biosystems',
-        navAbout:'Game da Mu',
+        navAbout:'Abin Da Muke Yi',
     navResearch:'Bincike',
     navMap:'NeuroMap',
     navPubs:'Wallafe-wallafe',
     navContact:'Tuntubi',
     statsLabel:'// Kididdigar Dandalin',
-    aboutP1:'Dakin Bincike na Lafiyar Jijiya na Afirka (ANHRL), wanda yake cikin Sashen Kimiyya ta Physiological a Jami\'ar Ilorin, an kebe shi don fahimta, hasashe, da kuma hana cututtukan jijiya a duk fadin Afirka.',
-    aboutP2:'Muna hada tsarin dabbobi na fassara, cututtukan annoba, ethnopharmacology, da koyon injin — hada kimiyyar dakin gwaje-gwaje zuwa hankali na lafiya na al\'umma.',
-    aboutQuote:'"Daga kayan yaji zuwa kimiyya — binciken mu yana bincika mahadi na shuke-shuke na magani tare da tsarawa na lissafi don ba da fahimtar kariyar jijiya ga al\'ummomin Afirka." — Adebimpe-John O.E.',
-    feat1Title:'SACEST · Omu-Ijebu, Jihar Ogun, Najeriya',
-    feat1Desc:'Sashen Ilimin Jiki — Sashen Jijiya da Kumburi. Tare da goyon bayan TETFund da GRASP/NIH/DSI Africa.',
+    aboutP1:'Dandalin African NeuroHealth wani dandali ne na kyauta wanda AI ke tafiyar da shi, wanda ke hasashen hadarin bugun jini da cutar hauka a cikin mintuna. Tsarin koyon injin mu — wanda aka tabbatar a waje — yana hada bayanan jiki, salon rayuwa, muhalli, da gwajin tunani domin baka sakamakon hadari na musamman tare da matakan gaba bayyanannu.',
+    aboutP2:'Bayan hasashen hadari, dandalin ya kunshi na\'urar bin diddigin abinci, kimanta damuwa, wasan tunani, da rahoton PDF na gaggawa a harshenka — babu bukatar shiga don farawa.',
     feat2Title:'Ethnopharmacology da Magungunan Gargajiya',
     feat2Desc:'Bincike na tsarin shuke-shuke na Afirka — cinnamon Saigon, Aframomum melegueta, da sauransu.',
     feat3Title:'Dandalin Hankali na Lafiya na AI',
@@ -2403,12 +2199,11 @@ stroke_title:'🫀 Kimanta Hadarin Bugun Jini', dementia_title:'🧬 Kimanta Had
   },
   ig: {
     navResearcher:'Banye Onye Nyocha', navAssess:'🩺 Malite Nyocha',
-    heroPill:'Ụlọ Nyocha Ahụike Ọpọlọ Afrika · UNILORIN · GRASP/NIH/DSI',
     heroDesc:'Ntọala ihe ize ndụ ọbara ọpọlọ na ọrịa icheta nke AI mere, ọgụgụ ihe banyere ahụike obodo, na nyocha neuroscience — wulitere maka Afrika, site n\'Afrika.',
     heroStartBtn:'🩺 Malite Nyocha', heroAboutBtn:'📖 Maka Ụlọ Nyocha',
     statLang:'Asụsụ', statBio:'Ihe Ngosi Ahụ', statStates:'Steeti E Zoro Maapụ',
-    aboutLabel:'// Maka Ụlọ Nyocha',
-    aboutTitle:'Ebe Neuroscience Afrika\nZutu Ọgụgụ Ihe Atọ',
+    aboutLabel:'// Ihe Ngwa A Na-eme',
+    aboutTitle:'Nyocha Ahụike Ọpọlọ Site Na AI,\nEwuru Maka Obodo Afrika',
     pillarsLabel:'// Mpaghara Nyocha', pillarsTitle:'Ọnọdụ Anọ nke Ahụike Ọpọlọ Afrika',
     statsTitle:'Pulọọgị Nsonaazụ Nyocha', statsSub:'Ihe omume niile a gụtara site n\'ule, amụma, na ndekọ nyocha.',
     statsStroke:'Ule Ọbara Ọpọlọ', statsDementia:'Nyocha Icheta',
@@ -2417,18 +2212,14 @@ stroke_title:'🫀 Kimanta Hadarin Bugun Jini', dementia_title:'🧬 Kimanta Had
     mapLabel:'// NeuroMap Afrika', mapTitle:'Maapụ Ndị Na-arụ Ọrụ nke Ahụike Ọpọlọ Afrika',
     pubsLabel:'// Akwụkwọ Emepụtara A Họọrọ', pubsTitle:'Site n\'Ụlọ Nyocha',
     contactLabel:'// Kpọtụrụ Anyị', contactTitle:'Soro Ụlọ Nyocha Anyị',
-    footerCopy:'© 2026 Ụlọ Nyocha Ahụike Ọpọlọ Afrika · Mahadum Ilorin · NeuroMatrix Biosystems',
-        navAbout:'Maka Anyi',
+        navAbout:'Ihe Anyị Na-eme',
     navResearch:'Nyocha',
     navMap:'NeuroMap',
     navPubs:'Ebiputa',
     navContact:'Kpoturu Anyi',
     statsLabel:'// Onuogu Ikpo Okwu',
-    aboutP1:'Ulo Nyocha Ahuike Opolo Afrika (ANHRL), di n\'ime Ngalaba Sayensi Fizioloji, Mahadum Ilorin, nochitere anya ighota, asotu, na ikebido oria opolo n\'ofe Afrika.',
-    aboutP2:'Anyi jikoo udi anumanu ntugarhi, oria ojiji nke obodo, ethnopharmacology, na omumu igwe — na-ejiko sayensi laboratori na oghom ahuike obodo.',
-    aboutQuote:'"Site na oja ruo sayensi — nyocha anyi na-enyocha ogige osisi ogwu ohaneze n\'akuko ihe mejuputa udi onuogu ka o wetara ihe omuma nchedo opolo maka ndi Afrika." — Adebimpe-John O.E.',
-    feat1Title:'SACEST · Omu-Ijebu, Steeti Ogun, Naijiriya',
-    feat1Desc:'Ngalaba Fizioloji — Ngalaba Opolo na Mbufuo. Nkwado site na TETFund na GRASP/NIH/DSI Africa.',
+    aboutP1:'African NeuroHealth Dashboard bu ikpo okwu efu, nke AI na-akwado, nke na-ako amuma ihe ize ndu obara opolo na oria icheta gi n\'ime nkeji ole na ole. Udi mmuta igwe anyi — nke enyochara na mba ozo — na-ejikota nyocha ahu, omume ndu, gburugburu ebe obibi, na ule uche iji nye gi akara ihe ize ndu nke ahaziri gi yana usoro na-esote doro anya.',
+    aboutP2:'Ewezuga amuma ihe ize ndu, ikpo okwu ahu nwekwara ihe na-eleba anya na nri, nyocha nchekasi, egwuregwu ncheta, na akuko PDF ozugbo n\'asusu gi — a choghi ibanye iji malite.',
     feat2Title:'Ethnopharmacology na Ogwu Osisi',
     feat2Desc:'Nyocha usoro nke osisi Afrika — cinnamon Saigon, Aframomum melegueta, na ndi ozo.',
     feat3Title:'Ikpo Okwu Otuta Ahuike AI',
@@ -2476,12 +2267,11 @@ stroke_title:'🫀 Nyocha Ihe Egwu Ọbara Ọpọlọ', dementia_title:'🧬 Ny
   },
   fr: {
     navResearcher:'Connexion Chercheur', navAssess:'🩺 Commencer l\'Évaluation',
-    heroPill:'Laboratoire de Recherche AfriNeuroSanté · UNILORIN · GRASP/NIH/DSI',
     heroDesc:'Prédiction du risque d\'AVC et de démence par IA, intelligence en santé communautaire, et recherche en neurosciences translationnelles — conçu pour l\'Afrique, par l\'Afrique.',
     heroStartBtn:'🩺 Commencer l\'Évaluation', heroAboutBtn:'📖 À Propos du Labo',
     statLang:'Langues', statBio:'Biomarqueurs', statStates:'États Cartographiés',
-    aboutLabel:'// À Propos du Laboratoire',
-    aboutTitle:'Où la Neuroscience Africaine\nRencontre l\'Intelligence Artificielle',
+    aboutLabel:'// Ce Que Fait Cette Application',
+    aboutTitle:'Dépistage de la Santé Cérébrale par IA,\nConçu pour les Communautés Africaines',
     pillarsLabel:'// Axes de Recherche', pillarsTitle:'Quatre Piliers de la Santé Cérébrale en Afrique',
     statsTitle:'Tableau de Bord de l\'Impact', statsSub:'Métriques agrégées en direct sur toutes les évaluations, prédictions et dossiers de recherche.',
     statsStroke:'Évaluations AVC', statsDementia:'Dépistages Démence',
@@ -2490,18 +2280,14 @@ stroke_title:'🫀 Nyocha Ihe Egwu Ọbara Ọpọlọ', dementia_title:'🧬 Ny
     mapLabel:'// NeuroMap Afrique', mapTitle:'Géographie Interactive de la Santé Cérébrale en Afrique',
     pubsLabel:'// Publications Sélectionnées', pubsTitle:'Du Laboratoire',
     contactLabel:'// Nous Contacter', contactTitle:'Rejoignez Notre Laboratoire',
-    footerCopy:'© 2026 Laboratoire de Recherche AfriNeuroSanté · Université d\'Ilorin · NeuroMatrix Biosystems',
-        navAbout:'A Propos',
+        navAbout:'Ce Que Nous Faisons',
     navResearch:'Recherche',
     navMap:'NeuroMap',
     navPubs:'Publications',
     navContact:'Contact',
     statsLabel:'// Statistiques de la Plateforme',
-    aboutP1:'Le Laboratoire de Recherche AfriNeuroSante (ANHRL), heberge au sein de l\'Unite de Neurosciences et Inflammation, Universite d\'Ilorin, est dedie a la comprehension, la prediction et la prevention des maladies neurologiques a travers l\'Afrique.',
-    aboutP2:'Nous integrons des modeles animaux translationnels, l\'epidemiologie clinique, l\'ethnopharmacologie et l\'apprentissage automatique — reliant la science de laboratoire a l\'intelligence en sante communautaire.',
-    aboutQuote:'"De l\'epice a la science — notre recherche explore des composes vegetaux medicinaux aux cotes de la modelisation computationnelle pour fournir des insights neuroprotecteurs concrets aux populations africaines." — Adebimpe-John O.E.',
-    feat1Title:'SACEST · Omu-Ijebu, État d\'Ogun, Nigéria',
-    feat1Desc:'Dept. de Physiologie — Unite Neurosciences et Inflammation. Soutenu par TETFund et GRASP/NIH/DSI Africa.',
+    aboutP1:'Le tableau de bord AfriNeuroSante est une plateforme gratuite pilotee par IA qui predit votre risque d\'AVC et de demence en quelques minutes. Nos modeles d\'apprentissage automatique — valides en externe — combinent mesures biomedicales, habitudes de vie, expositions environnementales et tests cognitifs pour vous donner un score de risque personnalise et des recommandations claires.',
+    aboutP2:'Au-dela de la prediction du risque, la plateforme comprend un suivi nutritionnel, une evaluation du stress, un jeu de memoire, et un rapport PDF instantane dans votre langue — aucune connexion requise pour commencer.',
     feat2Title:'Ethnopharmacologie et Therapeutiques a Base de Plantes',
     feat2Desc:'Investigation systematique des plantes africaines — cannelle de Saigon, Aframomum melegueta, et plus encore.',
     feat3Title:'Plateforme d\'Intelligence Sanitaire IA',
@@ -2549,12 +2335,11 @@ stroke_title:'🫀 Évaluation du Risque d\'AVC', dementia_title:'🧬 Évaluati
   },
   ar: {
     navResearcher:'تسجيل دخول الباحث', navAssess:'🩺 ابدأ التقييم',
-    heroPill:'مختبر أبحاث الصحة العصبية الأفريقية · جامعة إلورين · GRASP/NIH/DSI',
     heroDesc:'التنبؤ بمخاطر السكتة الدماغية والخرف بالذكاء الاصطناعي، ذكاء الصحة المجتمعية، وأبحاث علم الأعصاب الانتقالي — مبني لأفريقيا، من أفريقيا.',
     heroStartBtn:'🩺 ابدأ التقييم', heroAboutBtn:'📖 عن المختبر',
     statLang:'اللغات', statBio:'المؤشرات الحيوية', statStates:'الولايات المُعينة',
-    aboutLabel:'// عن المختبر',
-    aboutTitle:'حيث يلتقي علم الأعصاب الأفريقي\nبالذكاء الاصطناعي',
+    aboutLabel:'// ما تقوم به هذه المنصة',
+    aboutTitle:'فحص صحة الدماغ بالذكاء الاصطناعي،\nمصمم للمجتمعات الأفريقية',
     pillarsLabel:'// محاور البحث', pillarsTitle:'أربعة ركائز لصحة الدماغ في أفريقيا',
     statsTitle:'لوحة تأثير البحث', statsSub:'مقاييس مجمعة مباشرة عبر جميع التقييمات والتنبؤات وسجلات البحث.',
     statsStroke:'تقييمات السكتة الدماغية', statsDementia:'فحوصات الخرف',
@@ -2563,18 +2348,14 @@ stroke_title:'🫀 Évaluation du Risque d\'AVC', dementia_title:'🧬 Évaluati
     mapLabel:'// خريطة الأعصاب أفريقيا', mapTitle:'الجغرافيا التفاعلية لصحة الدماغ في أفريقيا',
     pubsLabel:'// منشورات مختارة', pubsTitle:'من المختبر',
     contactLabel:'// تواصل معنا', contactTitle:'تواصل مع مختبرنا',
-    footerCopy:'© 2026 مختبر أبحاث الصحة العصبية الأفريقية · جامعة إلورين · NeuroMatrix Biosystems',
-        navAbout:'حول',
+        navAbout:'ما نقوم به',
     navResearch:'البحث',
     navMap:'خريطة الأعصاب',
     navPubs:'المنشورات',
     navContact:'اتصل بنا',
     statsLabel:'// احصاءات المنصة',
-    aboutP1:'مختبر ابحاث الصحة العصبية الافريقية، الكائن ضمن وحدة علم الاعصاب والالتهابات بجامعة ايلورين، مكرس لفهم الامراض العصبية والتنبؤ بها والوقاية منها عبر افريقيا.',
-    aboutP2:'ندمج النماذج الحيوانية التحولية وعلم الاوبئة السريري والصيدلة الاثنية والتعلم الالي — نربط علم المختبر بذكاء الصحة المجتمعية.',
-    aboutQuote:'"من التوابل الى العلم — يستقصي بحثنا المركبات النباتية الطبية جنبا الى جنب مع النمذجة الحسابية لتقديم رؤى واقعية للحماية العصبية للسكان الافارقة." — اديبيمبي-جون',
-    feat1Title:'SACEST · أومو-إيجيبو، ولاية أوغون، نيجيريا',
-    feat1Desc:'قسم الفسيولوجيا — وحدة علم الاعصاب والالتهابات. بدعم من TETFund وGRASP/NIH/DSI افريقيا.',
+    aboutP1:'لوحة معلومات الصحة العصبية الافريقية هي منصة مجانية مدعومة بالذكاء الاصطناعي تتنبأ بخطر اصابتك بالسكتة الدماغية والخرف في دقائق. تجمع نماذج التعلم الالي لدينا — التي تم التحقق من صحتها خارجيا — بين القياسات الحيوية وعادات نمط الحياة والتعرضات البيئية والاختبارات المعرفية لاعطائك درجة خطر مخصصة مع خطوات واضحة قابلة للتنفيذ.',
+    aboutP2:'بالاضافة الى التنبؤ بالمخاطر، تشمل المنصة متتبع التغذية وتقييم الاجهاد ولعبة الذاكرة وتقرير PDF فوري بلغتك — لا حاجة لتسجيل الدخول للبدء.',
     feat2Title:'الصيدلة الاثنية والعلاجات العشبية',
     feat2Desc:'استقصاء منهجي للنباتات الافريقية — قرفة سايغون وAframomum melegueta والمزيد.',
     feat3Title:'منصة ذكاء الصحة الاصطناعي',
@@ -2622,11 +2403,10 @@ stroke_title:'🫀 تقييم خطر السكتة الدماغية', dementia_ti
   },
   sw: {
     navResearcher:'Ingia kwa Mtafiti', navAssess:'🩺 Anza Tathmini',
-    heroPill:'Maabara ya Utafiti wa Afya ya Neva Afrika · UNILORIN · GRASP/NIH/DSI',
     heroDesc:'Utabiri wa hatari ya kiharusi na shida ya akili kwa AI, akili ya afya ya jamii, na utafiti wa neurosayensi wa kitafsiri — uliojengwa kwa Afrika, na Afrika.',
     heroStartBtn:'🩺 Anza Tathmini', heroAboutBtn:'📖 Kuhusu Maabara',
     statLang:'Lugha', statBio:'Vialama vya Kibiolojia', statStates:'Majimbo Yaliyopigwa Ramani',
-    aboutLabel:'// Kuhusu Maabara', aboutTitle:'Mahali Neurosayensi ya Afrika\nInapoungana na Akili Bandia',
+    aboutLabel:'// Jukwaa Hili Linafanya Nini', aboutTitle:'Uchunguzi wa Afya ya Ubongo kwa AI,\nUliojengwa kwa Jamii za Afrika',
     pillarsLabel:'// Maeneo ya Utafiti', pillarsTitle:'Nguzo Nne za Afya ya Ubongo Afrika',
     statsTitle:'Dashibodi ya Athari za Utafiti', statsSub:'Vipimo vilivyokusanywa kutoka tathmini zote, utabiri, na rekodi za utafiti.',
     statsStroke:'Tathmini za Kiharusi', statsDementia:'Uchunguzi wa Shida ya Akili',
@@ -2635,18 +2415,14 @@ stroke_title:'🫀 تقييم خطر السكتة الدماغية', dementia_ti
     mapLabel:'// NeuroMap Afrika', mapTitle:'Jiografia ya Maingiliano ya Afya ya Ubongo Afrika',
     pubsLabel:'// Machapisho Yaliyochaguliwa', pubsTitle:'Kutoka Maabara',
     contactLabel:'// Wasiliana Nasi', contactTitle:'Ungana na Maabara Yetu',
-    footerCopy:'© 2026 Maabara ya Utafiti wa Afya ya Neva Afrika · Chuo Kikuu cha Ilorin · NeuroMatrix Biosystems',
-        navAbout:'Kuhusu',
+        navAbout:'Tunachofanya',
     navResearch:'Utafiti',
     navMap:'NeuroMap',
     navPubs:'Machapisho',
     navContact:'Wasiliana',
     statsLabel:'// Takwimu za Jukwaa',
-    aboutP1:'Maabara ya Utafiti wa Afya ya Neva Afrika (ANHRL), iliyoko ndani ya Kitengo cha Neurosayensi na Uchochezi, Chuo Kikuu cha Ilorin, imejitolea kuelewa, kutabiri, na kuzuia magonjwa ya neva kote Afrika.',
-    aboutP2:'Tunachanganya mifano ya wanyama ya kutafsiri, epidemiolojia ya kimatibabu, ethnofamasia, na ujifunzaji wa mashine — kuunganisha sayansi ya maabara na akili ya afya ya jamii.',
-    aboutQuote:'"Kutoka kwa viungo hadi sayansi — utafiti wetu unachunguza misombo ya mimea ya dawa pamoja na umodeli wa kompyuta ili kutoa maarifa ya ulinzi wa neva kwa watu wa Afrika." — Adebimpe-John O.E.',
-    feat1Title:'SACEST · Omu-Ijebu, Jimbo la Ogun, Nigeria',
-    feat1Desc:'Idara ya Fiziolojia — Kitengo cha Neurosayensi na Uchochezi. Inayosaidiwa na TETFund na GRASP/NIH/DSI Africa.',
+    aboutP1:'Dashibodi ya Afya ya Neva Afrika ni jukwaa la bure linaloendeshwa na AI ambalo linatabiri hatari yako ya kiharusi na shida ya akili ndani ya dakika. Mifano yetu ya kujifunza mashine — iliyothibitishwa nje — inachanganya vipimo vya kibiolojia, tabia za maisha, mfiduo wa mazingira, na vipimo vya utambuzi kukupa alama ya hatari ya kibinafsi pamoja na hatua wazi za kufuata.',
+    aboutP2:'Zaidi ya utabiri wa hatari, jukwaa hilo linajumuisha kifuatilia lishe, tathmini ya msongo, mchezo wa kumbukumbu, na ripoti ya PDF ya papo hapo kwa lugha yako — hakuna kuingia kunahitajika kuanza.',
     feat2Title:'Ethnofamasia na Matibabu ya Mimea',
     feat2Desc:'Uchunguzi wa kimfumo wa mimea ya Afrika — mdalasini wa Saigon, Aframomum melegueta, na zaidi.',
     feat3Title:'Jukwaa la Akili ya Afya ya AI',
@@ -2781,7 +2557,7 @@ function showPage(id) {
   appState.page = id;
   window.scrollTo(0, 0);
   if (id === 'home')       { setTimeout(initHomeCharts, 300); }
-  if (id === 'researcher') { setTimeout(loadResearcherChart, 300); runCounters(document.getElementById('page-researcher')); }
+  if (id === 'researcher') { setTimeout(loadResearcherChart, 300); runCounters(document.getElementById('page-researcher')); loadLiveStats(); }
   if (id === 'herbs') { loadHerbGallery(); }
   if (id === 'admin') {
     const a = document.getElementById('access-admin-pass');
@@ -2990,6 +2766,72 @@ const statsObs = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting) { runCounters(document.getElementById('stats')); statsObs.disconnect(); }
 }, { threshold: 0.3 });
 
+// Independent retry: if initMap() didn't fire successfully via the
+// window 'load' timer (e.g. the load event behaved unexpectedly in a
+// preview tool), attempt it again once the NeuroMap section actually
+// scrolls into view. initMap() is safe to call more than once.
+const mapSectionObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { initMap(); mapSectionObs.disconnect(); }
+}, { threshold: 0.1 });
+/* ══════════════════════════════════════════════
+   LIVE STATS — pulls real counts from Supabase so the
+   dashboard always reflects the current record totals,
+   instead of hardcoded numbers.
+══════════════════════════════════════════════ */
+async function loadLiveStats() {
+  if (!supa) return;
+  try {
+    const v = await supa.from('public_counts').select('*').maybeSingle();
+    if (!v.error && v.data) {
+      const d = v.data;
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.setAttribute('data-count', val); };
+      set('stat-stroke', d.stroke_count); set('stat-dementia', d.dementia_count);
+      if (d.states_count) set('stat-states', d.states_count);
+      set('rtab-stat-stroke', d.stroke_count); set('rtab-stat-dementia', d.dementia_count);
+      runCounters(document.getElementById('stats'));
+      runCounters(document.getElementById('rtab-overview'));
+      return;
+    }
+  } catch (e) { /* fall through to raw-table counts */ }
+  return loadLiveStatsRaw();
+}
+
+async function loadLiveStatsRaw() {
+  if (!supa) return; // keep offline fallback numbers if not connected
+  try {
+    const [strokeRes, dementiaRes] = await Promise.all([
+      supa.from('stroke_predictions').select('*', { count: 'exact', head: true }),
+      supa.from('alzheimer_predictions').select('*', { count: 'exact', head: true })
+    ]);
+    const strokeCount   = strokeRes.count   ?? null;
+    const dementiaCount = dementiaRes.count ?? null;
+
+    const [strokeProv, demProv] = await Promise.all([
+      supa.from('stroke_predictions').select('province').not('province', 'is', null),
+      supa.from('alzheimer_predictions').select('province').not('province', 'is', null)
+    ]);
+    const provinceSet = new Set();
+    (strokeProv.data || []).forEach(r => r.province && provinceSet.add(r.province));
+    (demProv.data   || []).forEach(r => r.province && provinceSet.add(r.province));
+    const statesCount = provinceSet.size || null;
+
+    const setCount = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val !== null) el.setAttribute('data-count', val);
+    };
+    setCount('stat-stroke', strokeCount);
+    setCount('stat-dementia', dementiaCount);
+    if (statesCount) setCount('stat-states', statesCount);
+    setCount('rtab-stat-stroke', strokeCount);
+    setCount('rtab-stat-dementia', dementiaCount);
+
+    runCounters(document.getElementById('stats'));
+    runCounters(document.getElementById('rtab-overview'));
+  } catch (e) {
+    console.warn('loadLiveStats error, using offline fallback numbers:', e);
+  }
+}
+
 /* ══════════════════════════════════════════════
    BMI
 ══════════════════════════════════════════════ */
@@ -3147,7 +2989,7 @@ function runStrokeAssessment() {
       recommendations.map(r => '<div class="reco-item">' + r + '</div>').join('');
 
     document.getElementById('stroke-extra-details').innerHTML =
-      '<div style="background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;font-size:.82rem;">' +
+      '<div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;font-size:.82rem;">' +
       '<div style="margin-bottom:.4rem;"><strong>Model:</strong> ' + (model_used === 'trained' ? '✅ Published Gradient Boosting (94% accuracy)' : '⚡ Demo scoring') + '</div>' +
       '<div style="margin-bottom:.4rem;"><strong>BP:</strong> ' + sbp + '/' + dbp + ' mmHg</div>' +
       '<div style="margin-bottom:.4rem;"><strong>BMI:</strong> ' + bmi.toFixed(1) + ' — ' + document.getElementById('s-bmi-cat').textContent + '</div>' +
@@ -3230,7 +3072,15 @@ function runStrokeScoreOffline(payload, gender, bmi, sbp, dbp, glucose, smoke, h
   document.getElementById('stroke-recommendations').innerHTML =
     '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Recommendations</h4>' +
     recos.map(r=>'<div class="reco-item">'+r+'</div>').join('');
-  window._lastStroke = { riskLevel:level, riskPct:pct, factors, recos, userId:'OFFLINE',
+  const uidOff = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
+  saveRecord('stroke_predictions', {
+    user_id: uidOff, age: payload.age, gender, bmi: parseFloat(Number(bmi).toFixed(1)),
+    hypertension: htn, heart_disease: heart, avg_glucose_level: glucose, smoking_status: smoke,
+    systolic_bp: sbp, diastolic_bp: dbp, risk_score: finalScore, risk_level: level,
+    prediction_result: level === 'HIGH' ? 1 : 0, country, province, region, ethnicity,
+    assessment_date: new Date().toISOString().split('T')[0]
+  });
+  window._lastStroke = { riskLevel:level, riskPct:pct, factors, recos, userId:uidOff,
     extras:[{label:'Mode',value:'Offline scoring — connect API for published model'}] };
 }
 
@@ -3270,7 +3120,8 @@ function runDementiaAssessment() {
   if (!age) { toast('⚠️ Please enter Age to continue.'); return; }
 
   const bmi    = parseFloat(document.getElementById('d-bmi').value) || 25;
-  const edu    = parseInt(document.getElementById('d-edu').value) || 12;
+  const eduRaw = document.getElementById('d-edu').value;
+  const edu    = eduRaw === '' ? 1 : Number(eduRaw);
   const fam    = document.getElementById('d-fam').value || 'No';
   const cardio = document.getElementById('d-cardio').value || 'No';
   const dep    = document.getElementById('d-dep').value || 'No';
@@ -3285,11 +3136,16 @@ function runDementiaAssessment() {
   const func   = parseInt(document.getElementById('d-func').value) || 8;
   const adl    = parseInt(document.getElementById('d-adl').value) || 8;
   const mmse   = estimateCulturalMMSE(age);
-  const activity = parseInt(document.getElementById('d-activity').value) || 3;
-  const diet   = parseInt(document.getElementById('d-diet').value) || 5;
-  const sleep  = parseInt(document.getElementById('d-sleep').value) || 6;
-  const stress = parseInt(document.getElementById('d-stress').value) || 4;
-  const poll   = parseInt(document.getElementById('d-poll').value) || 20;
+  const activityRaw = document.getElementById('d-activity').value;
+  const activity = activityRaw === '' ? 3 : Number(activityRaw);
+  const dietRaw = document.getElementById('d-diet').value;
+  const diet   = dietRaw === '' ? 5 : Number(dietRaw);
+  const sleepRaw = document.getElementById('d-sleep').value;
+  const sleep  = sleepRaw === '' ? 6 : Number(sleepRaw);
+  const stressRaw = document.getElementById('d-stress').value;
+  const stress = stressRaw === '' ? 4 : Number(stressRaw);
+  const pollRaw = document.getElementById('d-poll').value;
+  const poll   = pollRaw === '' ? 20 : Number(pollRaw);
   const height = parseFloat(document.getElementById('d-height').value) || 170;
   const weight = parseFloat(document.getElementById('d-weight').value) || 70;
   const gender = document.getElementById('d-gender').value || 'Male';
@@ -3318,83 +3174,95 @@ function runDementiaAssessment() {
   const pollMod = (poll >= 33 && poll < 66) ? 1 : 0;
   const pollHigh= poll >= 66 ? 1 : 0;
 
+  const nutritionScoreForModel = nutritionScore !== null && nutritionScore !== undefined ? nutritionScore : diet;
+  const saltInput = document.getElementById('d-cog-salt-score').value;
+  const saltScoreForModel = saltRiskScore !== null && saltRiskScore !== undefined ? saltRiskScore : (saltInput === '' ? 8 : Number(saltInput));
+  const educationCategory = edu === 0 ? 'PRY EDUCATION' : edu === 1 ? 'SECONDARY' : edu === 2 ? 'MASTERS' : edu === 3 ? 'PHD' : 'SECONDARY';
+  const stressCategory = stress >= 7 ? 'H' : stress >= 4 ? 'M' : 'L';
+  const pollutionCategory = poll >= 66 ? 'H' : poll >= 33 ? 'M' : 'L';
+  const lifestyleChoice = document.getElementById('d-cog-lifestyle').value;
   const payload = {
-    Age: age, BMI: bmi, EducationLevel: edu,
-    AlcoholConsumption: alc, PhysicalActivity: activity,
-    DietQuality: diet, SleepQuality: sleep,
-    SystolicBP: sbp, DiastolicBP: dbp,
-    CholesterolTotal: chol, CholesterolLDL: ldl,
-    CholesterolHDL: hdl, CholesterolTriglycerides: trig,
-    FunctionalAssessment: func, ADL: adl,
-    HeadInjury: head, MMSE: mmse,
-    Height: height, Weight: weight,
-    PollutionScore: poll, Ethnicity: 0,
-    Country: 0, Province_Option: 0,
-    MemoryScore: 0, CustomStressScore: stress,
-    Gender: gender, Smoking: smoke,
-    FamilyHistoryAlzheimers: fam,
-    CardiovascularDisease: cardio,
-    Diabetes: diab, Depression: dep,
-    Hypertension: htn,
-    BehavioralProblems: behav ? 'Yes' : 'No',
-    Genotype: geno, BloodGroup: blood,
-    Confusion: conf > 0.5 ? 1 : 0,
-    Disorientation: 0,
-    PersonalityChanges: pers > 0.5 ? 1 : 0,
-    DifficultyCompletingTasks: tasks > 0.5 ? 1 : 0,
-    Forgetfulness: forget > 0.5 ? 1 : 0,
-    MemoryComplaints: memcx > 0.5 ? 1 : 0,
-    PollutionCategoryLow: pollLow,
-    PollutionCategoryModerate: pollMod,
-    PollutionCategoryHigh: pollHigh,
-    country_name: country, province_name: province,
-    region_name: region, ethnicity_name: ethnicity,
-    NutritionalScore: nutritionScore, SaltRiskScore: saltRiskScore
+    'AGE': age,
+    'SEX': gender.toLowerCase() === 'female' ? 'F' : 'M',
+    'EDU- L': educationCategory,
+    'S- BP': sbp,
+    'D-BP': dbp,
+    'DIABETES': diab.toUpperCase(),
+    'HYPERTENSION': htn.toUpperCase(),
+    'HEART- D': cardio.toUpperCase(),
+    'STRESS- L': stressCategory,
+    'SLEEP HOURS': numericOr('d-cog-sleep-hours', 7),
+    'CHRONIC- PAIN': document.getElementById('d-cog-chronic-pain').value,
+    'NUTRITION SCORE': nutritionScoreForModel,
+    'HEART RATE': numericOr('d-cog-heart-rate', 72),
+    'POLLUTION': pollutionCategory,
+    'OCCUPATION HAZZARD': document.getElementById('d-cog-occupation-hazard').value,
+    'ACCESS TO HEALTH CARE': document.getElementById('d-cog-health-access').value,
+    'SMOKING STATUS (CORRECTED)': smoke.toLowerCase() === 'yes' ? 'Smoker' : 'Non-smoker / not reported',
+    'HYPERTENSION TREATMENT (CORRECTED)': document.getElementById('d-cog-htn-treatment').value,
+    'FRUIT_INTAKE': parseInt(document.getElementById('d-cog-fruit').value, 10),
+    'VEGETABLE_INTAKE': parseInt(document.getElementById('d-cog-vegetable').value, 10),
+    'HYDRATION_LITERS': numericOr('d-cog-hydration', 2),
+    'LIFESTYLE_CHOICES': lifestyleChoice,
+    'Total_Salt Intake Score': saltScoreForModel,
+    'ZONE': document.getElementById('d-cog-zone').value
   };
 
-  // Show loading
+  // Show loading while the Render API evaluates the cognitive-symptom model.
   document.getElementById('dementia-placeholder').style.display = 'none';
   document.getElementById('dementia-result-card').style.display = 'block';
-  document.getElementById('dementia-risk-badge').textContent = 'Running AI Model...';
+  document.getElementById('dementia-risk-badge').textContent = 'Running cognitive-symptom model...';
   document.getElementById('dementia-risk-badge').className = 'risk-badge risk-medium';
-  document.getElementById('dementia-risk-factors').innerHTML = '<p style="color:var(--mist);text-align:center;padding:1rem;">⏳ Calling published AI model...</p>';
+  document.getElementById('dementia-risk-factors').innerHTML = '<p style="color:var(--mist);text-align:center;padding:1rem;">⏳ Contacting the Render API...</p>';
+  document.getElementById('dementia-recommendations').innerHTML = '';
+  document.getElementById('dementia-mmse-box').innerHTML = '';
+  toast('🧠 Sending assessment to the cognitive-symptom model...');
 
-  toast('🤖 Sending data to your published dementia model...');
-
-  fetch(API_BASE + '/predict/dementia', {
+  fetch(API_BASE + '/predict/cognitive-symptoms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(r => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); })
+  .then(async r => {
+    if (!r.ok) {
+      let detail = 'API error: ' + r.status;
+      try { const body = await r.json(); if (body.detail) detail = body.detail; } catch (_) {}
+      throw new Error(detail);
+    }
+    return r.json();
+  })
   .then(result => {
-    const { risk_pct, risk_level, mmse_label, risk_factors, recommendations, model_used } = result;
+    const risk_pct = Number(result.cognitive_symptom_risk_pct ?? result.risk_pct ?? (Number(result.risk_score) * 100));
+    const risk_level = result.risk_level || (risk_pct >= 60 ? 'HIGH' : risk_pct >= 30 ? 'MEDIUM' : 'LOW');
+    const recommendations = Array.isArray(result.recommendations) ? result.recommendations : [];
+    const model_used = result.model_used || 'trained';
+    const note = result.note || 'Screening estimate for self-reported cognitive symptoms, not a diagnosis.';
     animateGauge('gauge-d-fill','gauge-d-pct', risk_pct);
 
     const badge = document.getElementById('dementia-risk-badge');
-    badge.textContent = risk_level + ' RISK — ' + risk_pct + '%' + (model_used === 'trained' ? ' 🤖' : ' (demo)');
-    badge.className = 'risk-badge ' + (risk_level==='HIGH'?'risk-high':risk_level==='MEDIUM'?'risk-medium':'risk-low');
+    badge.textContent = 'COGNITIVE-SYMPTOM ESTIMATE — ' + risk_pct.toFixed(1) + '%';
+    badge.className = 'risk-badge ' + (risk_level === 'HIGH' ? 'risk-high' : risk_level === 'MEDIUM' ? 'risk-medium' : 'risk-low');
 
     document.getElementById('dementia-risk-factors').innerHTML =
-      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">⚠️ Risk Factors</h4>' +
-      risk_factors.map(f=>'<div class="rf-item"><div class="rf-dot"></div>'+f+'</div>').join('');
+      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">ℹ️ Screening Note</h4>' +
+      '<p style="font-size:.82rem;color:var(--smoke);line-height:1.7;">' + note + '</p>';
 
     document.getElementById('dementia-recommendations').innerHTML =
-      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Recommendations</h4>' +
-      recommendations.map(r=>'<div class="reco-item">'+r+'</div>').join('');
+      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Suggested Next Steps</h4>' +
+      recommendations.map(r => '<div class="reco-item">' + r + '</div>').join('');
 
     document.getElementById('dementia-mmse-box').innerHTML =
       '<div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;">' +
-      '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">MMSE Score</div>' +
-      '<div style="font-family:\'Space Mono\',monospace;font-size:1.8rem;color:var(--gold);">' + mmse + '<span style="font-size:.9rem;color:var(--mist)">/30</span></div>' +
-      '<div style="font-size:.78rem;color:var(--smoke);margin-top:.35rem;">' + mmse_label + '</div>' +
-      '<div style="font-size:.72rem;color:var(--mist);margin-top:.25rem;">Model: ' + (model_used === 'trained' ? '✅ Published Random Forest (91.6% accuracy)' : '⚡ Demo scoring') + '</div>' +
+      '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Model</div>' +
+      '<div style="font-family:\'Space Mono\',monospace;font-size:1rem;color:var(--gold);">' + (result.model_name || 'African Cognitive Symptom Risk Model') + '</div>' +
+      '<div style="font-size:.75rem;color:var(--mist);margin-top:.5rem;">This is not a dementia or Alzheimer\'s diagnosis. Fields not supplied to the model may use defaults.</div>' +
       '</div>';
 
     const uid = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
+    // Keep the existing table for backwards compatibility; assessment_type distinguishes these records.
     saveRecord('alzheimer_predictions', {
-      user_id: uid, age, gender, bmi: parseFloat(bmi.toFixed(1)),
-      mmse, education_years: edu,
+      user_id: uid, age, gender,
+      bmi: parseFloat(bmi.toFixed(1)), mmse, education_years: edu,
       family_history_alzheimers: fam, cardiovascular_disease: cardio,
       depression: dep, hypertension: htn, head_injury: head,
       systolic_bp: sbp, diastolic_bp: dbp,
@@ -3403,37 +3271,37 @@ function runDementiaAssessment() {
       physical_activity: activity, diet_quality: diet,
       sleep_quality: sleep, stress_level: stress, pollution_score: poll,
       functional_assessment: func, adl,
-      risk_score: parseFloat(result.risk_score.toFixed(3)),
+      risk_score: Number(result.risk_score ?? risk_pct / 100),
       risk_level, prediction_result: risk_level === 'HIGH' ? 1 : 0,
+      cognitive_symptom_risk_pct: risk_pct,
       country, province, region, ethnicity,
       assessment_date: new Date().toISOString().split('T')[0]
     });
 
-    window._lastDementia = { riskLevel: risk_level, riskPct: risk_pct,
-      factors: risk_factors, recos: recommendations, userId: uid,
+    window._lastDementia = {
+      riskLevel: risk_level, riskPct: risk_pct, factors: [], recos: recommendations, userId: uid,
       extras: [
-        { label: 'Model', value: model_used === 'trained' ? 'Published Random Forest (91.6% accuracy)' : 'Demo scoring' },
-        { label: 'MMSE Score', value: mmse + '/30 — ' + mmse_label },
-        { label: 'Education', value: edu + ' years' },
+        { label: 'Assessment', value: 'Self-reported cognitive-symptom screening' },
+        { label: 'Model', value: result.model_name || 'African Cognitive Symptom Risk Model' },
+        { label: 'Estimate', value: risk_pct.toFixed(1) + '%' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
-        { label: 'Total Cholesterol', value: chol + ' mg/dL | LDL: ' + ldl + ' | HDL: ' + hdl + ' | Trig: ' + trig },
-        { label: 'Activity', value: activity + ' hrs/week' },
-        { label: 'Diet Quality', value: diet + '/10' },
-        { label: 'Sleep Quality', value: sleep + '/10' },
-        { label: 'Pollution', value: poll + '/100' },
-        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Risk ' + saltRiskScore + '/22') : 'Not completed' },
-        { label: 'Location', value: (province||'—') + ', ' + (country||'—') }
+        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Score ' + saltScoreForModel + '/22') : 'Supplemented with form values' },
+        { label: 'Location', value: (province || '—') + ', ' + (country || '—') },
+        { label: 'Interpretation', value: note }
       ]
     };
-
-    toast(risk_level==='HIGH' ? '⚠️ HIGH dementia risk. See a neurologist.' :
-          risk_level==='MEDIUM' ? '⚡ Moderate risk. Lifestyle changes recommended.' :
-          '✅ Low dementia risk. Maintain healthy habits!');
+    toast('✅ Cognitive-symptom estimate received. This is not a diagnosis.');
   })
   .catch(err => {
-    console.error('Dementia API error:', err);
-    toast('⚠️ API offline. Using offline scoring...');
-    runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province, nutritionScore, saltRiskScore);
+    console.error('Cognitive-symptom API error:', err);
+    const badge = document.getElementById('dementia-risk-badge');
+    badge.textContent = 'ASSESSMENT UNAVAILABLE';
+    badge.className = 'risk-badge risk-medium';
+    document.getElementById('dementia-risk-factors').innerHTML =
+      '<p style="color:#FCA5A5;font-size:.85rem;line-height:1.6;">No estimate was produced because the prediction API could not complete the request. Please try again later. Details: ' + String(err.message || err) + '</p>';
+    document.getElementById('dementia-recommendations').innerHTML = '';
+    document.getElementById('dementia-mmse-box').innerHTML = '';
+    toast('⚠️ Cognitive-symptom API unavailable. No fallback estimate was generated.');
   });
 }
 
@@ -3478,13 +3346,19 @@ function runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp
     '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Recommendations</h4>' +
     recos.map(r=>'<div class="reco-item">'+r+'</div>').join('');
   document.getElementById('dementia-mmse-box').innerHTML =
-    '<div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;">' +
+    '<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;">' +
     '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">MMSE Score</div>' +
     '<div style="font-family:\'Space Mono\',monospace;font-size:1.8rem;color:var(--gold);">' + mmse + '<span style="font-size:.9rem;color:var(--mist)">/30</span></div>' +
     '<div style="font-size:.78rem;color:var(--smoke);margin-top:.35rem;">' + mmseLabel + '</div>' +
     '<div style="font-size:.72rem;color:var(--mist);margin-top:.25rem;">Mode: Offline scoring — connect API for published model</div>' +
     '</div>';
-  window._lastDementia = { riskLevel:level, riskPct:pct, factors, recos, userId:'OFFLINE',
+  const uidOffD = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
+  saveRecord('alzheimer_predictions', {
+    user_id: uidOffD, age, mmse, risk_score: finalScore, risk_level: level,
+    prediction_result: level === 'HIGH' ? 1 : 0, country, province,
+    assessment_date: new Date().toISOString().split('T')[0]
+  });
+  window._lastDementia = { riskLevel:level, riskPct:pct, factors, recos, userId:uidOffD,
     extras:[{label:'Mode',value:'Offline scoring — connect API for published model'}] };
 }
 
@@ -3515,9 +3389,9 @@ function runNutrition() {
   const junk    = parseInt(gv('n-junk','0'))   || 0;
   const vegfreq = parseInt(gv('n-vegfreq','0'))|| 0;
 
-  const suppChecks = [...document.querySelectorAll('#supp-list input[type=checkbox]:checked')].map(c => c.value).filter(v => v !== 'None');
-  const herbChecks = [...document.querySelectorAll('#herb-list input[type=checkbox]:checked')].map(c => c.value).filter(v => v !== 'None');
-  const lifestyleChecks = [...document.querySelectorAll('#lifestyle-list input[type=checkbox]')];
+  const suppChecks = [...document.querySelectorAll('.supp-cb:checked')].map(c => c.value).filter(v => v !== 'None');
+  const herbChecks = [...document.querySelectorAll('.herb-cb:checked')].map(c => c.value).filter(v => v !== 'None');
+  const lifestyleChecks = [...document.querySelectorAll('.life-cb')];
   const lifestylePos = lifestyleChecks.filter(c => c.checked && c.dataset.positive).length;
   const lifestyleNeg = lifestyleChecks.filter(c => c.checked && c.dataset.negative).length;
   const lifestyleList = lifestyleChecks.filter(c => c.checked).map(c => c.value).join(', ');
@@ -3554,7 +3428,7 @@ function runNutrition() {
     '<div class="reco-item">Traditional African diets rich in legumes and vegetables are neuroprotective</div>';
 
   const nsalt = document.getElementById('nutri-salt');
-  if (nsalt) nsalt.innerHTML = '<div style="background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;">' +
+  if (nsalt) nsalt.innerHTML = '<div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;">' +
     '<strong style="font-size:.82rem;color:var(--gold);">&#x1F9C2; Salt Risk Score: ' + saltRisk.total + '/22 — ' + saltRisk.category + '</strong>' +
     '<div class="progress-track" style="margin-top:.6rem;"><div class="progress-fill" style="width:' + Math.round(saltRisk.total/22*100) + '%;background:linear-gradient(90deg,#F59E0B,#EF4444);"></div></div>' +
     '</div>';
@@ -3563,7 +3437,7 @@ function runNutrition() {
   if (ns) ns.innerHTML = suppChecks.length ? '<div style="background:rgba(78,203,130,.07);border:1px solid rgba(78,203,130,.2);border-radius:10px;padding:1rem;margin-top:.75rem;"><strong style="font-size:.82rem;color:var(--mint);">💊 Supplements:</strong><p style="font-size:.82rem;color:var(--smoke);margin-top:.35rem;">' + suppChecks.join(', ') + '</p></div>' : '';
 
   const nh = document.getElementById('nutri-herbs');
-  if (nh) nh.innerHTML = herbChecks.length ? '<div style="background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;margin-top:.75rem;"><strong style="font-size:.82rem;color:var(--gold);">🌿 Herbal Remedies:</strong><p style="font-size:.82rem;color:var(--smoke);margin-top:.35rem;">' + herbChecks.join(', ') + '</p><p style="font-size:.75rem;color:var(--mist);margin-top:.35rem;">Several have documented neuroprotective properties in African traditional medicine research.</p></div>' : '';
+  if (nh) nh.innerHTML = herbChecks.length ? '<div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;margin-top:.75rem;"><strong style="font-size:.82rem;color:var(--gold);">🌿 Herbal Remedies:</strong><p style="font-size:.82rem;color:var(--smoke);margin-top:.35rem;">' + herbChecks.join(', ') + '</p><p style="font-size:.75rem;color:var(--mist);margin-top:.35rem;">Several have documented neuroprotective properties in African traditional medicine research.</p></div>' : '';
 
   saveRecord('nutrition_tracker', {
     user_id: SESSION.user ? SESSION.user.id : 'USR-'+Math.random().toString(36).substr(2,8).toUpperCase(),
@@ -3738,16 +3612,16 @@ function generatePDF(type, data) {
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const W = 210, M = 18;
 
-  doc.setFillColor(8,31,20); doc.rect(0,0,W,36,'F');
-  doc.setFillColor(212,160,23); doc.rect(0,34,W,2,'F');
-  doc.setTextColor(212,160,23); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.setFillColor(7,11,22); doc.rect(0,0,W,36,'F');
+  doc.setFillColor(201,168,76); doc.rect(0,34,W,2,'F');
+  doc.setTextColor(201,168,76); doc.setFontSize(16); doc.setFont('helvetica','bold');
   doc.text('African NeuroHealth Intelligence', M, 13);
   doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,220,200);
-  doc.text('SACEST/SACOTECH, Omu-Ijebu · Neuroscience & Inflammation Unit · GRASP/NIH/DSI Africa', M, 21);
+  doc.text('African NeuroHealth Research Lab· GRASP/NIH/DSI Africa', M, 21);
   doc.text('neuromatrixbiosystems.com  |  A Research Unit of NeuroMatrix Biosystems', M, 28);
 
   doc.setFillColor(240,192,64); doc.rect(M,40,W-M*2,10,'F');
-  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(8,31,20);
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(7,11,22);
   doc.text(type + ' Risk Assessment Report', M+3, 47);
 
   let y = 58;
@@ -3770,7 +3644,7 @@ function generatePDF(type, data) {
   function sec(title) {
     if (y > 255) { doc.addPage(); y = 20; }
     doc.setFillColor(230,245,235); doc.rect(M,y,W-M*2,8,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(8,31,20);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(7,11,22);
     doc.text(title, M+3, y+5.5); y += 12;
     doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
   }
@@ -3793,15 +3667,15 @@ function generatePDF(type, data) {
   if (data.extras  && data.extras.length)  { sec('📋 Full Assessment Details'); data.extras.forEach(e => fld(e.label, e.value)); y+=3; }
 
   if (y > 255) { doc.addPage(); y = 20; }
-  doc.setDrawColor(212,160,23); doc.line(M,y,W-M,y); y+=5;
+  doc.setDrawColor(201,168,76); doc.line(M,y,W-M,y); y+=5;
   doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(120,120,120);
   const disc = 'DISCLAIMER: This report is generated by the African NeuroHealth AI, a clinically validated screening tool designed for African populations. This result is a statistical estimate of risk and does not constitute a medical diagnosis. Please share this report with a qualified healthcare provider for formal evaluation and personalised care.';
   const dl = doc.splitTextToSize(disc, W-M*2);
   doc.text(dl, M, y); y += dl.length*4.5+4;
 
-  doc.setFillColor(8,31,20); doc.rect(0,286,W,11,'F');
+  doc.setFillColor(7,11,22); doc.rect(0,286,W,11,'F');
   doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(160,210,180);
-  doc.text('African NeuroHealth Research Lab · SACEST/SACOTECH, Omu-Ijebu, Nigeria · NeuroMatrix Biosystems · © 2026', M, 293);
+  doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026', M, 293);
 
   doc.save('ANHRL_' + type + '_Report_' + data.patientName.replace(/\s+/g,'_') + '_' + Date.now() + '.pdf');
   toast('📄 PDF report downloaded!');
@@ -3814,14 +3688,14 @@ function generateNutritionPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const W = 210, M = 18;
-  doc.setFillColor(8,31,20); doc.rect(0,0,W,36,'F');
-  doc.setFillColor(212,160,23); doc.rect(0,34,W,2,'F');
-  doc.setTextColor(212,160,23); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.setFillColor(7,11,22); doc.rect(0,0,W,36,'F');
+  doc.setFillColor(201,168,76); doc.rect(0,34,W,2,'F');
+  doc.setTextColor(201,168,76); doc.setFontSize(16); doc.setFont('helvetica','bold');
   doc.text('African NeuroHealth Intelligence', M, 13);
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(180,220,200);
   doc.text('Nutrition Tracker Report · neuromatrixbiosystems.com', M, 22);
   doc.setFillColor(240,192,64); doc.rect(M,40,W-M*2,10,'F');
-  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(8,31,20);
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(7,11,22);
   doc.text('Nutritional Assessment Report', M+3, 47);
   let y = 58;
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
@@ -3833,7 +3707,7 @@ function generateNutritionPDF() {
   doc.setFontSize(8); doc.setFont('helvetica','normal');
   const advice2 = doc.splitTextToSize(d.advice, W-M*2-8);
   doc.text(advice2, M+4, y+14); y += 28;
-  function sec2(t2){if(y>255){doc.addPage();y=20;} doc.setFillColor(230,245,235);doc.rect(M,y,W-M*2,8,'F');doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(8,31,20);doc.text(t2,M+3,y+5.5);y+=12;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);}
+  function sec2(t2){if(y>255){doc.addPage();y=20;} doc.setFillColor(230,245,235);doc.rect(M,y,W-M*2,8,'F');doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(7,11,22);doc.text(t2,M+3,y+5.5);y+=12;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);}
   function fld2(l2,v2){if(y>265){doc.addPage();y=20;}doc.setFont('helvetica','bold');doc.text(l2+':',M,y);doc.setFont('helvetica','normal');doc.text(String(v2||'N/A'),M+55,y);y+=6.5;}
   sec2('📊 Dietary Intake');
   fld2('Fruit Intake', d.fruit + ' servings/day');
@@ -3853,9 +3727,9 @@ function generateNutritionPDF() {
   ['Aim for 5+ servings of fruit and vegetables daily','Drink at least 2 litres of water per day','Choose whole grains over refined carbohydrates','Reduce salt and junk food','Continue herbal supplementation where evidence-based','Traditional African diets high in legumes are neuroprotective'].forEach(r=>{
     if(y>265){doc.addPage();y=20;} doc.setFillColor(45,155,90);doc.circle(M+2.5,y-1,1.3,'F');doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);doc.text(r,M+7,y);y+=6.5;
   });
-  doc.setFillColor(8,31,20);doc.rect(0,286,W,11,'F');
+  doc.setFillColor(7,11,22);doc.rect(0,286,W,11,'F');
   doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,210,180);
-  doc.text('African NeuroHealth Research Lab · SACEST/SACOTECH, Omu-Ijebu · NeuroMatrix Biosystems · © 2026',M,293);
+  doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026',M,293);
   doc.save('ANHRL_Nutrition_Report_' + (SESSION.user?SESSION.user.name.replace(/\s+/g,'_'):'') + '_' + Date.now() + '.pdf');
   toast('📄 Nutrition PDF downloaded!');
 }
@@ -4570,7 +4444,7 @@ async function loadResearcherChart() {
   const states = ['Lagos','Abuja','Kano','Ogun','Rivers','Oyo','Kaduna','Imo','Delta','Kwara'];
   Plotly.newPlot('researcher-chart', [
     { x:states, y:[285,178,162,124,118,102,89,76,68,54], name:'Stroke', type:'bar', marker:{color:'rgba(239,68,68,0.7)'} },
-    { x:states, y:[210,145,133,98,88,79,71,58,52,41], name:'Dementia', type:'bar', marker:{color:'rgba(212,160,23,0.7)'} }
+    { x:states, y:[210,145,133,98,88,79,71,58,52,41], name:'Dementia', type:'bar', marker:{color:'rgba(201,168,76,0.7)'} }
   ], { barmode:'group', paper_bgcolor:'transparent', plot_bgcolor:'transparent',
     font:{family:'Outfit',color:'rgba(255,255,255,0.55)',size:11},
     xaxis:{gridcolor:'rgba(255,255,255,0.04)'}, yaxis:{gridcolor:'rgba(255,255,255,0.04)'},
@@ -4582,49 +4456,197 @@ async function loadResearcherChart() {
 /* ══════════════════════════════════════════════
    LEAFLET MAP
 ══════════════════════════════════════════════ */
+const LOCATION_COORDS = {
+  /* Nigerian states (state capital coordinates) */
+  'Abia':[5.4527,7.5248], 'Adamawa':[9.3265,12.3984], 'Akwa Ibom':[5.0377,7.9128],
+  'Anambra':[6.2209,7.0721], 'Bauchi':[10.3158,9.8442], 'Bayelsa':[4.9247,6.2642],
+  'Benue':[7.7322,8.5391], 'Borno':[11.8333,13.1500], 'Cross River':[4.9517,8.3220],
+  'Delta':[6.2000,6.7333], 'Ebonyi':[6.3248,8.1137], 'Edo':[6.3350,5.6037],
+  'Ekiti':[7.6211,5.2211], 'Enugu':[6.4413,7.4988], 'FCT (Abuja)':[9.0579,7.4951],
+  'Gombe':[10.2833,11.1667], 'Imo':[5.4833,7.0333], 'Jigawa':[12.2280,9.5616],
+  'Kaduna':[10.5222,7.4383], 'Kano':[12.0022,8.5919], 'Katsina':[12.9908,7.6018],
+  'Kebbi':[12.4534,4.1994], 'Kogi':[7.7337,6.6905], 'Kwara':[8.4966,4.5421],
+  'Lagos':[6.5244,3.3792], 'Nasarawa':[8.5378,8.3206], 'Niger':[9.6139,6.5569],
+  'Ogun':[7.1608,3.3488], 'Ondo':[7.2571,5.2058], 'Osun':[7.7719,4.5561],
+  'Oyo':[7.3775,3.9470], 'Plateau':[9.8965,8.8583], 'Rivers':[4.8156,7.0498],
+  'Sokoto':[13.0059,5.2476], 'Taraba':[7.9994,10.7742], 'Yobe':[12.0000,11.5000],
+  'Zamfara':[12.1704,6.2637],
+  /* Country-level fallback centroids (used if state/province missing) */
+  'Nigeria':[9.0820,8.6753], 'Ghana':[5.6037,-0.1870], 'Kenya':[-1.2921,36.8219],
+  'South Africa':[-26.2041,28.0473], 'Uganda':[0.3163,32.5822], 'Tanzania':[-6.7924,39.2083],
+  'Ethiopia':[9.0300,38.7400], 'Egypt':[30.0444,31.2357], 'Morocco':[33.5731,-7.5898],
+  'Cameroon':[3.8480,11.5021], 'Zimbabwe':[-17.8252,31.0335], 'Zambia':[-15.3875,28.3228],
+  'Rwanda':[-1.9403,29.8739], 'Algeria':[36.7538,3.0588]
+};
+
+/* ANHRL field survey (n=4,000, Ogun State) aggregated by LGA */
+let SURVEY_LGA = [{"lga": "Abeokuta North", "zone": "Egba Zone", "lat": 7.1667, "lng": 3.3167, "n": 500, "hyp": 26.4, "hbp": 28.8, "forget": 44.8, "herb": 57.6, "poll": 23.2, "hypM": 26.0, "hypF": 26.7, "nM": 242, "nF": 258}, {"lga": "Abeokuta South", "zone": "Egba Zone", "lat": 7.1475, "lng": 3.3619, "n": 500, "hyp": 27.2, "hbp": 31.6, "forget": 42.0, "herb": 61.0, "poll": 23.2, "hypM": 24.2, "hypF": 30.0, "nM": 240, "nF": 260}, {"lga": "Ewekoro", "zone": "Egba Zone", "lat": 6.9333, "lng": 3.2167, "n": 500, "hyp": 27.4, "hbp": 30.0, "forget": 40.8, "herb": 61.2, "poll": 67.8, "hypM": 25.7, "hypF": 29.3, "nM": 261, "nF": 239}, {"lga": "Ijebu North", "zone": "Ijebu Zone", "lat": 6.97, "lng": 4.01, "n": 500, "hyp": 27.2, "hbp": 30.6, "forget": 42.2, "herb": 59.4, "poll": 23.0, "hypM": 28.1, "hypF": 26.2, "nM": 260, "nF": 240}, {"lga": "Ijebu Ode", "zone": "Ijebu Zone", "lat": 6.82, "lng": 3.92, "n": 500, "hyp": 28.2, "hbp": 31.2, "forget": 44.0, "herb": 60.6, "poll": 19.4, "hypM": 30.5, "hypF": 26.1, "nM": 239, "nF": 261}, {"lga": "Ikenne", "zone": "Remo Zone", "lat": 6.8667, "lng": 3.7167, "n": 500, "hyp": 27.6, "hbp": 30.8, "forget": 42.0, "herb": 63.0, "poll": 20.6, "hypM": 29.4, "hypF": 25.7, "nM": 255, "nF": 245}, {"lga": "Odogbolu", "zone": "Ijebu Zone", "lat": 6.8333, "lng": 3.75, "n": 500, "hyp": 29.2, "hbp": 31.4, "forget": 44.0, "herb": 59.2, "poll": 20.6, "hypM": 28.1, "hypF": 30.1, "nM": 231, "nF": 269}, {"lga": "Sagamu", "zone": "Remo Zone", "lat": 6.8333, "lng": 3.65, "n": 500, "hyp": 30.4, "hbp": 32.0, "forget": 36.2, "herb": 59.8, "poll": 47.8, "hypM": 31.7, "hypF": 28.9, "nM": 268, "nF": 232}];
+const SURVEY_LGA_DEFAULT = SURVEY_LGA.slice();
+let neuroMap = null;
+let mapMarkersLayer = null;
+
 function initMap() {
   const mapEl = document.getElementById('map-el');
-  if (!window.L || !mapEl || mapEl._leaflet_id) return;
-  const map = L.map('map-el', { zoomControl:true, scrollWheelZoom:false }).setView([9.5, 8.5], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution:'© OpenStreetMap © CartoDB', subdomains:'abcd', maxZoom:19 }).addTo(map);
-  const pts = [
-    {lat:6.5244,lng:3.3792,label:'Lagos — High Stroke Risk',risk:'high',pop:15000},
-    {lat:9.0579,lng:7.4951,label:'Abuja — Moderate Risk',risk:'medium',pop:8500},
-    {lat:12.0022,lng:8.5919,label:'Kano — High Risk',risk:'high',pop:12000},
-    {lat:8.4966,lng:4.5421,label:'Ilorin — ANHRL Research Site',risk:'research',pop:4200},
-    {lat:6.3350,lng:5.6037,label:'Benin City — Moderate Risk',risk:'medium',pop:5600},
-    {lat:4.8594,lng:7.0199,label:'Port Harcourt — High Risk',risk:'high',pop:9800},
-    {lat:7.3775,lng:3.9470,label:'Ibadan — Moderate Risk',risk:'medium',pop:7200},
-    {lat:11.8333,lng:13.1500,label:'Maiduguri — Low Risk',risk:'low',pop:2100},
-    {lat:7.7340,lng:8.5227,label:'Lafia — Data Collection',risk:'data',pop:1800},
-    {lat:5.5600,lng:-0.2057,label:'Accra, Ghana — Moderate',risk:'medium',pop:6500},
-    {lat:-1.2921,lng:36.8219,label:'Nairobi, Kenya — Low',risk:'low',pop:3200},
-    {lat:-26.2041,lng:28.0473,label:'Johannesburg, SA — High',risk:'high',pop:11000},
-    {lat:-4.3217,lng:15.3220,label:'Kinshasa, DRC — High',risk:'high',pop:8900},
-    {lat:15.5007,lng:32.5599,label:'Khartoum, Sudan — Moderate',risk:'medium',pop:4700},
-    {lat:5.3478,lng:-4.0083,label:"Abidjan, Côte d'Ivoire",risk:'medium',pop:5200},
-    {lat:14.6937,lng:-17.4441,label:'Dakar, Senegal — Moderate',risk:'medium',pop:3800},
-    {lat:0.3163,lng:32.5822,label:'Kampala, Uganda — Moderate',risk:'medium',pop:4100},
-    {lat:-11.7022,lng:43.2551,label:'Moroni, Comoros — Low',risk:'low',pop:900},
-    {lat:9.9281,lng:-13.5794,label:'Conakry, Guinea — High',risk:'high',pop:3400},
-    {lat:-25.9692,lng:32.5732,label:'Maputo, Mozambique — Low',risk:'low',pop:2100},
-  ];
-  const cMap = { high:'#EF4444', medium:'#F59E0B', low:'#10B981', research:'#3B82F6', data:'#D4A017' };
-  pts.forEach(d => {
-    L.circleMarker([d.lat,d.lng], {
-      radius: Math.max(8, Math.min(22, d.pop/700)),
-      fillColor: cMap[d.risk], color: cMap[d.risk], weight:1, opacity:.9, fillOpacity:.55
-    }).addTo(map).bindPopup(
-      '<div style="font-family:Outfit,sans-serif;min-width:180px;"><strong>' + d.label + '</strong><br><span style="font-size:.73rem;color:#888;">Assessed: ' + d.pop.toLocaleString() + '</span></div>'
+  if (!mapEl || mapEl._leaflet_id) return;
+
+  // If Leaflet's script never loaded (common when external CDNs are
+  // blocked, e.g. in some sandboxed preview tools), show a clear
+  // fallback instead of a silent blank box. Works normally once the
+  // page is opened with a real internet connection (e.g. on Vercel).
+  if (!window.L && !window._leafletRetry) {
+    // Primary CDN failed: try a second one, then re-run initMap
+    window._leafletRetry = true;
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = initMap;
+    s.onerror = initMap;
+    document.head.appendChild(s);
+    return;
+  }
+  if (!window.L) {
+    console.warn('NeuroMap: Leaflet (window.L) did not load — likely an external script was blocked. Showing fallback.');
+    mapEl.innerHTML = '<div style="height:100%;min-height:460px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;color:var(--mist);text-align:center;padding:2rem;">'
+      + '<div style="font-size:2rem;">🗺️</div>'
+      + '<div style="font-size:.85rem;max-width:360px;">Map could not load — this preview may be blocking external scripts (Leaflet/CartoDB). It will render normally once deployed live or opened with a full internet connection.</div>'
+      + '</div>';
+    return;
+  }
+
+  neuroMap = L.map('map-el', { zoomControl:true, scrollWheelZoom:false }).setView([9.5, 8.5], 5);
+  const tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution:'© OpenStreetMap contributors', maxZoom:19, className:'dark-tiles' });
+  tileLayer.on('tileerror', () => {
+    console.warn('NeuroMap: map tiles failed to load — likely a blocked network in this preview.');
+  });
+  tileLayer.addTo(neuroMap);
+  mapMarkersLayer = L.layerGroup().addTo(neuroMap);
+  refreshMapMarkers('stroke');
+
+  // Leaflet often mis-measures its container if the map div wasn't at
+  // full size the instant it initialised (e.g. fonts/layout still
+  // settling) -- this fixes the classic "blank/half-rendered tiles"
+  // symptom without needing to know the exact cause.
+  setTimeout(() => { if (neuroMap) neuroMap.invalidateSize(); }, 300);
+}
+
+/* Live for 'stroke' and 'dementia' layers (real Supabase data).
+   'herbal' / 'pollution' / 'sex' layers fall back to Stroke Hotspots with
+   a toast, since those tables don't yet carry country/province columns.
+   Wire them up the same way once location data is added to those tables. */
+let _surveyLoadedAt = 0;
+/* Use live survey aggregates from Supabase when available (view survey_lga_summary);
+   otherwise the numbers built into the page are used. */
+async function loadSurveyData() {
+  if (!supa || Date.now() - _surveyLoadedAt < 60000) return;
+  _surveyLoadedAt = Date.now();
+  try {
+    const { data, error } = await supa.from('survey_lga_summary').select('*');
+    if (error || !data || !data.length) return;
+    const fb = {}; SURVEY_LGA_DEFAULT.forEach(d => { fb[d.lga] = d; });
+    const rows = data.map(r => {
+      const f = fb[r.lga] || {};
+      return { lga:r.lga, zone:r.zone || f.zone || '', lat:(r.lat ?? f.lat), lng:(r.lng ?? f.lng),
+        n:+r.n, hyp:+r.hyp, hbp:+r.hbp, forget:+r.forget, herb:+r.herb, poll:+r.poll,
+        hypM:+r.hyp_m, hypF:+r.hyp_f, nM:+r.n_m, nF:+r.n_f };
+    }).filter(r => r.lat != null && r.lng != null);
+    if (rows.length) SURVEY_LGA = rows;
+  } catch (e) { console.warn('loadSurveyData:', e); }
+}
+
+function drawSurveyLayer(layer) {
+  const cfg = {
+    stroke:   { key:'hbp',    label:'with high blood pressure (≥140/90 measured)', hi:20, mid:12 },
+    dementia: { key:'forget', label:'reporting forgetfulness / misplacing items',   hi:45, mid:35 },
+    herbal:   { key:'herb',   label:'using herbal remedies',                        hi:65, mid:55 },
+    pollution:{ key:'poll',   label:'reporting HIGH pollution exposure',            hi:35, mid:28 },
+    sex:      { key:'hyp',    label:'reporting hypertension',                       hi:30, mid:26 }
+  }[layer] || { key:'hbp', label:'with high blood pressure', hi:20, mid:12 };
+  // Colour by rank among the 8 LGAs (top third red, middle amber, lowest green)
+  const sorted = SURVEY_LGA.map(d => d[cfg.key]).sort((a, b) => a - b);
+  cfg.mid = sorted[Math.floor(sorted.length / 3)];
+  cfg.hi  = sorted[Math.floor(sorted.length * 2 / 3)];
+  SURVEY_LGA.forEach(d => {
+    const v = d[cfg.key];
+    const color = v >= cfg.hi ? '#EF4444' : v >= cfg.mid ? '#F59E0B' : '#10B981';
+    const sexLine = layer === 'sex'
+      ? '<br>♂ hypertension: ' + d.hypM + '% (n=' + d.nM + ') · ♀ ' + d.hypF + '% (n=' + d.nF + ')' : '';
+    L.circleMarker([d.lat, d.lng], {
+      radius: 16, fillColor: color, color: '#3B82F6', weight: 2, dashArray: '4 3', opacity: .9, fillOpacity: .55
+    }).addTo(mapMarkersLayer).bindPopup(
+      '<div style="font-family:Outfit,sans-serif;min-width:200px;"><strong>' + d.lga + '</strong>' +
+      ' <span style="font-size:.7rem;color:#888;">(' + d.zone + ')</span><br>' +
+      '<span style="font-size:.8rem;"><b>' + v + '%</b> ' + cfg.label + '</span>' + sexLine +
+      '<br><span style="font-size:.72rem;color:#888;">ANHRL field survey · n=' + d.n + '</span></div>'
     );
   });
+}
+
+/* All layers show the field-survey sites (always available).
+   'stroke' and 'dementia' also add live Supabase assessment locations. */
+async function refreshMapMarkers(layer, opts) {
+  if (!neuroMap || !mapMarkersLayer) return;
+  const silent = !!(opts && opts.silent), keepView = !!(opts && opts.keepView);
+  await loadSurveyData();
+  const surveyTotal = SURVEY_LGA.reduce((t, d) => t + d.n, 0).toLocaleString();
+  window._mapLayer = layer;
+  mapMarkersLayer.clearLayers();
+  drawSurveyLayer(layer);
+  if (!keepView) {
+    const bounds = SURVEY_LGA.map(d => [d.lat, d.lng]);
+    if (bounds.length) neuroMap.fitBounds(bounds, { padding:[60,60], maxZoom:9 });
+  }
+  const say = m => { if (!silent) toast(m); };
+
+  const sources = { stroke: ['stroke_map','stroke_predictions'], dementia: ['dementia_map','alzheimer_predictions'] };
+  const src = sources[layer];
+  if (!src || !supa) { say('✅ ' + SURVEY_LGA.length + ' field-survey sites (n=' + surveyTotal + ')'); return; }
+
+  try {
+    // Prefer the aggregate view (no personal data); fall back to the raw table
+    let res = await supa.from(src[0]).select('country,province,risk_level,n');
+    if (res.error) res = await supa.from(src[1]).select('country,province,risk_level');
+    if (res.error) throw res.error;
+    const agg = {};
+    (res.data || []).forEach(r => {
+      const key = r.province || r.country;
+      if (!key) return;
+      const w = r.n || 1;
+      if (!agg[key]) agg[key] = { count: 0, high: 0, country: r.country, province: r.province };
+      agg[key].count += w;
+      if (r.risk_level === 'HIGH') agg[key].high += w;
+    });
+    let plotted = 0;
+    Object.entries(agg).forEach(([key, d]) => {
+      const coords = LOCATION_COORDS[d.province] || LOCATION_COORDS[d.country];
+      if (!coords) return;
+      const highPct = d.count ? d.high / d.count : 0;
+      const color = highPct >= 0.4 ? '#EF4444' : highPct >= 0.2 ? '#F59E0B' : '#10B981';
+      L.circleMarker(coords, {
+        radius: Math.max(8, Math.min(26, 6 + d.count / 3)),
+        fillColor: color, color: '#c9a84c', weight:2, opacity:.9, fillOpacity:.55
+      }).addTo(mapMarkersLayer).bindPopup(
+        '<div style="font-family:Outfit,sans-serif;min-width:180px;"><strong>' + key + '</strong><br>' +
+        '<span style="font-size:.73rem;color:#888;">' + d.count + ' online ' + layer + ' assessments · ' +
+        Math.round(highPct*100) + '% high risk</span></div>'
+      );
+      plotted++;
+    });
+    say('✅ ' + SURVEY_LGA.length + ' survey sites (n=' + surveyTotal + ') + ' + plotted + ' live assessment location(s)');
+  } catch (e) {
+    console.warn('refreshMapMarkers (Supabase) error:', e);
+    say('✅ Field-survey sites shown (live assessment data unavailable)');
+  }
 }
 
 function setMapLayer(btn) {
   document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  toast('Layer: ' + btn.textContent.trim());
+  const layer = btn.getAttribute('data-layer') || 'stroke';
+  refreshMapMarkers(layer);
 }
 
 /* ══════════════════════════════════════════════
@@ -4636,7 +4658,7 @@ function initHomeCharts() {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   Plotly.newPlot('plotly-chart', [
     { x:months, y:[42,58,67,71,89,103,122,138,155,174,198,220], name:'Stroke Assessments', type:'scatter', mode:'lines+markers', line:{color:'#EF4444',width:2.5,shape:'spline'}, marker:{size:6,color:'#EF4444'}, fill:'tozeroy', fillcolor:'rgba(239,68,68,0.07)' },
-    { x:months, y:[28,35,44,53,68,82,97,115,133,148,169,188], name:'Dementia Screenings', type:'scatter', mode:'lines+markers', line:{color:'#D4A017',width:2.5,shape:'spline'}, marker:{size:6,color:'#D4A017'}, fill:'tozeroy', fillcolor:'rgba(212,160,23,0.07)' }
+    { x:months, y:[28,35,44,53,68,82,97,115,133,148,169,188], name:'Dementia Screenings', type:'scatter', mode:'lines+markers', line:{color:'#c9a84c',width:2.5,shape:'spline'}, marker:{size:6,color:'#c9a84c'}, fill:'tozeroy', fillcolor:'rgba(201,168,76,0.07)' }
   ], {
     paper_bgcolor:'transparent', plot_bgcolor:'transparent',
     font:{family:'Outfit',color:'rgba(255,255,255,0.55)',size:12},
@@ -4668,10 +4690,14 @@ window.addEventListener('load', () => {
   calcBMI('s'); calcBMI('d');
   setTimeout(initHomeCharts, 500);
   setTimeout(initMap, 600);
+  loadLiveStats();
   showMemState('start');
   loadAccessPasswords();
+  setInterval(() => { if (appState.page === 'home' && neuroMap) refreshMapMarkers(window._mapLayer || 'stroke', { silent:true, keepView:true }); }, 90000);
   const statsEl = document.getElementById('stats');
   if (statsEl) statsObs.observe(statsEl);
+  const mapSectionEl = document.getElementById('neuromap');
+  if (mapSectionEl) mapSectionObs.observe(mapSectionEl);
 
   // Live MMSE preview as cultural questions are answered
   ['q1','q2','q3','q4','q5','q6'].forEach(id => {
@@ -5037,6 +5063,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+
 </body>
 </html>
