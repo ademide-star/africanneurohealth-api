@@ -292,9 +292,18 @@ footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);pad
 .lang-switcher-nav select{background:transparent;border:none;color:var(--white);font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;outline:none;cursor:pointer;padding:2px 4px;}
 .lang-switcher-nav select option{background:var(--deep);color:var(--white);}
 @media(max-width:960px){.lang-switcher-nav{display:none;}}
+
+/* Privacy-first access states */
+body.public-view #pillars, body.public-view #stats, body.public-view #portals, body.public-view #neuromap { display:none !important; }
+body.public-view .nav-links li[data-private-nav="true"] { display:none !important; }
+.access-note{font-size:.78rem;color:var(--mist);line-height:1.6;margin:.75rem 0;}
+.research-data-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-top:1rem;}
+#reg-extra{border:1px solid var(--border);border-radius:9px;padding:.7rem .85rem;margin:.4rem 0 1rem;}
+#reg-extra summary{cursor:pointer;color:var(--gold);font-size:.82rem;font-weight:600;}
+
 </style>
 </head>
-<body>
+<body class="public-view">
 <!-- NAV -->
 <nav id="navbar">
   <div class="nav-brand" onclick="showPage('home')">
@@ -303,8 +312,8 @@ footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);pad
   </div>
   <ul class="nav-links">
     <li><a onclick="gotoSection('about')" data-i18n="navAbout">What We Do</a></li>
-    <li><a onclick="gotoSection('pillars')" data-i18n="navResearch">Research</a></li>
-    <li><a onclick="gotoSection('neuromap')" data-i18n="navMap">NeuroMap</a></li>
+    <li data-private-nav="true"><a onclick="gotoSection('pillars')" data-i18n="navResearch">Research</a></li>
+    <li data-private-nav="true"><a onclick="gotoSection('neuromap')" data-i18n="navMap">NeuroMap</a></li>
     <li><a onclick="gotoSection('publications')" data-i18n="navPubs">Publications</a></li>
     <li><a onclick="gotoSection('contact')" data-i18n="navContact">Contact</a></li>
   </ul>
@@ -322,7 +331,9 @@ footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);pad
       </select>
     </div>
     <button class="btn btn-gold" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
-    <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="openLoginModal('researcher')">Researcher Login</button>
+    <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="SESSION.researcher ? showPage('researcher') : openLoginModal('researcher')">Researcher Login</button>
+    <button class="btn btn-outline btn-sm" id="nav-research-id" onclick="copyResearchId()" style="display:none;" title="Click to copy your research ID">Research ID</button>
+    <button class="btn btn-outline btn-sm" id="nav-btn-logout" onclick="logoutSession()" style="display:none;">Sign out</button>
     <a href="https://neuromatrixbiosystems.com" target="_blank" class="btn btn-outline btn-sm" style="font-size:.75rem;padding:6px 14px;">NeuroMatrix ↗</a>
     <button class="btn btn-outline btn-sm" onclick="showPage('herbs')">🌿 Herbal Remedies</button>
     <button class="btn btn-outline btn-sm" onclick="showPage('painstudy')">🩹 Pain-Stroke Study</button>
@@ -337,7 +348,7 @@ footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);pad
     <div>
       <div class="hero-pill fade-up"><div class="hero-dot"></div><span data-i18n="heroPill">African NeuroHealth Research Lab ·GRASP/NIH/DSI</span></div>
       <h1 class="headline hero-title fade-up fade-up-1">African<br><span class="g">NeuroHealth</span><br><span class="m">Intelligence</span></h1>
-      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">AI-powered stroke and cognitive-symptom screening, community health intelligence, and translational neuroscience research — built for Africa, by Africa.</span></p>
+      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">AI-powered stroke and dementia risk prediction, community health intelligence, and translational neuroscience research — built for Africa, by Africa.</span></p>
       <div class="hero-ctas fade-up fade-up-3">
         <button class="btn btn-gold" onclick="openAssessModal()" data-i18n="heroStartBtn">🩺 Start Assessment</button>
         <button class="btn btn-outline" onclick="gotoSection('about')" data-i18n="heroAboutBtn">📖 What This App Does</button>
@@ -374,7 +385,7 @@ footer{background:rgba(7,11,22,.8);border-top:1px solid rgba(201,168,76,.15);pad
         <span class="section-label" data-i18n="aboutLabel">// What This App Does</span>
         <h2 class="section-title" data-i18n="aboutTitle">AI-Powered Brain Health Screening,<br>Built for African Communities</h2>
         <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP1">
-The <strong>African NeuroHealth Dashboard</strong> is a free, AI-driven platform that estimates stroke risk and screens for self-reported cognitive symptoms in minutes. Our machine learning models — externally validated on an independent African cohort — combine biomedical measurements, lifestyle habits, environmental exposures, and cognitive testing to give you a personalised risk score with clear, actionable next steps.
+The <strong>African NeuroHealth Dashboard</strong> is a free, AI-driven platform that predicts your risk of stroke and dementia in minutes. Our machine learning models — externally validated on an independent African cohort — combine biomedical measurements, lifestyle habits, environmental exposures, and cognitive testing to give you a personalised risk score with clear, actionable next steps.
 </p>
 
 <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP2">
@@ -916,35 +927,6 @@ For researchers, the same platform doubles as live research infrastructure: uplo
         <div class="fg"><label>Sleep Quality (0-10): <span id="d-sleep-val" style="color:var(--gold);font-weight:700;">6</span></label><input type="range" id="d-sleep" min="0" max="10" value="6" oninput="document.getElementById('d-sleep-val').textContent=this.value"></div>
         <div class="fg"><label>Stress Level (0-10): <span id="d-stress-val" style="color:var(--gold);font-weight:700;">4</span></label><input type="range" id="d-stress" min="0" max="10" value="4" oninput="document.getElementById('d-stress-val').textContent=this.value"></div>
         <div class="fg"><label>Pollution Score (0-100): <span id="d-poll-val" style="color:var(--gold);font-weight:700;">20</span></label><input type="range" id="d-poll" min="0" max="100" value="20" oninput="document.getElementById('d-poll-val').textContent=this.value"></div>
-      <div class="asmt-section">
-        <h3>Community &amp; Lifestyle Predictors</h3>
-        <p style="font-size:.8rem;color:var(--mist);margin-bottom:1rem;">These additional fields are used by the self-reported cognitive-symptom model. Choose the closest accurate response.</p>
-        <div class="form-row">
-          <div class="fg"><label>Sleep Hours per Night</label><input type="number" id="d-cog-sleep-hours" min="0" max="24" step="0.5" value="7"></div>
-          <div class="fg"><label>Resting Heart Rate (bpm)</label><input type="number" id="d-cog-heart-rate" min="30" max="220" value="72"></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Chronic Pain Level</label><select id="d-cog-chronic-pain"><option value="NO">No chronic pain</option><option value="L">Low</option><option value="M">Moderate</option><option value="H">High</option></select></div>
-          <div class="fg"><label>Occupational Hazard Exposure</label><select id="d-cog-occupation-hazard"><option value="NO">No</option><option value="YES">Yes</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Access to Healthcare</label><select id="d-cog-health-access"><option value="YES">Yes</option><option value="NO">No</option></select></div>
-          <div class="fg"><label>Hypertension Treatment</label><select id="d-cog-htn-treatment"><option value="Not applicable">Not applicable</option><option value="Combined herbal + drugs">Combined herbal + drugs</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Fruit Intake Score (0-5)</label><select id="d-cog-fruit"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
-          <div class="fg"><label>Vegetable Intake Score (1-5)</label><select id="d-cog-vegetable"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Daily Hydration (litres)</label><input type="number" id="d-cog-hydration" min="0" max="10" step="0.25" value="2"></div>
-          <div class="fg"><label>Total Salt Intake Score (0-22)</label><input type="number" id="d-cog-salt-score" min="0" max="22" value="8"></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Usual Lifestyle / Food Choice</label><select id="d-cog-lifestyle"><option>Balanced Diet</option><option>Fast Food</option><option selected>Homemade Food</option><option>Homemade Food, Local Street Food</option><option>Homemade Food, Organic Food</option><option>Local Street Food</option><option>Organic Food</option></select></div>
-          <div class="fg"><label>Ogun Study Zone</label><select id="d-cog-zone"><option>Egba Zone</option><option selected>Ijebu Zone</option><option>Remo Zone</option></select></div>
-        </div>
-      </div>
-
         <!-- ===== CULTURALLY ADAPTED MMSE ASSESSMENT (African Context) ===== -->
         <div id="mmse-cultural-section" class="fg" style="margin-top:.5rem;">
           <label style="font-family:'Playfair Display',serif;font-size:.95rem;">MMSE Assessment (Adapted for African Context)</label>
@@ -980,11 +962,11 @@ For researchers, the same platform doubles as live research infrastructure: uplo
         </div>
         <div class="fg"><label>Behavioral Problems</label><select id="d-behav"><option value="0">No</option><option value="1">Yes</option></select></div>
       </div>
-      <button class="btn btn-gold btn-full" style="font-size:1rem;padding:16px;" id="btn-run-dementia" onclick="runDementiaAssessment()">&#x1F9EC; Run Cognitive Symptom Screening</button>
+      <button class="btn btn-gold btn-full" style="font-size:1rem;padding:16px;" id="btn-run-dementia" onclick="runDementiaAssessment()">&#x1F9EC; Run Dementia Risk Assessment</button>
     </div>
     <div style="position:sticky;top:88px;">
       <div class="result-card" id="dementia-result-card" style="display:none;">
-        <h4>&#x1F9EC; Cognitive Symptom Screening Result</h4>
+        <h4>&#x1F9EC; Dementia Risk Analysis</h4>
         <div style="max-width:260px;margin:0 auto;">
           <svg viewBox="0 0 200 120" style="width:100%;">
             <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="18" stroke-linecap="round"/>
@@ -1003,7 +985,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
       </div>
       <div id="dementia-placeholder" class="result-card" style="text-align:center;padding:2.5rem 1.5rem;">
         <div style="font-size:3rem;margin-bottom:1rem;">&#x1F9EC;</div>
-        <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">Complete the form and click Run Assessment to receive a self-reported cognitive-symptom screening estimate. This is not a dementia or Alzheimer’s diagnosis.</p>
+        <p style="color:var(--mist);font-size:.88rem;line-height:1.7;">Complete the form and click Run Assessment to see your dementia risk profile.</p>
       </div>
     </div>
   </div>
@@ -1216,14 +1198,14 @@ For researchers, the same platform doubles as live research infrastructure: uplo
           </select>
         </div>
         <div class="fg" id="ps-interviewer-wrap" style="display:none;">
-          <label>Interviewer Name</label>
-          <input type="text" id="ps-interviewer-name" placeholder="Research assistant's name">
+          <label>Interviewer Code (optional)</label>
+          <input type="text" id="ps-interviewer-name" placeholder="Staff/researcher code">
         </div>
       </div>
 
       <div class="asmt-section">
         <h3>Participant Information</h3>
-        <div class="fg"><label>Participant Name / ID</label><input type="text" id="ps-name" placeholder="Name or anonymized ID"></div>
+        <div class="fg"><label>Participant Research ID</label><input type="text" id="ps-name" readonly placeholder="Generated after participant consent"><small class="access-note">No participant name is collected here.</small></div>
         <div class="fg"><label>Age</label><input type="number" id="ps-age" min="0" max="120"></div>
         <div class="fg"><label>Sex</label><select id="ps-sex"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
         <div class="fg"><label>Region (LGA / Zone / State)</label><input type="text" id="ps-region" placeholder="e.g. Ijebu Ode, Ogun State"></div>
@@ -1485,7 +1467,16 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <div id="researcher-chart" style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem;min-height:300px;"></div>
   </div>
   <div id="rtab-datasets" class="tab-panel">
-    <div style="overflow-x:auto;">
+    <div class="research-data-card">
+      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.4rem;">🔐 NRF de-identified research dataset</h4>
+      <p class="access-note">New eligible assessments are stored under a generated research ID. Direct identity fields are excluded. Verified follow-up outcomes can be stored separately for future model evaluation and retraining.</p>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="refreshResearchDataSummary()">↻ Refresh summary</button>
+        <button class="btn btn-green btn-sm" onclick="downloadResearchDataset()">↓ Download research CSV</button>
+      </div>
+      <div id="research-data-summary" class="access-note" aria-live="polite">Sign in as a researcher to view the dataset summary.</div>
+    </div>
+    <div style="overflow-x:auto;margin-top:1rem;">
       <table class="data-table">
         <thead><tr><th>Table</th><th>Records</th><th>Status</th><th>Export</th></tr></thead>
         <tbody>
@@ -1685,52 +1676,10 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     </div>
   </div>
   <div id="atab-access" class="tab-panel">
-    <div class="card" style="max-width:560px;margin-bottom:1.5rem;">
-      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🔑 Admin Password</h4>
-      <p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">
-        Unlocks the Admin Portal (and also lets that person view the Researcher Portal).
-        Changing it here updates it immediately — no redeploy needed.
-      </p>
-      <div class="fg" style="margin-bottom:1rem;">
-        <label>Current Password</label>
-        <div style="display:flex;gap:.5rem;">
-          <input type="text" id="access-admin-pass" readonly style="flex:1;font-family:'Space Mono',monospace;">
-          <button class="btn btn-outline btn-sm" onclick="copyAccessPassword('access-admin-pass')">Copy</button>
-        </div>
-      </div>
-      <div class="fg" style="margin-bottom:1rem;">
-        <label>New Password</label>
-        <div style="display:flex;gap:.5rem;">
-          <input type="text" id="access-admin-new" placeholder="Type a new password, or generate one">
-          <button class="btn btn-outline btn-sm" onclick="generateAccessPassword('access-admin-new')">🎲 Generate</button>
-        </div>
-      </div>
-      <button class="btn btn-gold btn-sm" onclick="saveAccessPassword('admin_password','access-admin-new','access-admin-pass','access-admin-status')">💾 Save Admin Password</button>
-      <div id="access-admin-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
-    </div>
-
-    <div class="card" style="max-width:560px;">
-      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🔬 Researcher Password</h4>
-      <p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">
-        Unlocks only the Researcher Portal. Share this one with researchers, supervisors,
-        or students you want to give data-viewing access to, without giving them Admin access.
-      </p>
-      <div class="fg" style="margin-bottom:1rem;">
-        <label>Current Password</label>
-        <div style="display:flex;gap:.5rem;">
-          <input type="text" id="access-researcher-pass" readonly style="flex:1;font-family:'Space Mono',monospace;">
-          <button class="btn btn-outline btn-sm" onclick="copyAccessPassword('access-researcher-pass')">Copy</button>
-        </div>
-      </div>
-      <div class="fg" style="margin-bottom:1rem;">
-        <label>New Password</label>
-        <div style="display:flex;gap:.5rem;">
-          <input type="text" id="access-researcher-new" placeholder="Type a new password, or generate one">
-          <button class="btn btn-outline btn-sm" onclick="generateAccessPassword('access-researcher-new')">🎲 Generate</button>
-        </div>
-      </div>
-      <button class="btn btn-gold btn-sm" onclick="saveAccessPassword('researcher_password','access-researcher-new','access-researcher-pass','access-researcher-status')">💾 Save Researcher Password</button>
-      <div id="access-researcher-status" style="margin-top:1rem;font-size:.85rem;color:var(--mist);"></div>
+    <div class="card" style="max-width:680px;">
+      <h4 style="font-family:'Playfair Display',serif;margin-bottom:.75rem;">🔐 Secure Access Configuration</h4>
+      <p style="color:var(--mist);font-size:.85rem;line-height:1.7;">Passwords are no longer displayed or edited in the browser. Configure <code>ADMIN_PASSWORD</code>, <code>RESEARCHER_PASSWORD</code>, and <code>AUTH_SECRET</code> as private environment variables on Render. Do not store passwords in Supabase tables or frontend JavaScript.</p>
+      <p style="color:var(--mist);font-size:.82rem;line-height:1.7;margin-top:.75rem;">Use unique, strong passwords and rotate them from the hosting dashboard. Backend research-data endpoints require a signed, expiring session token.</p>
     </div>
   </div>
   <div id="atab-notifs" class="tab-panel">
@@ -1779,42 +1728,46 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 
 
-<!-- ══ REGISTRATION MODAL ══ -->
+<!-- ══ PARTICIPANT ACCESS / RESEARCH ID MODAL ══ -->
 <div class="modal-bg" id="modal-register" onclick="closeModal('modal-register',event)">
-  <div class="modal" style="max-width:480px;">
+  <div class="modal" style="max-width:520px;">
     <button class="modal-close" onclick="closeModal('modal-register')">&#x2715;</button>
     <div style="text-align:center;margin-bottom:1rem;">
       <div style="font-size:2rem;margin-bottom:.5rem;">🧠</div>
-      <h2 style="font-size:1.5rem;">Welcome to ANHRL</h2>
-      <p style="font-size:.85rem;color:var(--mist);margin-top:.5rem;">Register once to access all free health assessments. No password needed — just your name and email.</p>
+      <h2 style="font-size:1.5rem;">Participant Access</h2>
+      <p style="font-size:.85rem;color:var(--mist);margin-top:.5rem;">Your unique research ID is generated automatically. This form does not ask for your name, email address, or phone number.</p>
     </div>
     <input type="hidden" id="reg-next-action" value="assess">
     <div class="form-row">
-      <div class="fg"><label>Full Name *</label><input type="text" id="reg-name" placeholder="Your full name"></div>
-      <div class="fg"><label>Email Address *</label><input type="email" id="reg-email" placeholder="you@email.com"></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Age *</label><input type="number" id="reg-age" min="1" max="120" placeholder="Age in years"></div>
-      <div class="fg"><label>Gender *</label>
-        <select id="reg-gender">
-          <option value="">— Select —</option>
-          <option>Male</option><option>Female</option><option>Prefer not to say</option>
-        </select>
+      <div class="fg"><label>Age (optional)</label><input type="number" id="reg-age" min="1" max="120" placeholder="Age in years"></div>
+      <div class="fg"><label>Gender (optional)</label>
+        <select id="reg-gender"><option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Other</option></select>
       </div>
     </div>
-    <div class="fg"><label>Country</label>
-      <select id="reg-country">
-        <option value="">— Select Country —</option>
-        <option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>South Africa</option>
-        <option>Uganda</option><option>Tanzania</option><option>Ethiopia</option><option>Egypt</option>
-        <option>Morocco</option><option>Cameroon</option><option>Zimbabwe</option><option>Other</option>
-      </select>
+    <div class="form-row">
+      <div class="fg"><label>Country *</label><select id="reg-country" required>
+        <option value="">— Select African country —</option>
+        <option>Algeria</option><option>Angola</option><option>Benin</option><option>Botswana</option><option>Burkina Faso</option><option>Burundi</option><option>Cabo Verde</option><option>Cameroon</option><option>Central African Republic</option><option>Chad</option><option>Comoros</option><option>Republic of the Congo</option><option>Democratic Republic of the Congo</option><option>Côte d’Ivoire</option><option>Djibouti</option><option>Egypt</option><option>Equatorial Guinea</option><option>Eritrea</option><option>Eswatini</option><option>Ethiopia</option><option>Gabon</option><option>Gambia</option><option>Ghana</option><option>Guinea</option><option>Guinea-Bissau</option><option>Kenya</option><option>Lesotho</option><option>Liberia</option><option>Libya</option><option>Madagascar</option><option>Malawi</option><option>Mali</option><option>Mauritania</option><option>Mauritius</option><option>Morocco</option><option>Mozambique</option><option>Namibia</option><option>Niger</option><option>Nigeria</option><option>Rwanda</option><option>Sao Tome and Principe</option><option>Senegal</option><option>Seychelles</option><option>Sierra Leone</option><option>Somalia</option><option>South Africa</option><option>South Sudan</option><option>Sudan</option><option>Tanzania</option><option>Togo</option><option>Tunisia</option><option>Uganda</option><option>Zambia</option><option>Zimbabwe</option>
+      </select></div>
+      <div class="fg"><label>State / Province (optional)</label><input type="text" id="reg-province" maxlength="100" placeholder="State, province or region"></div>
     </div>
-    <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:.85rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--mist);line-height:1.6;">
-      🔒 Your information is stored securely in our research database and used solely for African NeuroHealth research. We do not share your data with third parties.
+    <details id="reg-extra">
+      <summary>Additional study geography (optional)</summary>
+      <div class="form-row" style="margin-top:.85rem;">
+        <div class="fg"><label>African subregion</label><select id="reg-region"><option value="">— Select —</option><option>North Africa</option><option>West Africa</option><option>Central Africa</option><option>East Africa</option><option>Southern Africa</option><option>Indian Ocean Islands</option></select></div>
+        <div class="fg"><label>Nigeria geopolitical zone</label><select id="reg-zone"><option value="">— Not applicable / select —</option><option>North Central</option><option>North East</option><option>North West</option><option>South East</option><option>South South</option><option>South West</option></select></div>
+      </div>
+      <div class="fg"><label>Study site / local zone</label><input type="text" id="reg-study-site" maxlength="150" placeholder="e.g., Egba Zone, Ijebu Zone, Remo Zone"></div>
+    </details>
+    <label style="display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;line-height:1.55;color:var(--smoke);margin:.8rem 0 1rem;">
+      <input type="checkbox" id="reg-consent" style="margin-top:.25rem;flex-shrink:0;">
+      <span>I have read the data notice and agree to collection of the de-identified assessment and geographic variables described here for research. This online agreement does not replace any additional consent required by the approved study protocol.</span>
+    </label>
+    <div style="background:rgba(78,203,130,.07);border:1px solid rgba(78,203,130,.18);border-radius:8px;padding:.85rem;margin-bottom:1.1rem;font-size:.78rem;color:var(--mist);line-height:1.6;">
+      🔒 A research ID links your assessment records. Names and contact details are not collected in this form. Research data are stored separately from any optional identity records.
     </div>
-    <button class="btn btn-gold btn-full" onclick="handleRegister()">Start My Assessment &#x2192;</button>
-    <p style="text-align:center;font-size:.75rem;color:var(--mist);margin-top:1rem;">Already registered on this device? <span style="color:var(--gold);cursor:pointer;" onclick="skipRegistration()">Continue without registering</span></p>
+    <button class="btn btn-gold btn-full" id="reg-submit" onclick="handleRegister()">Create Research ID &amp; Continue &#x2192;</button>
+    <p class="access-note">Only proceed when the collection and consent process matches the approved study protocol.</p>
   </div>
 </div>
 
@@ -1851,29 +1804,43 @@ try {
   }
 } catch(e) { console.warn('Supabase init error:', e); }
 
-const CORE_FIELDS = {
-  stroke_predictions:    ['user_id','age','gender','risk_score','risk_level','country','province','region','ethnicity','assessment_date'],
-  alzheimer_predictions: ['user_id','age','gender','risk_score','risk_level','country','province','region','ethnicity','assessment_date']
-};
+const IDENTITY_FIELD_NAMES = new Set(['name','full_name','patient_name','participant_name','email','phone','phone_number','address','hospital_number','national_id','passport_number','date_of_birth','contact_details']);
+function currentSessionToken() { return sessionStorage.getItem('anh_participant_token') || sessionStorage.getItem('anh_access_token') || ''; }
 async function saveRecord(table, payload) {
   try {
-    if (!supa) { console.warn('saveRecord: Supabase not connected'); return false; }
-    let { error } = await supa.from(table).insert([payload]);
-    // If the full record is rejected (e.g. a column is missing), keep at least the core fields
-    if (error && CORE_FIELDS[table]) {
-      console.warn('Full save to ' + table + ' failed (' + error.message + ') — retrying with core fields only');
-      const core = {};
-      CORE_FIELDS[table].forEach(k => { if (payload[k] !== undefined && payload[k] !== null) core[k] = payload[k]; });
-      ({ error } = await supa.from(table).insert([core]));
+    // Contact enquiries are not health research records and remain in their separate contact workflow.
+    if (table === 'contact_messages') {
+      if (!supa) { toast('Contact service is not configured.'); return false; }
+      const { error } = await supa.from('contact_messages').insert([payload]);
+      if (error) { toast('Could not send message. Please try again later.'); return false; }
+      return true;
     }
-    if (error) {
-      console.warn('Supabase save error (' + table + '):', error.message);
-      toast('⚠️ Could not save record: ' + error.message);
+    const allowed = ['stroke_predictions','alzheimer_predictions','cognitive_symptom_assessments','nutrition_tracker','stress_assessments','pain_stroke_study'];
+    if (!allowed.includes(table)) { console.warn('Blocked non-approved research record type:', table); return false; }
+    const token = currentSessionToken();
+    if (!token) { toast('Please start a participant session before saving an assessment.'); return false; }
+    const clean = {};
+    Object.entries(payload || {}).forEach(([key,value]) => {
+      const k = key.toLowerCase();
+      if (IDENTITY_FIELD_NAMES.has(k) || k === 'user_id' || k === 'research_id' || k === 'email_address') return;
+      if (value === undefined || typeof value === 'function') return;
+      clean[key] = value;
+    });
+    const response = await fetch(API_BASE + '/research/records', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+      body: JSON.stringify({ record_type: table, payload: clean, model_name: table === 'cognitive_symptom_assessments' ? 'African Cognitive Symptom Risk Model' : null })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.warn('Research save failed:', response.status, result.detail || '');
+      toast(response.status === 401 ? 'Session expired. Start again to continue.' : 'Research record could not be saved. Check backend/database configuration.');
       return false;
     }
+    if (SESSION.user && result.research_id) SESSION.user.id = result.research_id;
     onRecordSaved(table);
     return true;
-  } catch (e) { console.warn('Supabase error:', e); return false; }
+  } catch (e) { console.warn('Research API error:', e); toast('Could not connect to research storage.'); return false; }
 }
 
 /* After any assessment is stored, refresh the public numbers and the map */
@@ -1889,36 +1856,40 @@ function onRecordSaved(table) {
    USER SESSION — Registration required for assessments
    Researcher portal — secret password only (you assign it)
 ══════════════════════════════════════════════ */
-const SESSION = {
-  user: null,        // { name, email, role, country, age }
-  researcher: false, // true only after correct password
-  admin: false
-};
+const SESSION = { user: null, researcher: false, admin: false, participant: false };
+let AUTH_TOKEN = sessionStorage.getItem('anh_access_token') || '';
 
-// Two separate access passwords — one per portal. Both loaded from
-// Supabase (app_config table) so either can be changed from the Admin
-// dashboard without redeploying. Fall back to these defaults if the
-// fetch fails (e.g. offline / Supabase unreachable).
-let ADMIN_PASSWORD      = 'ademideola2026';
-let RESEARCHER_PASSWORD = 'ANHRL2026';
-
-async function loadAccessPasswords() {
-  if (!supa) return;
-  try {
-    const { data, error } = await supa.from('app_config')
-      .select('key,value').in('key', ['admin_password', 'researcher_password']);
-    if (!error && data) {
-      data.forEach(row => {
-        if (row.key === 'admin_password')      ADMIN_PASSWORD = row.value;
-        if (row.key === 'researcher_password') RESEARCHER_PASSWORD = row.value;
-      });
-    }
-  } catch (e) {
-    console.warn('Could not load access passwords, using fallback:', e);
+function restoreBrowserSession() {
+  const role = sessionStorage.getItem('anh_role') || '';
+  const username = sessionStorage.getItem('anh_username') || '';
+  const participantToken = sessionStorage.getItem('anh_participant_token') || '';
+  const researchId = sessionStorage.getItem('anh_research_id') || '';
+  if (AUTH_TOKEN && (role === 'researcher' || role === 'admin')) {
+    SESSION.user = { name: username || 'Researcher', role, id: 'STAFF' };
+    SESSION.researcher = role === 'researcher' || role === 'admin';
+    SESSION.admin = role === 'admin';
   }
+  if (participantToken && researchId) {
+    SESSION.user = { id: researchId, role: 'participant' };
+    SESSION.participant = true;
+  }
+  applyAccessView();
 }
 
-function isLoggedIn() { return SESSION.user !== null; }
+function applyAccessView() {
+  const unlocked = !!(SESSION.participant || SESSION.researcher || SESSION.admin);
+  document.body.classList.toggle('public-view', !unlocked);
+  const researchLinks = document.querySelectorAll('.nav-links li[data-private-nav="true"]');
+  researchLinks.forEach(el => { el.style.display = unlocked ? '' : 'none'; });
+  const assessBtn = document.getElementById('nav-btn-assess');
+  if (assessBtn) assessBtn.textContent = unlocked ? '🩺 Open Assessments' : '🩺 Start Assessment';
+  const loginBtn = document.getElementById('nav-btn-researcher');
+  if (loginBtn) loginBtn.textContent = SESSION.researcher ? 'Research Portal' : 'Researcher Login';
+  const logoutBtn = document.getElementById('nav-btn-logout');
+  if (logoutBtn) logoutBtn.style.display = unlocked ? '' : 'none';
+  const idBtn = document.getElementById('nav-research-id');
+  if (idBtn) { const rid = SESSION.participant && SESSION.user ? SESSION.user.id : ''; idBtn.style.display = rid ? '' : 'none'; idBtn.textContent = rid ? ('ID: ' + rid) : 'Research ID'; idBtn.title = rid ? 'Click to copy ' + rid : 'No participant ID assigned'; }
+}
 
 /* ══════════════════════════════════════════════
    LOCATION DATA
@@ -1981,7 +1952,7 @@ const LANG = {
     // NAV
     navResearcher:'Researcher Login', navAssess:'🩺 Start Assessment',
     // HERO
-    heroDesc:'AI-powered stroke and cognitive-symptom screening, community health intelligence, and translational neuroscience research — built for Africa, by Africa.',
+    heroDesc:'AI-powered stroke and dementia risk prediction, community health intelligence, and translational neuroscience research — built for Africa, by Africa.',
     heroStartBtn:'🩺 Start Assessment', heroAboutBtn:'📖 What This App Does',
     statLang:'Languages', statBio:'Biomarkers', statStates:'States Mapped',
     // ABOUT
@@ -2006,7 +1977,7 @@ const LANG = {
     // ASSESSMENT
     navAbout:'What We Do', navResearch:'Research', navMap:'NeuroMap', navPubs:'Publications', navContact:'Contact',
     statsLabel:'// Platform Statistics',
-    aboutP1:'The African NeuroHealth Dashboard is a free, AI-driven platform that estimates stroke risk and screens for self-reported cognitive symptoms in minutes, combining biomedical, lifestyle, environmental, and cognitive data into a personalised risk score.',
+    aboutP1:'The African NeuroHealth Dashboard is a free, AI-driven platform that predicts your risk of stroke and dementia in minutes, combining biomedical, lifestyle, environmental, and cognitive data into a personalised risk score.',
     aboutP2:'It also includes a nutrition tracker, a stress assessment, a memory game, and an instant PDF report in your language — no login required to get started.',
     feat2Title:'Ethnopharmacology & Herbal Therapeutics',
     feat2Desc:'Systematic investigation of African botanicals — Saigon cinnamon, Aframomum melegueta, and more.',
@@ -2043,7 +2014,7 @@ const LANG = {
     footerResearch:'Research',
     footerLegal:'Legal',
 stroke_title:'🫀 Stroke Risk Assessment', dementia_title:'🧬 Dementia Risk Assessment',
-    runStroke:'🧠 Run Stroke Risk Assessment', runDementia:'🧬 Run Cognitive Symptom Screening',
+    runStroke:'🧠 Run Stroke Risk Assessment', runDementia:'🧬 Run Dementia Risk Assessment',
     riskFactors:'⚠️ Risk Factors Identified', recommendations:'✅ Recommendations',
     low:'LOW RISK', medium:'MEDIUM RISK', high:'HIGH RISK',
     downloadPDF:'📄 Download PDF Report',
@@ -2545,26 +2516,44 @@ function setLanguage(lang) {
   toast('🌍 ' + (langNames[lang] || lang));
 }
 
+function copyResearchId() {
+  const rid = SESSION.participant && SESSION.user ? SESSION.user.id : '';
+  if (!rid) { toast('No participant research ID is active.'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(rid).then(() => toast('Research ID copied.')).catch(() => toast('Research ID: ' + rid));
+  else toast('Research ID: ' + rid);
+}
+
+function logoutSession() {
+  ['anh_access_token','anh_role','anh_username','anh_participant_token','anh_research_id'].forEach(k => sessionStorage.removeItem(k));
+  AUTH_TOKEN = '';
+  SESSION.user = null; SESSION.researcher = false; SESSION.admin = false; SESSION.participant = false;
+  document.querySelectorAll('.modal-bg.open').forEach(el => el.classList.remove('open'));
+  applyAccessView(); showPage('home'); toast('You have signed out.');
+}
+
 /* ══════════════════════════════════════════════
    ROUTING
 ══════════════════════════════════════════════ */
 // appState defined above
 
 function showPage(id) {
+  const researcherPages = new Set(['researcher']);
+  const adminPages = new Set(['admin']);
+  const participantPages = new Set(['stroke','dementia','nutrition','stress','memory','herbs','painstudy']);
+  if (researcherPages.has(id) && !SESSION.researcher && !SESSION.admin) { openLoginModal('researcher'); return; }
+  if (adminPages.has(id) && !SESSION.admin) { openLoginModal('admin'); return; }
+  if (participantPages.has(id) && !SESSION.participant) {
+    const rm = document.getElementById('modal-register'); if (rm) rm.classList.add('open'); return;
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
   if (pg) pg.classList.add('active');
   appState.page = id;
   window.scrollTo(0, 0);
-  if (id === 'home')       { setTimeout(initHomeCharts, 300); }
-  if (id === 'researcher') { setTimeout(loadResearcherChart, 300); runCounters(document.getElementById('page-researcher')); loadLiveStats(); }
+  if (id === 'home') { applyAccessView(); setTimeout(initHomeCharts, 300); }
+  if (id === 'researcher') { setTimeout(loadResearcherChart, 300); runCounters(document.getElementById('page-researcher')); loadLiveStats(); refreshResearchDataSummary(); }
   if (id === 'herbs') { loadHerbGallery(); }
-  if (id === 'admin') {
-    const a = document.getElementById('access-admin-pass');
-    const r = document.getElementById('access-researcher-pass');
-    if (a) a.value = ADMIN_PASSWORD;
-    if (r) r.value = RESEARCHER_PASSWORD;
-  }
+  if (id === 'painstudy') { const pid = document.getElementById('ps-name'); if (pid) pid.value = SESSION.user ? SESSION.user.id : ''; }
 }
 
 function gotoSection(id) {
@@ -2607,26 +2596,11 @@ function toast(msg) {
    REGISTRATION MODAL — opens before assessment
 ══════════════════════════════════════════════ */
 function openAssessModal() {
-  try {
-    // Always open registration first if not yet registered
-    if (!SESSION || !SESSION.user) {
-      var rm = document.getElementById('modal-register');
-      if (rm) {
-        var na = document.getElementById('reg-next-action');
-        if (na) na.value = 'assess';
-        rm.classList.add('open');
-        return;
-      }
-    }
-    // Already registered — open assessment menu directly
-    var am = document.getElementById('modal-assess');
-    if (am) am.classList.add('open');
-  } catch(e) {
-    console.error('openAssessModal error:', e);
-    // Last resort fallback
-    var am2 = document.getElementById('modal-assess');
-    if (am2) am2.classList.add('open');
+  if (!SESSION.participant) {
+    const rm = document.getElementById('modal-register'); if (rm) rm.classList.add('open');
+    return;
   }
+  const am = document.getElementById('modal-assess'); if (am) am.classList.add('open');
 }
 
 function openLoginModal(role) {
@@ -2661,74 +2635,114 @@ function closeModalById(id) {
 }
 
 /* ── Registration submit ── */
-function handleRegister() {
-  const name    = (document.getElementById('reg-name').value || '').trim();
-  const email   = (document.getElementById('reg-email').value || '').trim();
-  const age     = document.getElementById('reg-age').value;
-  const gender  = document.getElementById('reg-gender').value;
-  const country = (document.getElementById('reg-country').value || '');
-
-  if (!name)  { toast('⚠️ Please enter your full name.'); return; }
-  if (!email || !email.includes('@')) { toast('⚠️ Please enter a valid email address.'); return; }
-  if (!age)   { toast('⚠️ Please enter your age.'); return; }
-  if (!gender){ toast('⚠️ Please select your gender.'); return; }
-
-  const uid = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
-  SESSION.user = { name, email, age, gender, country, id: uid };
-
-  // Save to Supabase
-  saveRecord('community_users', { user_id: uid, name, email, age: parseInt(age), gender, country,
-    registered_at: new Date().toISOString() });
-
-  // Close registration modal
-  document.getElementById('modal-register').classList.remove('open');
-  toast('Welcome, ' + name + '! 🎉 Choose your assessment below.');
-
-  // Open assessment modal after short delay
-  const nextAction = (document.getElementById('reg-next-action').value || 'assess');
-  setTimeout(() => {
-    if (nextAction === 'assess') {
-      document.getElementById('modal-assess').classList.add('open');
-    }
-  }, 600);
+async function handleRegister() {
+  const ageRaw = (document.getElementById('reg-age').value || '').trim();
+  const age = ageRaw ? Number(ageRaw) : null;
+  const gender = document.getElementById('reg-gender').value || null;
+  const country = (document.getElementById('reg-country').value || '').trim();
+  const province = (document.getElementById('reg-province').value || '').trim() || null;
+  const region = (document.getElementById('reg-region').value || '').trim() || null;
+  const geopoliticalZone = (document.getElementById('reg-zone').value || '').trim() || null;
+  const studySite = (document.getElementById('reg-study-site').value || '').trim() || null;
+  const consent = !!document.getElementById('reg-consent').checked;
+  if (!country) { toast('Please select a country.'); return; }
+  if (age !== null && (!Number.isFinite(age) || age < 1 || age > 120)) { toast('Enter a valid age or leave it blank.'); return; }
+  if (!consent) { toast('Please review and confirm the data notice before continuing.'); return; }
+  const submit = document.getElementById('reg-submit'); if (submit) { submit.disabled = true; submit.textContent = 'Creating secure research ID…'; }
+  try {
+    const response = await fetch(API_BASE + '/research/participants', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ consent, consent_version:'ANHRL-NRF-2026-v1', age, gender, country, province, region, geopolitical_zone:geopoliticalZone, study_site:studySite })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.detail || 'Research ID could not be created. Please try again later.');
+    sessionStorage.setItem('anh_participant_token', result.participant_token);
+    sessionStorage.setItem('anh_research_id', result.research_id);
+    SESSION.user = { id: result.research_id, role:'participant', age, gender, country, province, region, geopolitical_zone:geopoliticalZone, study_site:studySite };
+    SESSION.participant = true;
+    document.getElementById('modal-register').classList.remove('open');
+    applyAccessView();
+    toast('Research ID created: ' + result.research_id);
+    const am = document.getElementById('modal-assess'); if (am) setTimeout(() => am.classList.add('open'), 250);
+  } catch (e) {
+    console.error('Participant creation failed:', e);
+    toast(e.message || 'Could not create research ID. Check connection and database setup.');
+  } finally {
+    if (submit) { submit.disabled = false; submit.innerHTML = 'Create Research ID &amp; Continue &#x2192;'; }
+  }
 }
 
 function skipRegistration() {
-  // Allow access without full registration (guest mode)
-  SESSION.user = { name: 'Guest', email: '', age: '', gender: '', country: '', id: 'GUEST-' + Date.now() };
-  document.getElementById('modal-register').classList.remove('open');
-  setTimeout(() => { document.getElementById('modal-assess').classList.add('open'); }, 300);
+  toast('A research ID and consent are required before saving an assessment.');
 }
 
 /* ── Researcher / Admin login ──
    Two separate passwords. Admin password unlocks the Admin portal (and
    also grants researcher visibility). Researcher password unlocks only
    the Researcher portal. Manage both from Admin → Access Control. */
-function handleLogin() {
-  const nameEl = document.getElementById('login-name');
-  const name   = nameEl ? nameEl.value.trim() : '';
-  const pass   = (document.getElementById('login-pass').value || '').trim();
-  const role   = appState.loginRole;
-
-  if (!name) { toast('⚠️ Please enter your full name.'); return; }
-  if (!pass)  { toast('⚠️ Please enter the access password.'); return; }
-
-  if (role === 'admin' && pass === ADMIN_PASSWORD) {
-    SESSION.admin = true;
-    SESSION.researcher = true;
-    SESSION.user = { name, role: 'admin', id: 'ADMIN-' + Date.now() };
+async function handleLogin() {
+  const name = (document.getElementById('login-name').value || '').trim();
+  const pass = (document.getElementById('login-pass').value || '').trim();
+  const role = appState.loginRole || 'researcher';
+  if (!name) { toast('Please enter your staff username or name.'); return; }
+  if (!pass) { toast('Please enter your assigned password.'); return; }
+  try {
+    const response = await fetch(API_BASE + '/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:name,password:pass,role})
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.detail || 'Login failed.');
+    AUTH_TOKEN = result.access_token;
+    sessionStorage.setItem('anh_access_token', AUTH_TOKEN);
+    sessionStorage.setItem('anh_role', result.role);
+    sessionStorage.setItem('anh_username', name);
+    sessionStorage.removeItem('anh_participant_token');
+    sessionStorage.removeItem('anh_research_id');
+    SESSION.user = { name, role:result.role, id:'STAFF' };
+    SESSION.researcher = result.role === 'researcher' || result.role === 'admin';
+    SESSION.admin = result.role === 'admin';
+    SESSION.participant = false;
     document.getElementById('modal-login').classList.remove('open');
-    showPage('admin');
-    toast('Welcome, ' + name + ' — Admin access granted ✅');
-  } else if (role === 'researcher' && (pass === RESEARCHER_PASSWORD || pass === ADMIN_PASSWORD)) {
-    SESSION.researcher = true;
-    SESSION.user = { name, role: 'researcher', id: 'RES-' + Date.now() };
-    document.getElementById('modal-login').classList.remove('open');
-    showPage('researcher');
-    toast('Welcome, ' + name + ' — Researcher access granted ✅');
-  } else {
-    toast('❌ Incorrect password. Contact Adebimpe-John O.E. for access.');
+    applyAccessView();
+    showPage(result.role === 'admin' ? 'admin' : 'researcher');
+    toast('Secure sign-in successful.');
+  } catch (e) {
+    console.error('Login failed:', e);
+    toast(e.message || 'Login failed. Check your credentials and backend configuration.');
   }
+}
+
+async function refreshResearchDataSummary() {
+  const el = document.getElementById('research-data-summary');
+  if (!el) return;
+  if (!AUTH_TOKEN) { el.textContent = 'Sign in as a researcher to view the dataset summary.'; return; }
+  el.textContent = 'Loading protected research summary…';
+  try {
+    const res = await fetch(API_BASE + '/research/participants/summary', {headers:{'Authorization':'Bearer '+AUTH_TOKEN}});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load summary');
+    const byType = Object.entries(data.records_by_type || {}).map(([k,v]) => `${k}: ${v}`).join(' · ') || 'No saved assessment records yet';
+    el.textContent = `Participants returned: ${data.participants_returned} · Research records returned: ${data.records_returned} · Verified outcomes returned: ${data.outcomes_returned || 0} · ${byType}`;
+  } catch (e) { el.textContent = 'Summary unavailable. Confirm database tables and backend environment variables.'; }
+}
+
+async function downloadResearchDataset() {
+  if (!AUTH_TOKEN) { toast('Researcher sign-in is required to export this dataset.'); return; }
+  try {
+    const res = await fetch(API_BASE + '/research/records?limit=2000', {headers:{'Authorization':'Bearer '+AUTH_TOKEN}});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Export failed');
+    const rows = (data.records || []).map(r => ({research_id:r.research_id,record_type:r.record_type,created_at:r.created_at,model_name:r.model_name,model_version:r.model_version,...(r.payload || {})}));
+    if (!rows.length) { toast('No research records are available to export yet.'); return; }
+    const keys = [...new Set(rows.flatMap(r => Object.keys(r)))];
+    const quote = v => '"' + String(v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : v)).replace(/"/g,'""') + '"';
+    const csv = [keys.map(quote).join(','), ...rows.map(r => keys.map(k => quote(r[k])).join(','))].join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = 'ANHRL_deidentified_research_dataset.csv'; a.click(); URL.revokeObjectURL(url);
+    toast('Research dataset export prepared.');
+  } catch (e) { toast('Export unavailable. Confirm researcher access and database configuration.'); }
 }
 
 /* ══════════════════════════════════════════════
@@ -3120,8 +3134,7 @@ function runDementiaAssessment() {
   if (!age) { toast('⚠️ Please enter Age to continue.'); return; }
 
   const bmi    = parseFloat(document.getElementById('d-bmi').value) || 25;
-  const eduRaw = document.getElementById('d-edu').value;
-  const edu    = eduRaw === '' ? 1 : Number(eduRaw);
+  const edu    = parseInt(document.getElementById('d-edu').value) || 12;
   const fam    = document.getElementById('d-fam').value || 'No';
   const cardio = document.getElementById('d-cardio').value || 'No';
   const dep    = document.getElementById('d-dep').value || 'No';
@@ -3136,16 +3149,11 @@ function runDementiaAssessment() {
   const func   = parseInt(document.getElementById('d-func').value) || 8;
   const adl    = parseInt(document.getElementById('d-adl').value) || 8;
   const mmse   = estimateCulturalMMSE(age);
-  const activityRaw = document.getElementById('d-activity').value;
-  const activity = activityRaw === '' ? 3 : Number(activityRaw);
-  const dietRaw = document.getElementById('d-diet').value;
-  const diet   = dietRaw === '' ? 5 : Number(dietRaw);
-  const sleepRaw = document.getElementById('d-sleep').value;
-  const sleep  = sleepRaw === '' ? 6 : Number(sleepRaw);
-  const stressRaw = document.getElementById('d-stress').value;
-  const stress = stressRaw === '' ? 4 : Number(stressRaw);
-  const pollRaw = document.getElementById('d-poll').value;
-  const poll   = pollRaw === '' ? 20 : Number(pollRaw);
+  const activity = parseInt(document.getElementById('d-activity').value) || 3;
+  const diet   = parseInt(document.getElementById('d-diet').value) || 5;
+  const sleep  = parseInt(document.getElementById('d-sleep').value) || 6;
+  const stress = parseInt(document.getElementById('d-stress').value) || 4;
+  const poll   = parseInt(document.getElementById('d-poll').value) || 20;
   const height = parseFloat(document.getElementById('d-height').value) || 170;
   const weight = parseFloat(document.getElementById('d-weight').value) || 70;
   const gender = document.getElementById('d-gender').value || 'Male';
@@ -3174,95 +3182,83 @@ function runDementiaAssessment() {
   const pollMod = (poll >= 33 && poll < 66) ? 1 : 0;
   const pollHigh= poll >= 66 ? 1 : 0;
 
-  const nutritionScoreForModel = nutritionScore !== null && nutritionScore !== undefined ? nutritionScore : diet;
-  const saltInput = document.getElementById('d-cog-salt-score').value;
-  const saltScoreForModel = saltRiskScore !== null && saltRiskScore !== undefined ? saltRiskScore : (saltInput === '' ? 8 : Number(saltInput));
-  const educationCategory = edu === 0 ? 'PRY EDUCATION' : edu === 1 ? 'SECONDARY' : edu === 2 ? 'MASTERS' : edu === 3 ? 'PHD' : 'SECONDARY';
-  const stressCategory = stress >= 7 ? 'H' : stress >= 4 ? 'M' : 'L';
-  const pollutionCategory = poll >= 66 ? 'H' : poll >= 33 ? 'M' : 'L';
-  const lifestyleChoice = document.getElementById('d-cog-lifestyle').value;
   const payload = {
-    'AGE': age,
-    'SEX': gender.toLowerCase() === 'female' ? 'F' : 'M',
-    'EDU- L': educationCategory,
-    'S- BP': sbp,
-    'D-BP': dbp,
-    'DIABETES': diab.toUpperCase(),
-    'HYPERTENSION': htn.toUpperCase(),
-    'HEART- D': cardio.toUpperCase(),
-    'STRESS- L': stressCategory,
-    'SLEEP HOURS': numericOr('d-cog-sleep-hours', 7),
-    'CHRONIC- PAIN': document.getElementById('d-cog-chronic-pain').value,
-    'NUTRITION SCORE': nutritionScoreForModel,
-    'HEART RATE': numericOr('d-cog-heart-rate', 72),
-    'POLLUTION': pollutionCategory,
-    'OCCUPATION HAZZARD': document.getElementById('d-cog-occupation-hazard').value,
-    'ACCESS TO HEALTH CARE': document.getElementById('d-cog-health-access').value,
-    'SMOKING STATUS (CORRECTED)': smoke.toLowerCase() === 'yes' ? 'Smoker' : 'Non-smoker / not reported',
-    'HYPERTENSION TREATMENT (CORRECTED)': document.getElementById('d-cog-htn-treatment').value,
-    'FRUIT_INTAKE': parseInt(document.getElementById('d-cog-fruit').value, 10),
-    'VEGETABLE_INTAKE': parseInt(document.getElementById('d-cog-vegetable').value, 10),
-    'HYDRATION_LITERS': numericOr('d-cog-hydration', 2),
-    'LIFESTYLE_CHOICES': lifestyleChoice,
-    'Total_Salt Intake Score': saltScoreForModel,
-    'ZONE': document.getElementById('d-cog-zone').value
+    Age: age, BMI: bmi, EducationLevel: edu,
+    AlcoholConsumption: alc, PhysicalActivity: activity,
+    DietQuality: diet, SleepQuality: sleep,
+    SystolicBP: sbp, DiastolicBP: dbp,
+    CholesterolTotal: chol, CholesterolLDL: ldl,
+    CholesterolHDL: hdl, CholesterolTriglycerides: trig,
+    FunctionalAssessment: func, ADL: adl,
+    HeadInjury: head, MMSE: mmse,
+    Height: height, Weight: weight,
+    PollutionScore: poll, Ethnicity: 0,
+    Country: 0, Province_Option: 0,
+    MemoryScore: 0, CustomStressScore: stress,
+    Gender: gender, Smoking: smoke,
+    FamilyHistoryAlzheimers: fam,
+    CardiovascularDisease: cardio,
+    Diabetes: diab, Depression: dep,
+    Hypertension: htn,
+    BehavioralProblems: behav ? 'Yes' : 'No',
+    Genotype: geno, BloodGroup: blood,
+    Confusion: conf > 0.5 ? 1 : 0,
+    Disorientation: 0,
+    PersonalityChanges: pers > 0.5 ? 1 : 0,
+    DifficultyCompletingTasks: tasks > 0.5 ? 1 : 0,
+    Forgetfulness: forget > 0.5 ? 1 : 0,
+    MemoryComplaints: memcx > 0.5 ? 1 : 0,
+    PollutionCategoryLow: pollLow,
+    PollutionCategoryModerate: pollMod,
+    PollutionCategoryHigh: pollHigh,
+    country_name: country, province_name: province,
+    region_name: region, ethnicity_name: ethnicity,
+    NutritionalScore: nutritionScore, SaltRiskScore: saltRiskScore
   };
 
-  // Show loading while the Render API evaluates the cognitive-symptom model.
+  // Show loading
   document.getElementById('dementia-placeholder').style.display = 'none';
   document.getElementById('dementia-result-card').style.display = 'block';
-  document.getElementById('dementia-risk-badge').textContent = 'Running cognitive-symptom model...';
+  document.getElementById('dementia-risk-badge').textContent = 'Running AI Model...';
   document.getElementById('dementia-risk-badge').className = 'risk-badge risk-medium';
-  document.getElementById('dementia-risk-factors').innerHTML = '<p style="color:var(--mist);text-align:center;padding:1rem;">⏳ Contacting the Render API...</p>';
-  document.getElementById('dementia-recommendations').innerHTML = '';
-  document.getElementById('dementia-mmse-box').innerHTML = '';
-  toast('🧠 Sending assessment to the cognitive-symptom model...');
+  document.getElementById('dementia-risk-factors').innerHTML = '<p style="color:var(--mist);text-align:center;padding:1rem;">⏳ Calling published AI model...</p>';
 
-  fetch(API_BASE + '/predict/cognitive-symptoms', {
+  toast('🤖 Sending data to your published dementia model...');
+
+  fetch(API_BASE + '/predict/dementia', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(async r => {
-    if (!r.ok) {
-      let detail = 'API error: ' + r.status;
-      try { const body = await r.json(); if (body.detail) detail = body.detail; } catch (_) {}
-      throw new Error(detail);
-    }
-    return r.json();
-  })
+  .then(r => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); })
   .then(result => {
-    const risk_pct = Number(result.cognitive_symptom_risk_pct ?? result.risk_pct ?? (Number(result.risk_score) * 100));
-    const risk_level = result.risk_level || (risk_pct >= 60 ? 'HIGH' : risk_pct >= 30 ? 'MEDIUM' : 'LOW');
-    const recommendations = Array.isArray(result.recommendations) ? result.recommendations : [];
-    const model_used = result.model_used || 'trained';
-    const note = result.note || 'Screening estimate for self-reported cognitive symptoms, not a diagnosis.';
+    const { risk_pct, risk_level, mmse_label, risk_factors, recommendations, model_used } = result;
     animateGauge('gauge-d-fill','gauge-d-pct', risk_pct);
 
     const badge = document.getElementById('dementia-risk-badge');
-    badge.textContent = 'COGNITIVE-SYMPTOM ESTIMATE — ' + risk_pct.toFixed(1) + '%';
-    badge.className = 'risk-badge ' + (risk_level === 'HIGH' ? 'risk-high' : risk_level === 'MEDIUM' ? 'risk-medium' : 'risk-low');
+    badge.textContent = risk_level + ' RISK — ' + risk_pct + '%' + (model_used === 'trained' ? ' 🤖' : ' (demo)');
+    badge.className = 'risk-badge ' + (risk_level==='HIGH'?'risk-high':risk_level==='MEDIUM'?'risk-medium':'risk-low');
 
     document.getElementById('dementia-risk-factors').innerHTML =
-      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">ℹ️ Screening Note</h4>' +
-      '<p style="font-size:.82rem;color:var(--smoke);line-height:1.7;">' + note + '</p>';
+      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">⚠️ Risk Factors</h4>' +
+      risk_factors.map(f=>'<div class="rf-item"><div class="rf-dot"></div>'+f+'</div>').join('');
 
     document.getElementById('dementia-recommendations').innerHTML =
-      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Suggested Next Steps</h4>' +
-      recommendations.map(r => '<div class="reco-item">' + r + '</div>').join('');
+      '<h4 style="font-family:\'Playfair Display\',serif;font-size:.95rem;margin-bottom:.75rem;">✅ Recommendations</h4>' +
+      recommendations.map(r=>'<div class="reco-item">'+r+'</div>').join('');
 
     document.getElementById('dementia-mmse-box').innerHTML =
-      '<div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);border-radius:10px;padding:1rem;">' +
-      '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Model</div>' +
-      '<div style="font-family:\'Space Mono\',monospace;font-size:1rem;color:var(--gold);">' + (result.model_name || 'African Cognitive Symptom Risk Model') + '</div>' +
-      '<div style="font-size:.75rem;color:var(--mist);margin-top:.5rem;">This is not a dementia or Alzheimer\'s diagnosis. Fields not supplied to the model may use defaults.</div>' +
+      '<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;">' +
+      '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">MMSE Score</div>' +
+      '<div style="font-family:\'Space Mono\',monospace;font-size:1.8rem;color:var(--gold);">' + mmse + '<span style="font-size:.9rem;color:var(--mist)">/30</span></div>' +
+      '<div style="font-size:.78rem;color:var(--smoke);margin-top:.35rem;">' + mmse_label + '</div>' +
+      '<div style="font-size:.72rem;color:var(--mist);margin-top:.25rem;">Model: ' + (model_used === 'trained' ? '✅ Published Random Forest (91.6% accuracy)' : '⚡ Demo scoring') + '</div>' +
       '</div>';
 
     const uid = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
-    // Keep the existing table for backwards compatibility; assessment_type distinguishes these records.
     saveRecord('alzheimer_predictions', {
-      user_id: uid, age, gender,
-      bmi: parseFloat(bmi.toFixed(1)), mmse, education_years: edu,
+      user_id: uid, age, gender, bmi: parseFloat(bmi.toFixed(1)),
+      mmse, education_years: edu,
       family_history_alzheimers: fam, cardiovascular_disease: cardio,
       depression: dep, hypertension: htn, head_injury: head,
       systolic_bp: sbp, diastolic_bp: dbp,
@@ -3271,37 +3267,37 @@ function runDementiaAssessment() {
       physical_activity: activity, diet_quality: diet,
       sleep_quality: sleep, stress_level: stress, pollution_score: poll,
       functional_assessment: func, adl,
-      risk_score: Number(result.risk_score ?? risk_pct / 100),
+      risk_score: parseFloat(result.risk_score.toFixed(3)),
       risk_level, prediction_result: risk_level === 'HIGH' ? 1 : 0,
-      cognitive_symptom_risk_pct: risk_pct,
       country, province, region, ethnicity,
       assessment_date: new Date().toISOString().split('T')[0]
     });
 
-    window._lastDementia = {
-      riskLevel: risk_level, riskPct: risk_pct, factors: [], recos: recommendations, userId: uid,
+    window._lastDementia = { riskLevel: risk_level, riskPct: risk_pct,
+      factors: risk_factors, recos: recommendations, userId: uid,
       extras: [
-        { label: 'Assessment', value: 'Self-reported cognitive-symptom screening' },
-        { label: 'Model', value: result.model_name || 'African Cognitive Symptom Risk Model' },
-        { label: 'Estimate', value: risk_pct.toFixed(1) + '%' },
+        { label: 'Model', value: model_used === 'trained' ? 'Published Random Forest (91.6% accuracy)' : 'Demo scoring' },
+        { label: 'MMSE Score', value: mmse + '/30 — ' + mmse_label },
+        { label: 'Education', value: edu + ' years' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
-        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Score ' + saltScoreForModel + '/22') : 'Supplemented with form values' },
-        { label: 'Location', value: (province || '—') + ', ' + (country || '—') },
-        { label: 'Interpretation', value: note }
+        { label: 'Total Cholesterol', value: chol + ' mg/dL | LDL: ' + ldl + ' | HDL: ' + hdl + ' | Trig: ' + trig },
+        { label: 'Activity', value: activity + ' hrs/week' },
+        { label: 'Diet Quality', value: diet + '/10' },
+        { label: 'Sleep Quality', value: sleep + '/10' },
+        { label: 'Pollution', value: poll + '/100' },
+        { label: 'Nutrition Tracker', value: nutritionScore !== null ? (nutritionScore + '/13, Salt Risk ' + saltRiskScore + '/22') : 'Not completed' },
+        { label: 'Location', value: (province||'—') + ', ' + (country||'—') }
       ]
     };
-    toast('✅ Cognitive-symptom estimate received. This is not a diagnosis.');
+
+    toast(risk_level==='HIGH' ? '⚠️ HIGH dementia risk. See a neurologist.' :
+          risk_level==='MEDIUM' ? '⚡ Moderate risk. Lifestyle changes recommended.' :
+          '✅ Low dementia risk. Maintain healthy habits!');
   })
   .catch(err => {
-    console.error('Cognitive-symptom API error:', err);
-    const badge = document.getElementById('dementia-risk-badge');
-    badge.textContent = 'ASSESSMENT UNAVAILABLE';
-    badge.className = 'risk-badge risk-medium';
-    document.getElementById('dementia-risk-factors').innerHTML =
-      '<p style="color:#FCA5A5;font-size:.85rem;line-height:1.6;">No estimate was produced because the prediction API could not complete the request. Please try again later. Details: ' + String(err.message || err) + '</p>';
-    document.getElementById('dementia-recommendations').innerHTML = '';
-    document.getElementById('dementia-mmse-box').innerHTML = '';
-    toast('⚠️ Cognitive-symptom API unavailable. No fallback estimate was generated.');
+    console.error('Dementia API error:', err);
+    toast('⚠️ API offline. Using offline scoring...');
+    runDementiaScoreOffline(age, bmi, edu, fam, cardio, dep, htn, head, sbp, dbp, mmse, activity, diet, sleep, stress, poll, country, province, nutritionScore, saltRiskScore);
   });
 }
 
@@ -3440,8 +3436,7 @@ function runNutrition() {
   if (nh) nh.innerHTML = herbChecks.length ? '<div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;margin-top:.75rem;"><strong style="font-size:.82rem;color:var(--gold);">🌿 Herbal Remedies:</strong><p style="font-size:.82rem;color:var(--smoke);margin-top:.35rem;">' + herbChecks.join(', ') + '</p><p style="font-size:.75rem;color:var(--mist);margin-top:.35rem;">Several have documented neuroprotective properties in African traditional medicine research.</p></div>' : '';
 
   saveRecord('nutrition_tracker', {
-    user_id: SESSION.user ? SESSION.user.id : 'USR-'+Math.random().toString(36).substr(2,8).toUpperCase(),
-    patient_name: SESSION.user ? SESSION.user.name : '',
+    research_id: SESSION.user ? SESSION.user.id : '',
     fruit_intake: fruit, vegetable_intake: veg, hydration_liters: water,
     supplements_used: suppChecks.join(', '), natural_herbs: herbChecks.join(', '),
     lifestyle_choices: lifestyleList, nutritional_score: total,
@@ -3504,8 +3499,7 @@ function runStress() {
     '</div>';
 
   saveRecord('stress_assessments', {
-    user_id: SESSION.user ? SESSION.user.id : 'USR-'+Math.random().toString(36).substr(2,8).toUpperCase(),
-    patient_name: SESSION.user ? SESSION.user.name : '',
+    research_id: SESSION.user ? SESSION.user.id : '',
     financial_stress:fin, family_stress:fam, work_stress:work, safety_stress:safe,
     caregiver_stress:care, migration_stress:mig, family_expectations:trad, spiritual_stress:spir,
     total_score:total, stress_level:cat?cat.textContent:'',
@@ -3628,7 +3622,7 @@ function generatePDF(type, data) {
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
   doc.text('Report ID: ANH-' + Date.now().toString(36).toUpperCase(), M, y);
   doc.text('Generated: ' + new Date().toLocaleString('en-GB', {dateStyle:'full',timeStyle:'short'}), M, y+6);
-  doc.text('Patient: ' + (data.patientName || 'Anonymous') + '  |  ID: ' + (data.userId||''), M, y+12);
+  doc.text('Research ID: ' + (data.patientName || data.userId || 'Not assigned'), M, y+12);
   y += 24;
 
   const rc = data.riskLevel === 'HIGH' ? [239,68,68] : data.riskLevel === 'MEDIUM' ? [245,158,11] : [45,155,90];
@@ -3677,7 +3671,7 @@ function generatePDF(type, data) {
   doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(160,210,180);
   doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026', M, 293);
 
-  doc.save('ANHRL_' + type + '_Report_' + data.patientName.replace(/\s+/g,'_') + '_' + Date.now() + '.pdf');
+  doc.save('ANHRL_' + type + '_Report_' + String(data.patientName || data.userId || 'research').replace(/\s+/g,'_') + '_' + Date.now() + '.pdf');
   toast('📄 PDF report downloaded!');
 }
 
@@ -3699,7 +3693,7 @@ function generateNutritionPDF() {
   doc.text('Nutritional Assessment Report', M+3, 47);
   let y = 58;
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Patient: ' + (SESSION.user ? SESSION.user.name : 'Anonymous') + '  |  Generated: ' + new Date().toLocaleDateString('en-GB'), M, y); y += 14;
+  doc.text('Research ID: ' + (SESSION.user ? SESSION.user.id : 'Not assigned') + '  |  Generated: ' + new Date().toLocaleDateString('en-GB'), M, y); y += 14;
   const col = d.level==='Excellent'||d.level==='Good' ? [45,155,90] : d.level==='Fair' ? [245,158,11] : [239,68,68];
   doc.setFillColor(...col); doc.roundedRect(M,y,W-M*2,18,3,3,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
@@ -3730,14 +3724,14 @@ function generateNutritionPDF() {
   doc.setFillColor(7,11,22);doc.rect(0,286,W,11,'F');
   doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,210,180);
   doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026',M,293);
-  doc.save('ANHRL_Nutrition_Report_' + (SESSION.user?SESSION.user.name.replace(/\s+/g,'_'):'') + '_' + Date.now() + '.pdf');
+  doc.save('ANHRL_Nutrition_Report_' + (SESSION.user?SESSION.user.id:'') + '_' + Date.now() + '.pdf');
   toast('📄 Nutrition PDF downloaded!');
 }
 function doStrokePDF() {
   const d = window._lastStroke;
   if (!d) { toast('⚠️ Run the stroke assessment first.'); return; }
   generatePDF('Stroke', {
-    patientName: SESSION.user ? SESSION.user.name : 'Anonymous',
+    patientName: SESSION.user && SESSION.user.id ? SESSION.user.id : 'Not-assigned',
     userId: d.userId,
     riskLevel: d.riskLevel,
     riskPct: d.riskPct,
@@ -3751,7 +3745,7 @@ function doDementiaPDF() {
   const d = window._lastDementia;
   if (!d) { toast('⚠️ Run the dementia assessment first.'); return; }
   generatePDF('Dementia', {
-    patientName: SESSION.user ? SESSION.user.name : 'Anonymous',
+    patientName: SESSION.user && SESSION.user.id ? SESSION.user.id : 'Not-assigned',
     userId: d.userId,
     riskLevel: d.riskLevel,
     riskPct: d.riskPct,
@@ -3803,10 +3797,10 @@ async function loadAdminData() {
   }
   html += '</div>';
   try {
-    const { data } = await supa.from('stroke_predictions').select('patient_name,age,gender,risk_level,country,assessment_date').order('created_at', { ascending: false }).limit(8);
+    const { data } = await supa.from('stroke_predictions').select('age,gender,risk_level,country,assessment_date').order('created_at', { ascending: false }).limit(8);
     if (data && data.length) {
-      html += '<h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;">Latest Stroke Assessments</h4><div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Patient</th><th>Age</th><th>Gender</th><th>Country</th><th>Risk</th><th>Date</th></tr></thead><tbody>';
-      data.forEach(r => { html += '<tr><td>' + (r.patient_name||'Anon') + '</td><td>' + r.age + '</td><td>' + r.gender + '</td><td>' + (r.country||'—') + '</td><td><span class="tag ' + (r.risk_level==='HIGH'?'tag-red':r.risk_level==='MEDIUM'?'tag-gold':'tag-green') + '">' + r.risk_level + '</span></td><td>' + r.assessment_date + '</td></tr>'; });
+      html += '<h4 style="font-family:\'Playfair Display\',serif;margin-bottom:.75rem;">Latest Stroke Assessments</h4><div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Record</th><th>Age</th><th>Gender</th><th>Country</th><th>Risk</th><th>Date</th></tr></thead><tbody>';
+      data.forEach(r => { html += '<tr><td>De-identified</td><td>' + r.age + '</td><td>' + r.gender + '</td><td>' + (r.country||'—') + '</td><td><span class="tag ' + (r.risk_level==='HIGH'?'tag-red':r.risk_level==='MEDIUM'?'tag-gold':'tag-green') + '">' + r.risk_level + '</span></td><td>' + r.assessment_date + '</td></tr>'; });
       html += '</tbody></table></div>';
     }
   } catch(e) {}
@@ -3997,59 +3991,6 @@ async function uploadImportedCSV() {
    ACCESS PASSWORDS — Admin can view/rotate the two
    separate passwords (one per portal)
 ══════════════════════════════════════════════ */
-function generateAccessPassword(targetInputId) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  let pass = '';
-  for (let i = 0; i < 12; i++) pass += chars[Math.floor(Math.random() * chars.length)];
-  const el = document.getElementById(targetInputId);
-  if (el) el.value = pass;
-}
-
-function copyAccessPassword(sourceInputId) {
-  const el = document.getElementById(sourceInputId);
-  if (!el) return;
-  navigator.clipboard.writeText(el.value).then(() => {
-    toast('✅ Password copied to clipboard');
-  }).catch(() => {
-    el.select();
-    toast('Select-all applied — copy manually (clipboard access blocked)');
-  });
-}
-
-async function saveAccessPassword(configKey, newInputId, currentInputId, statusElId) {
-  const statusEl = document.getElementById(statusElId);
-  const newPassEl = document.getElementById(newInputId);
-  const newPass = (newPassEl ? newPassEl.value : '').trim();
-
-  if (!newPass || newPass.length < 6) {
-    statusEl.innerHTML = '<span style="color:#EF4444;">Password must be at least 6 characters.</span>';
-    return;
-  }
-  if (!supa) {
-    statusEl.innerHTML = '<span style="color:#EF4444;">Supabase is not connected — cannot save.</span>';
-    return;
-  }
-
-  try {
-    const { error } = await supa.from('app_config')
-      .update({ value: newPass, updated_at: new Date().toISOString() })
-      .eq('key', configKey);
-    if (error) {
-      statusEl.innerHTML = '<span style="color:#EF4444;">Save failed: ' + error.message + '</span>';
-      return;
-    }
-    if (configKey === 'admin_password')      ADMIN_PASSWORD = newPass;
-    if (configKey === 'researcher_password') RESEARCHER_PASSWORD = newPass;
-    const currentEl = document.getElementById(currentInputId);
-    if (currentEl) currentEl.value = newPass;
-    newPassEl.value = '';
-    statusEl.innerHTML = '<span style="color:var(--mint);">✅ Password updated. The old one no longer works.</span>';
-    toast('✅ Password updated');
-  } catch (e) {
-    statusEl.innerHTML = '<span style="color:#EF4444;">Save error: ' + e.message + '</span>';
-  }
-}
-
 /* ══════════════════════════════════════════════
    HERBAL REMEDIES — Admin add/manage, public gallery reads
    only status='published' rows.
@@ -4308,21 +4249,20 @@ function openHerbDetail(idx) {
 async function submitPainStudy() {
   const statusEl = document.getElementById('ps-submit-status');
   const entryMode = document.getElementById('ps-entry-mode').value;
-  const name = document.getElementById('ps-name').value.trim();
-
-  if (!name) { statusEl.innerHTML = '<span style="color:#EF4444;">Participant name/ID is required.</span>'; return; }
-  if (entryMode === 'interviewer' && !document.getElementById('ps-interviewer-name').value.trim()) {
-    statusEl.innerHTML = '<span style="color:#EF4444;">Interviewer name is required for interviewer-mode entries.</span>';
+  const researchId = SESSION.user && SESSION.user.id ? SESSION.user.id : '';
+  if (!SESSION.participant || !researchId) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Create a participant research ID and confirm consent before entering study data.</span>';
     return;
   }
-  if (!supa) { statusEl.innerHTML = '<span style="color:#EF4444;">Not connected to the database.</span>'; return; }
-
+  if (entryMode === 'interviewer' && !document.getElementById('ps-interviewer-name').value.trim()) {
+    statusEl.innerHTML = '<span style="color:#EF4444;">Enter the interviewer code for interviewer-mode entries.</span>';
+    return;
+  }
   const locations = Array.from(document.querySelectorAll('.ps-location:checked')).map(el => el.value).join(', ');
-
   const payload = {
+    research_id: researchId,
     entry_mode: entryMode,
-    interviewer_name: document.getElementById('ps-interviewer-name').value.trim() || null,
-    participant_name: name,
+    interviewer_code: document.getElementById('ps-interviewer-name').value.trim() || null,
     age: safeParseInt(document.getElementById('ps-age').value),
     sex: document.getElementById('ps-sex').value || null,
     region: document.getElementById('ps-region').value.trim() || null,
@@ -4338,617 +4278,33 @@ async function submitPainStudy() {
     sleep_quality: parseInt(document.getElementById('ps-sleep').value, 10),
     stress_level: parseInt(document.getElementById('ps-stress').value, 10),
     physical_activity: document.getElementById('ps-activity').value || null,
-    notes: document.getElementById('ps-notes').value.trim() || null,
     created_at: new Date().toISOString()
   };
-
-  statusEl.innerHTML = '<span style="color:var(--mist);">Saving...</span>';
+  statusEl.innerHTML = '<span style="color:var(--mist);">Calculating and saving de-identified record…</span>';
   try {
-    const { error } = await supa.from('pain_stroke_study').insert([payload]);
-    if (error) {
-      statusEl.innerHTML = '<span style="color:#EF4444;">Save failed: ' + error.message + '</span>';
+    const prediction = await runPainStrokeRisk(payload);
+    if (prediction && prediction.prob !== null) {
+      payload.predicted_stroke_risk = prediction.prob;
+      payload.risk_category = prediction.risk_category;
+    }
+    const saved = await saveRecord('pain_stroke_study', payload);
+    if (!saved) {
+      statusEl.innerHTML = '<span style="color:#EF4444;">Record was not saved. Check participant session, backend configuration, and database schema.</span>';
       return;
     }
-    statusEl.innerHTML = '<span style="color:var(--mint);">✅ Entry saved. Thank you for contributing to the study.</span>';
-    runPainStrokeRisk(payload);
-    toast('✅ Pain-stroke study entry saved');
-
-    // Reset form for the next entry
-    document.getElementById('ps-name').value = '';
-    document.getElementById('ps-age').value = '';
-    document.getElementById('ps-sex').value = '';
-    document.getElementById('ps-region').value = '';
-    document.getElementById('ps-intensity').value = 0;
-    document.getElementById('ps-intensity-v').textContent = '0';
+    statusEl.innerHTML = '<span style="color:var(--mint);">✅ De-identified entry saved under ' + researchId + '.</span>';
+    toast('Pain-stroke research record saved');
+    ['ps-age','ps-sex','ps-region','ps-duration','ps-headache-freq','ps-analgesic-freq','ps-analgesic-type'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('ps-intensity').value = 0; document.getElementById('ps-intensity-v').textContent = '0';
     document.querySelectorAll('.ps-location:checked').forEach(el => el.checked = false);
-    document.getElementById('ps-duration').value = '';
-    document.getElementById('ps-headache-freq').value = '';
-    document.getElementById('ps-analgesic-freq').value = '';
-    document.getElementById('ps-analgesic-type').value = '';
-    document.getElementById('ps-sbp').value = 120;
-    document.getElementById('ps-dbp').value = 80;
-    document.getElementById('ps-glucose').value = 100;
+    document.getElementById('ps-sbp').value = 120; document.getElementById('ps-dbp').value = 80; document.getElementById('ps-glucose').value = 100;
     document.getElementById('ps-sleep').value = 3; document.getElementById('ps-sleep-v').textContent = '3';
     document.getElementById('ps-stress').value = 0; document.getElementById('ps-stress-v').textContent = '0';
-    document.getElementById('ps-activity').value = '';
-    document.getElementById('ps-notes').value = '';
+    document.getElementById('ps-activity').value = 'Moderate'; document.getElementById('ps-notes').value = '';
   } catch (e) {
-    statusEl.innerHTML = '<span style="color:#EF4444;">Error: ' + e.message + '</span>';
+    console.error(e); statusEl.innerHTML = '<span style="color:#EF4444;">Could not save the entry. Please try again or contact the research administrator.</span>';
   }
 }
-
-function safeParseInt(v) {
-  const n = parseInt(v, 10);
-  return isNaN(n) ? null : n;
-}
-
-/* ══════════════════════════════════════════════
-   PAIN-STROKE STUDY — researcher dashboard analytics
-══════════════════════════════════════════════ */
-async function loadPainStudyDashboard() {
-  const el = document.getElementById('painstudy-dashboard');
-  if (!el) return;
-  if (!supa) { el.innerHTML = '<p style="color:var(--mist);">Not connected to the database.</p>'; return; }
-
-  el.innerHTML = '<p style="color:var(--mist);">Loading...</p>';
-  try {
-    const { data, error } = await supa.from('pain_stroke_study').select('*');
-    if (error) { el.innerHTML = '<p style="color:#EF4444;">' + error.message + '</p>'; return; }
-    if (!data || !data.length) { el.innerHTML = '<p style="color:var(--mist);">No entries yet.</p>'; return; }
-
-    const total = data.length;
-    const avgIntensity = (data.reduce((s, r) => s + (r.pain_intensity || 0), 0) / total).toFixed(1);
-    const selfReport = data.filter(r => r.entry_mode === 'self_report').length;
-    const interviewer = data.filter(r => r.entry_mode === 'interviewer').length;
-
-    const freqCounts = {};
-    data.forEach(r => {
-      const f = r.headache_frequency || 'Not recorded';
-      freqCounts[f] = (freqCounts[f] || 0) + 1;
-    });
-
-    const locCounts = {};
-    data.forEach(r => {
-      (r.pain_locations || '').split(',').map(s => s.trim()).filter(Boolean).forEach(loc => {
-        locCounts[loc] = (locCounts[loc] || 0) + 1;
-      });
-    });
-
-    let html = '<div class="grid4" style="margin-bottom:1.5rem;">' +
-      '<div class="admin-stat"><div class="admin-stat-num">' + total + '</div><div class="admin-stat-lbl">Total Entries</div></div>' +
-      '<div class="admin-stat"><div class="admin-stat-num">' + avgIntensity + '</div><div class="admin-stat-lbl">Avg Pain Intensity /10</div></div>' +
-      '<div class="admin-stat"><div class="admin-stat-num">' + selfReport + '</div><div class="admin-stat-lbl">Self-reported</div></div>' +
-      '<div class="admin-stat"><div class="admin-stat-num">' + interviewer + '</div><div class="admin-stat-lbl">Interviewer-collected</div></div>' +
-      '</div>';
-
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">';
-    html += '<div><h4 style="margin-bottom:.75rem;">Headache Frequency</h4>' +
-      Object.entries(freqCounts).map(([k, v]) =>
-        '<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:.4rem 0;border-bottom:1px solid var(--border);"><span>' + k + '</span><span style="color:var(--gold);font-weight:600;">' + v + '</span></div>'
-      ).join('') + '</div>';
-    html += '<div><h4 style="margin-bottom:.75rem;">Pain Locations</h4>' +
-      Object.entries(locCounts).sort((a,b) => b[1]-a[1]).map(([k, v]) =>
-        '<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:.4rem 0;border-bottom:1px solid var(--border);"><span>' + k + '</span><span style="color:var(--gold);font-weight:600;">' + v + '</span></div>'
-      ).join('') + '</div>';
-    html += '</div>';
-
-    el.innerHTML = html;
-  } catch (e) {
-    el.innerHTML = '<p style="color:#EF4444;">' + e.message + '</p>';
-  }
-}
-
-async function loadResearcherChart() {
-  const el = document.getElementById('researcher-chart');
-  if (!el || !window.Plotly) return;
-  const states = ['Lagos','Abuja','Kano','Ogun','Rivers','Oyo','Kaduna','Imo','Delta','Kwara'];
-  Plotly.newPlot('researcher-chart', [
-    { x:states, y:[285,178,162,124,118,102,89,76,68,54], name:'Stroke', type:'bar', marker:{color:'rgba(239,68,68,0.7)'} },
-    { x:states, y:[210,145,133,98,88,79,71,58,52,41], name:'Dementia', type:'bar', marker:{color:'rgba(201,168,76,0.7)'} }
-  ], { barmode:'group', paper_bgcolor:'transparent', plot_bgcolor:'transparent',
-    font:{family:'Outfit',color:'rgba(255,255,255,0.55)',size:11},
-    xaxis:{gridcolor:'rgba(255,255,255,0.04)'}, yaxis:{gridcolor:'rgba(255,255,255,0.04)'},
-    legend:{bgcolor:'transparent'}, margin:{t:30,r:20,b:50,l:50}, height:320,
-    title:{text:'Assessments by Nigerian State',font:{color:'rgba(255,255,255,0.7)',size:13}}
-  }, { responsive:true, displayModeBar:false });
-}
-
-/* ══════════════════════════════════════════════
-   LEAFLET MAP
-══════════════════════════════════════════════ */
-const LOCATION_COORDS = {
-  /* Nigerian states (state capital coordinates) */
-  'Abia':[5.4527,7.5248], 'Adamawa':[9.3265,12.3984], 'Akwa Ibom':[5.0377,7.9128],
-  'Anambra':[6.2209,7.0721], 'Bauchi':[10.3158,9.8442], 'Bayelsa':[4.9247,6.2642],
-  'Benue':[7.7322,8.5391], 'Borno':[11.8333,13.1500], 'Cross River':[4.9517,8.3220],
-  'Delta':[6.2000,6.7333], 'Ebonyi':[6.3248,8.1137], 'Edo':[6.3350,5.6037],
-  'Ekiti':[7.6211,5.2211], 'Enugu':[6.4413,7.4988], 'FCT (Abuja)':[9.0579,7.4951],
-  'Gombe':[10.2833,11.1667], 'Imo':[5.4833,7.0333], 'Jigawa':[12.2280,9.5616],
-  'Kaduna':[10.5222,7.4383], 'Kano':[12.0022,8.5919], 'Katsina':[12.9908,7.6018],
-  'Kebbi':[12.4534,4.1994], 'Kogi':[7.7337,6.6905], 'Kwara':[8.4966,4.5421],
-  'Lagos':[6.5244,3.3792], 'Nasarawa':[8.5378,8.3206], 'Niger':[9.6139,6.5569],
-  'Ogun':[7.1608,3.3488], 'Ondo':[7.2571,5.2058], 'Osun':[7.7719,4.5561],
-  'Oyo':[7.3775,3.9470], 'Plateau':[9.8965,8.8583], 'Rivers':[4.8156,7.0498],
-  'Sokoto':[13.0059,5.2476], 'Taraba':[7.9994,10.7742], 'Yobe':[12.0000,11.5000],
-  'Zamfara':[12.1704,6.2637],
-  /* Country-level fallback centroids (used if state/province missing) */
-  'Nigeria':[9.0820,8.6753], 'Ghana':[5.6037,-0.1870], 'Kenya':[-1.2921,36.8219],
-  'South Africa':[-26.2041,28.0473], 'Uganda':[0.3163,32.5822], 'Tanzania':[-6.7924,39.2083],
-  'Ethiopia':[9.0300,38.7400], 'Egypt':[30.0444,31.2357], 'Morocco':[33.5731,-7.5898],
-  'Cameroon':[3.8480,11.5021], 'Zimbabwe':[-17.8252,31.0335], 'Zambia':[-15.3875,28.3228],
-  'Rwanda':[-1.9403,29.8739], 'Algeria':[36.7538,3.0588]
-};
-
-/* ANHRL field survey (n=4,000, Ogun State) aggregated by LGA */
-let SURVEY_LGA = [{"lga": "Abeokuta North", "zone": "Egba Zone", "lat": 7.1667, "lng": 3.3167, "n": 500, "hyp": 26.4, "hbp": 28.8, "forget": 44.8, "herb": 57.6, "poll": 23.2, "hypM": 26.0, "hypF": 26.7, "nM": 242, "nF": 258}, {"lga": "Abeokuta South", "zone": "Egba Zone", "lat": 7.1475, "lng": 3.3619, "n": 500, "hyp": 27.2, "hbp": 31.6, "forget": 42.0, "herb": 61.0, "poll": 23.2, "hypM": 24.2, "hypF": 30.0, "nM": 240, "nF": 260}, {"lga": "Ewekoro", "zone": "Egba Zone", "lat": 6.9333, "lng": 3.2167, "n": 500, "hyp": 27.4, "hbp": 30.0, "forget": 40.8, "herb": 61.2, "poll": 67.8, "hypM": 25.7, "hypF": 29.3, "nM": 261, "nF": 239}, {"lga": "Ijebu North", "zone": "Ijebu Zone", "lat": 6.97, "lng": 4.01, "n": 500, "hyp": 27.2, "hbp": 30.6, "forget": 42.2, "herb": 59.4, "poll": 23.0, "hypM": 28.1, "hypF": 26.2, "nM": 260, "nF": 240}, {"lga": "Ijebu Ode", "zone": "Ijebu Zone", "lat": 6.82, "lng": 3.92, "n": 500, "hyp": 28.2, "hbp": 31.2, "forget": 44.0, "herb": 60.6, "poll": 19.4, "hypM": 30.5, "hypF": 26.1, "nM": 239, "nF": 261}, {"lga": "Ikenne", "zone": "Remo Zone", "lat": 6.8667, "lng": 3.7167, "n": 500, "hyp": 27.6, "hbp": 30.8, "forget": 42.0, "herb": 63.0, "poll": 20.6, "hypM": 29.4, "hypF": 25.7, "nM": 255, "nF": 245}, {"lga": "Odogbolu", "zone": "Ijebu Zone", "lat": 6.8333, "lng": 3.75, "n": 500, "hyp": 29.2, "hbp": 31.4, "forget": 44.0, "herb": 59.2, "poll": 20.6, "hypM": 28.1, "hypF": 30.1, "nM": 231, "nF": 269}, {"lga": "Sagamu", "zone": "Remo Zone", "lat": 6.8333, "lng": 3.65, "n": 500, "hyp": 30.4, "hbp": 32.0, "forget": 36.2, "herb": 59.8, "poll": 47.8, "hypM": 31.7, "hypF": 28.9, "nM": 268, "nF": 232}];
-const SURVEY_LGA_DEFAULT = SURVEY_LGA.slice();
-let neuroMap = null;
-let mapMarkersLayer = null;
-
-function initMap() {
-  const mapEl = document.getElementById('map-el');
-  if (!mapEl || mapEl._leaflet_id) return;
-
-  // If Leaflet's script never loaded (common when external CDNs are
-  // blocked, e.g. in some sandboxed preview tools), show a clear
-  // fallback instead of a silent blank box. Works normally once the
-  // page is opened with a real internet connection (e.g. on Vercel).
-  if (!window.L && !window._leafletRetry) {
-    // Primary CDN failed: try a second one, then re-run initMap
-    window._leafletRetry = true;
-    const css = document.createElement('link');
-    css.rel = 'stylesheet';
-    css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(css);
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-    s.onload = initMap;
-    s.onerror = initMap;
-    document.head.appendChild(s);
-    return;
-  }
-  if (!window.L) {
-    console.warn('NeuroMap: Leaflet (window.L) did not load — likely an external script was blocked. Showing fallback.');
-    mapEl.innerHTML = '<div style="height:100%;min-height:460px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;color:var(--mist);text-align:center;padding:2rem;">'
-      + '<div style="font-size:2rem;">🗺️</div>'
-      + '<div style="font-size:.85rem;max-width:360px;">Map could not load — this preview may be blocking external scripts (Leaflet/CartoDB). It will render normally once deployed live or opened with a full internet connection.</div>'
-      + '</div>';
-    return;
-  }
-
-  neuroMap = L.map('map-el', { zoomControl:true, scrollWheelZoom:false }).setView([9.5, 8.5], 5);
-  const tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { attribution:'© OpenStreetMap contributors', maxZoom:19, className:'dark-tiles' });
-  tileLayer.on('tileerror', () => {
-    console.warn('NeuroMap: map tiles failed to load — likely a blocked network in this preview.');
-  });
-  tileLayer.addTo(neuroMap);
-  mapMarkersLayer = L.layerGroup().addTo(neuroMap);
-  refreshMapMarkers('stroke');
-
-  // Leaflet often mis-measures its container if the map div wasn't at
-  // full size the instant it initialised (e.g. fonts/layout still
-  // settling) -- this fixes the classic "blank/half-rendered tiles"
-  // symptom without needing to know the exact cause.
-  setTimeout(() => { if (neuroMap) neuroMap.invalidateSize(); }, 300);
-}
-
-/* Live for 'stroke' and 'dementia' layers (real Supabase data).
-   'herbal' / 'pollution' / 'sex' layers fall back to Stroke Hotspots with
-   a toast, since those tables don't yet carry country/province columns.
-   Wire them up the same way once location data is added to those tables. */
-let _surveyLoadedAt = 0;
-/* Use live survey aggregates from Supabase when available (view survey_lga_summary);
-   otherwise the numbers built into the page are used. */
-async function loadSurveyData() {
-  if (!supa || Date.now() - _surveyLoadedAt < 60000) return;
-  _surveyLoadedAt = Date.now();
-  try {
-    const { data, error } = await supa.from('survey_lga_summary').select('*');
-    if (error || !data || !data.length) return;
-    const fb = {}; SURVEY_LGA_DEFAULT.forEach(d => { fb[d.lga] = d; });
-    const rows = data.map(r => {
-      const f = fb[r.lga] || {};
-      return { lga:r.lga, zone:r.zone || f.zone || '', lat:(r.lat ?? f.lat), lng:(r.lng ?? f.lng),
-        n:+r.n, hyp:+r.hyp, hbp:+r.hbp, forget:+r.forget, herb:+r.herb, poll:+r.poll,
-        hypM:+r.hyp_m, hypF:+r.hyp_f, nM:+r.n_m, nF:+r.n_f };
-    }).filter(r => r.lat != null && r.lng != null);
-    if (rows.length) SURVEY_LGA = rows;
-  } catch (e) { console.warn('loadSurveyData:', e); }
-}
-
-function drawSurveyLayer(layer) {
-  const cfg = {
-    stroke:   { key:'hbp',    label:'with high blood pressure (≥140/90 measured)', hi:20, mid:12 },
-    dementia: { key:'forget', label:'reporting forgetfulness / misplacing items',   hi:45, mid:35 },
-    herbal:   { key:'herb',   label:'using herbal remedies',                        hi:65, mid:55 },
-    pollution:{ key:'poll',   label:'reporting HIGH pollution exposure',            hi:35, mid:28 },
-    sex:      { key:'hyp',    label:'reporting hypertension',                       hi:30, mid:26 }
-  }[layer] || { key:'hbp', label:'with high blood pressure', hi:20, mid:12 };
-  // Colour by rank among the 8 LGAs (top third red, middle amber, lowest green)
-  const sorted = SURVEY_LGA.map(d => d[cfg.key]).sort((a, b) => a - b);
-  cfg.mid = sorted[Math.floor(sorted.length / 3)];
-  cfg.hi  = sorted[Math.floor(sorted.length * 2 / 3)];
-  SURVEY_LGA.forEach(d => {
-    const v = d[cfg.key];
-    const color = v >= cfg.hi ? '#EF4444' : v >= cfg.mid ? '#F59E0B' : '#10B981';
-    const sexLine = layer === 'sex'
-      ? '<br>♂ hypertension: ' + d.hypM + '% (n=' + d.nM + ') · ♀ ' + d.hypF + '% (n=' + d.nF + ')' : '';
-    L.circleMarker([d.lat, d.lng], {
-      radius: 16, fillColor: color, color: '#3B82F6', weight: 2, dashArray: '4 3', opacity: .9, fillOpacity: .55
-    }).addTo(mapMarkersLayer).bindPopup(
-      '<div style="font-family:Outfit,sans-serif;min-width:200px;"><strong>' + d.lga + '</strong>' +
-      ' <span style="font-size:.7rem;color:#888;">(' + d.zone + ')</span><br>' +
-      '<span style="font-size:.8rem;"><b>' + v + '%</b> ' + cfg.label + '</span>' + sexLine +
-      '<br><span style="font-size:.72rem;color:#888;">ANHRL field survey · n=' + d.n + '</span></div>'
-    );
-  });
-}
-
-/* All layers show the field-survey sites (always available).
-   'stroke' and 'dementia' also add live Supabase assessment locations. */
-async function refreshMapMarkers(layer, opts) {
-  if (!neuroMap || !mapMarkersLayer) return;
-  const silent = !!(opts && opts.silent), keepView = !!(opts && opts.keepView);
-  await loadSurveyData();
-  const surveyTotal = SURVEY_LGA.reduce((t, d) => t + d.n, 0).toLocaleString();
-  window._mapLayer = layer;
-  mapMarkersLayer.clearLayers();
-  drawSurveyLayer(layer);
-  if (!keepView) {
-    const bounds = SURVEY_LGA.map(d => [d.lat, d.lng]);
-    if (bounds.length) neuroMap.fitBounds(bounds, { padding:[60,60], maxZoom:9 });
-  }
-  const say = m => { if (!silent) toast(m); };
-
-  const sources = { stroke: ['stroke_map','stroke_predictions'], dementia: ['dementia_map','alzheimer_predictions'] };
-  const src = sources[layer];
-  if (!src || !supa) { say('✅ ' + SURVEY_LGA.length + ' field-survey sites (n=' + surveyTotal + ')'); return; }
-
-  try {
-    // Prefer the aggregate view (no personal data); fall back to the raw table
-    let res = await supa.from(src[0]).select('country,province,risk_level,n');
-    if (res.error) res = await supa.from(src[1]).select('country,province,risk_level');
-    if (res.error) throw res.error;
-    const agg = {};
-    (res.data || []).forEach(r => {
-      const key = r.province || r.country;
-      if (!key) return;
-      const w = r.n || 1;
-      if (!agg[key]) agg[key] = { count: 0, high: 0, country: r.country, province: r.province };
-      agg[key].count += w;
-      if (r.risk_level === 'HIGH') agg[key].high += w;
-    });
-    let plotted = 0;
-    Object.entries(agg).forEach(([key, d]) => {
-      const coords = LOCATION_COORDS[d.province] || LOCATION_COORDS[d.country];
-      if (!coords) return;
-      const highPct = d.count ? d.high / d.count : 0;
-      const color = highPct >= 0.4 ? '#EF4444' : highPct >= 0.2 ? '#F59E0B' : '#10B981';
-      L.circleMarker(coords, {
-        radius: Math.max(8, Math.min(26, 6 + d.count / 3)),
-        fillColor: color, color: '#c9a84c', weight:2, opacity:.9, fillOpacity:.55
-      }).addTo(mapMarkersLayer).bindPopup(
-        '<div style="font-family:Outfit,sans-serif;min-width:180px;"><strong>' + key + '</strong><br>' +
-        '<span style="font-size:.73rem;color:#888;">' + d.count + ' online ' + layer + ' assessments · ' +
-        Math.round(highPct*100) + '% high risk</span></div>'
-      );
-      plotted++;
-    });
-    say('✅ ' + SURVEY_LGA.length + ' survey sites (n=' + surveyTotal + ') + ' + plotted + ' live assessment location(s)');
-  } catch (e) {
-    console.warn('refreshMapMarkers (Supabase) error:', e);
-    say('✅ Field-survey sites shown (live assessment data unavailable)');
-  }
-}
-
-function setMapLayer(btn) {
-  document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const layer = btn.getAttribute('data-layer') || 'stroke';
-  refreshMapMarkers(layer);
-}
-
-/* ══════════════════════════════════════════════
-   HOME CHARTS
-══════════════════════════════════════════════ */
-function initHomeCharts() {
-  const el = document.getElementById('plotly-chart');
-  if (!el || !window.Plotly || el.innerHTML.trim()) return;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  Plotly.newPlot('plotly-chart', [
-    { x:months, y:[42,58,67,71,89,103,122,138,155,174,198,220], name:'Stroke Assessments', type:'scatter', mode:'lines+markers', line:{color:'#EF4444',width:2.5,shape:'spline'}, marker:{size:6,color:'#EF4444'}, fill:'tozeroy', fillcolor:'rgba(239,68,68,0.07)' },
-    { x:months, y:[28,35,44,53,68,82,97,115,133,148,169,188], name:'Dementia Screenings', type:'scatter', mode:'lines+markers', line:{color:'#c9a84c',width:2.5,shape:'spline'}, marker:{size:6,color:'#c9a84c'}, fill:'tozeroy', fillcolor:'rgba(201,168,76,0.07)' }
-  ], {
-    paper_bgcolor:'transparent', plot_bgcolor:'transparent',
-    font:{family:'Outfit',color:'rgba(255,255,255,0.55)',size:12},
-    xaxis:{gridcolor:'rgba(255,255,255,0.05)'}, yaxis:{gridcolor:'rgba(255,255,255,0.05)'},
-    legend:{bgcolor:'transparent',font:{color:'rgba(255,255,255,0.65)'}},
-    margin:{t:20,r:20,b:40,l:50}, height:280
-  }, { responsive:true, displayModeBar:false });
-}
-
-/* ══════════════════════════════════════════════
-   NAV SCROLL HIGHLIGHT
-══════════════════════════════════════════════ */
-window.addEventListener('scroll', () => {
-  if (appState.page !== 'home') return;
-  const scrollY = window.scrollY;
-  ['about','pillars','stats','neuromap','publications','contact'].forEach(id => {
-    const sec = document.getElementById(id);
-    if (!sec) return;
-    const top = sec.offsetTop - 120;
-    const link = document.querySelector('.nav-links a[onclick*="' + id + '"]');
-    if (link) link.style.color = (scrollY >= top && scrollY < top + sec.offsetHeight) ? 'var(--gold)' : '';
-  });
-});
-
-/* ══════════════════════════════════════════════
-   INIT
-══════════════════════════════════════════════ */
-window.addEventListener('load', () => {
-  calcBMI('s'); calcBMI('d');
-  setTimeout(initHomeCharts, 500);
-  setTimeout(initMap, 600);
-  loadLiveStats();
-  showMemState('start');
-  loadAccessPasswords();
-  setInterval(() => { if (appState.page === 'home' && neuroMap) refreshMapMarkers(window._mapLayer || 'stroke', { silent:true, keepView:true }); }, 90000);
-  const statsEl = document.getElementById('stats');
-  if (statsEl) statsObs.observe(statsEl);
-  const mapSectionEl = document.getElementById('neuromap');
-  if (mapSectionEl) mapSectionObs.observe(mapSectionEl);
-
-  // Live MMSE preview as cultural questions are answered
-  ['q1','q2','q3','q4','q5','q6'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('change', () => {
-        const ageEl = document.getElementById('d-age');
-        const age = ageEl ? (parseInt(ageEl.value) || 0) : 0;
-        const est = estimateCulturalMMSE(age);
-        const preview = document.getElementById('mmse-preview');
-        if (preview) preview.textContent = 'Estimated MMSE: ' + est + '/30';
-      });
-    }
-  });
-});
-
-/* ── Cinnamon Evidence Data (embedded from AD_model_verified_data.xlsx) ── */
-const CINNAMON_EVIDENCE = [
-  { key:'Nrf2', name:'Nrf2/ARE Pathway', domain:'Signalling', unit:'rel. units', dir:'higher_better',
-    clinical:'Master antioxidant regulator. Suppressed in AD. Cinnamaldehyde activates via Keap1 interaction — the same pathway targeted by sulforaphane.',
-    m:{ctrl:100.2,sham:98.1,scp:40.3,pretx:85.2,cotx:82.1,posttx:79.3,don:74.8,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.0008},
-    f:{ctrl:102.1,sham:100.3,scp:55.1,pretx:90.2,cotx:88.1,posttx:86.0,don:80.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
-  { key:'pCREB', name:'pCREB/CREB Ratio', domain:'Signalling', unit:'rel. units', dir:'higher_better',
-    clinical:'Memory consolidation transcription factor. Links cholinergic signalling to BDNF gene expression. Reduced in AD and cognitive decline.',
-    m:{ctrl:100.1,sham:98.2,scp:35.1,pretx:80.3,cotx:78.1,posttx:72.2,don:70.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0003},
-    f:{ctrl:102.3,sham:100.1,scp:55.2,pretx:85.1,cotx:84.2,posttx:78.3,don:75.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002}},
-  { key:'PSD95', name:'PSD-95 Synaptic Protein', domain:'Signalling', unit:'rel. units', dir:'higher_better',
-    clinical:'Postsynaptic scaffolding protein. Loss indicates synapse deterioration. Strong predictor of cognitive function — reduced in MCI and AD.',
-    m:{ctrl:100.2,sham:98.1,scp:45.2,pretx:90.1,cotx:88.2,posttx:82.3,don:78.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
-    f:{ctrl:103.1,sham:101.2,scp:60.1,pretx:94.2,cotx:92.1,posttx:86.2,don:82.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
-  { key:'BDNF', name:'BDNF', domain:'Neurotrophic', unit:'pg/mg protein', dir:'higher_better',
-    clinical:'Neuronal survival and plasticity factor. Depleted in AD, depression, and chronic stress. Exercise, sleep, and certain polyphenols upregulate BDNF.',
-    m:{ctrl:62.1,sham:60.2,scp:38.1,pretx:58.2,cotx:55.1,posttx:52.1,don:50.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
-    f:{ctrl:66.2,sham:65.1,scp:46.2,pretx:63.1,cotx:61.2,posttx:59.1,don:54.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
-  { key:'Caspase3', name:'Caspase-3', domain:'Neurotrophic', unit:'ng/mg protein', dir:'lower_better',
-    clinical:'Apoptosis executioner. Elevated in AD and neuroinflammatory states. Cinnamon suppresses via BDNF/pCREB survival signalling cascade.',
-    m:{ctrl:1.06,sham:1.00,scp:2.20,pretx:1.25,cotx:1.36,posttx:1.41,don:1.53,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
-    f:{ctrl:0.98,sham:0.95,scp:1.80,pretx:1.00,cotx:1.18,posttx:1.22,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.001}},
-  { key:'TNFa', name:'TNF-α', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
-    clinical:'Primary pro-inflammatory cytokine. Elevated in stroke, hypertension, and AD. Cinnamon suppresses NF-κB upstream, reducing TNF-α production.',
-    m:{ctrl:82.0,sham:83.0,scp:220.0,pretx:98.0,cotx:100.0,posttx:101.9,don:108.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
-    f:{ctrl:86.0,sham:85.0,scp:210.1,pretx:92.0,cotx:96.0,posttx:98.3,don:105.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
-  { key:'IL6', name:'IL-6', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
-    clinical:'Pleiotropic inflammatory cytokine. Elevated in obesity, hypertension, and neuroinflammation. Notably showed no sex difference in our study.',
-    m:{ctrl:21.5,sham:20.7,scp:78.9,pretx:24.0,cotx:24.8,posttx:25.0,don:27.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
-    f:{ctrl:23.0,sham:22.9,scp:75.0,pretx:21.0,cotx:22.0,posttx:22.7,don:25.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
-  { key:'IL10', name:'IL-10', domain:'Inflammation', unit:'pg/mg tissue', dir:'higher_better',
-    clinical:'Anti-inflammatory cytokine. Suppressed in the AD model. Cinnamon partially restores IL-10 — supporting its immunomodulatory, not just suppressive, profile.',
-    m:{ctrl:23.0,sham:22.8,scp:14.0,pretx:21.0,cotx:20.2,posttx:19.9,don:17.5,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
-    f:{ctrl:24.0,sham:23.0,scp:16.0,pretx:22.0,cotx:21.4,posttx:20.6,don:19.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
-  { key:'NFkB', name:'NF-κB', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
-    clinical:'Master inflammatory transcription factor. Upstream of TNF-α, IL-6, and COX-2. Key cinnamon target — cinnamaldehyde blocks IκB kinase directly.',
-    m:{ctrl:85.7,sham:85.0,scp:235.1,pretx:100.0,cotx:105.0,posttx:102.0,don:125.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:82.0,sham:80.0,scp:170.0,pretx:90.0,cotx:92.0,posttx:94.8,don:115.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'AChE', name:'Acetylcholinesterase', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
-    clinical:'Degrades acetylcholine — cholinergic neurotransmission. Overactivated in AD. Same target as Donepezil. Our study shows cinnamon comparable efficacy.',
-    m:{ctrl:10.1,sham:10.0,scp:15.0,pretx:9.5,cotx:11.0,posttx:12.0,don:13.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:9.7,sham:9.6,scp:13.0,pretx:9.2,cotx:10.5,posttx:11.5,don:12.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'MAOA', name:'MAO-A', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
-    clinical:'Metabolises serotonin and norepinephrine. Elevated in depression and AD. Cinnamon OUTPERFORMS Donepezil on MAO suppression — a key finding.',
-    m:{ctrl:1.01,sham:1.00,scp:1.70,pretx:1.10,cotx:1.13,posttx:1.18,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0005},
-    f:{ctrl:1.05,sham:1.03,scp:1.50,pretx:1.02,cotx:1.08,posttx:1.12,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0003}},
-  { key:'MAOB', name:'MAO-B', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
-    clinical:'Metabolises dopamine. Elevated in Parkinson\'s and AD. Cinnamon strongly suppresses both MAO-A and MAO-B — a dual-inhibition profile rare in natural products.',
-    m:{ctrl:1.30,sham:1.27,scp:2.03,pretx:1.20,cotx:1.15,posttx:1.08,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:1.20,sham:1.18,scp:1.80,pretx:1.00,cotx:1.13,posttx:1.17,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'Serotonin', name:'Serotonin (5-HT)', domain:'Neurotransmitters', unit:'ng/mg protein', dir:'higher_better',
-    clinical:'Mood, cognition, and sleep regulation. Depleted in depression, AD, and chronic stress. Cinnamon MAO-A inhibition preserves serotonin levels.',
-    m:{ctrl:90.1,sham:88.2,scp:55.1,pretx:87.2,cotx:83.1,posttx:80.2,don:78.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
-    f:{ctrl:95.2,sham:93.1,scp:60.2,pretx:90.1,cotx:88.2,posttx:85.1,don:82.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
-  { key:'Glutamate', name:'Glutamate', domain:'Neurotransmitters', unit:'µmol/g tissue', dir:'lower_better',
-    clinical:'Excitotoxic at high levels. Elevated in the SCP model — contributes to neuronal death. Cinnamon reduces excitotoxic burden across all treatment windows.',
-    m:{ctrl:10.0,sham:10.0,scp:20.0,pretx:12.0,cotx:12.5,posttx:11.7,don:14.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:9.5,sham:9.5,scp:18.0,pretx:10.5,cotx:11.5,posttx:11.0,don:12.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'SOD', name:'Superoxide Dismutase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
-    clinical:'Primary superoxide scavenger. Depleted in oxidative stress including AD and hypertension. Restored by Nrf2 activation — cinnamon\'s core mechanism.',
-    m:{ctrl:9.1,sham:9.1,scp:3.5,pretx:8.8,cotx:8.5,posttx:8.4,don:7.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:9.5,sham:9.2,scp:5.5,pretx:9.0,cotx:8.7,posttx:8.5,don:7.8,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'CAT', name:'Catalase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
-    clinical:'Detoxifies hydrogen peroxide. Works with SOD in the antioxidant cascade. Both SOD and CAT are Nrf2/ARE target genes activated by cinnamaldehyde.',
-    m:{ctrl:19.8,sham:19.6,scp:6.5,pretx:17.4,cotx:16.0,posttx:15.0,don:14.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:20.2,sham:20.0,scp:10.4,pretx:18.5,cotx:17.0,posttx:16.4,don:14.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'GSH', name:'Glutathione', domain:'Oxidative', unit:'µmol/mg protein', dir:'higher_better',
-    clinical:'Key endogenous antioxidant tripeptide. Severely depleted in AD, stroke, and chronic disease. A primary Nrf2/ARE target — cinnamon rescues GSH significantly.',
-    m:{ctrl:8.85,sham:8.81,scp:2.83,pretx:7.68,cotx:7.20,posttx:6.98,don:6.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:9.04,sham:9.00,scp:4.80,pretx:8.50,cotx:8.00,posttx:7.85,don:7.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'MDA', name:'Malondialdehyde', domain:'Oxidative', unit:'nmol/mg', dir:'lower_better',
-    clinical:'Lipid peroxidation marker — indicator of oxidative damage. Trending upward in SCP but high variability (ns). Reflects heterogeneous oxidative damage.',
-    m:{ctrl:0.96,sham:0.95,scp:2.50,pretx:1.20,cotx:1.30,posttx:1.35,don:1.45,p_pretx:0.08,p_cotx:0.12,p_posttx:0.15,p_don:0.18},
-    f:{ctrl:0.91,sham:0.90,scp:1.90,pretx:1.00,cotx:1.18,posttx:1.25,don:1.35,p_pretx:0.10,p_cotx:0.14,p_posttx:0.16,p_don:0.20}},
-  { key:'NO', name:'Nitric Oxide', domain:'Oxidative', unit:'µmol/L', dir:'lower_better',
-    clinical:'At elevated levels causes nitrosative stress. Elevated in hypertension and neuroinflammation. Significantly increased in SCP; Pre-Tx suppressed effectively.',
-    m:{ctrl:32.1,sham:30.2,scp:72.3,pretx:38.2,cotx:43.1,posttx:40.2,don:48.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:30.1,sham:29.2,scp:60.2,pretx:33.1,cotx:36.2,posttx:38.1,don:44.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'MPO', name:'Myeloperoxidase', domain:'Oxidative', unit:'U/mg', dir:'lower_better',
-    clinical:'Neutrophil-derived enzyme — indicator of neuroinflammation and vascular damage. High variability in our model (ns); useful as a supplementary marker.',
-    m:{ctrl:0.91,sham:0.90,scp:2.25,pretx:1.05,cotx:1.18,posttx:1.20,don:1.50,p_pretx:0.09,p_cotx:0.11,p_posttx:0.13,p_don:0.16},
-    f:{ctrl:0.86,sham:0.85,scp:1.70,pretx:0.95,cotx:1.00,posttx:1.15,don:1.30,p_pretx:0.11,p_cotx:0.14,p_posttx:0.17,p_don:0.19}},
-  { key:'NOR', name:'NOR Discrimination Index', domain:'Behavioral', unit:'index (−1 to 1)', dir:'higher_better',
-    clinical:'Measures recognition memory. Negative values = severe impairment (SCP males −0.15). Pre-Tx restored to 0.64 — near-complete cognitive recovery.',
-    m:{ctrl:0.630,sham:0.620,scp:-0.149,pretx:0.643,cotx:0.614,posttx:0.584,don:0.552,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:0.656,sham:0.631,scp:0.101,pretx:0.652,cotx:0.631,posttx:0.602,don:0.571,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'EscapeLatency', name:'Escape Latency (MWM)', domain:'Behavioral', unit:'seconds', dir:'lower_better',
-    clinical:'Morris Water Maze spatial memory. SCP males: 70s (vs 29s Control). Pre-Tx reduced to 32s — near-complete recovery. Females less impaired (SCP: 52s).',
-    m:{ctrl:29.0,sham:28.4,scp:70.3,pretx:32.0,cotx:38.5,posttx:42.6,don:45.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:27.0,sham:26.6,scp:52.2,pretx:29.1,cotx:34.2,posttx:38.1,don:41.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'Pathlength', name:'Pathlength (MWM)', domain:'Behavioral', unit:'cm', dir:'lower_better',
-    clinical:'Swimming distance to platform — spatial navigation efficiency. SCP males: 1208cm vs 450cm Control. Pre-Tx: 504cm. Reflects hippocampal function.',
-    m:{ctrl:450,sham:454,scp:1208,pretx:504,cotx:603,posttx:653,don:708,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:423,sham:428,scp:888,pretx:468,cotx:558,posttx:598,don:658,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'Ymaze', name:'Y-Maze Alternation', domain:'Behavioral', unit:'%', dir:'higher_better',
-    clinical:'Spontaneous alternation — working memory. SCP males: 42% (vs 75% Control). Reflects short-term hippocampal-dependent memory. Pre-Tx: 73.5%.',
-    m:{ctrl:75.4,sham:73.4,scp:42.1,pretx:73.5,cotx:70.0,posttx:68.2,don:66.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:76.2,sham:75.1,scp:55.0,pretx:75.2,cotx:72.1,posttx:70.2,don:68.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'Grooming', name:'Sucrose Splash Grooming', domain:'Behavioral', unit:'seconds', dir:'higher_better',
-    clinical:'Anhedonia/depression-like measure. Reduced grooming = motivational deficit. SCP males: 75.5s (vs 156s Control). Indicates hedonic impairment in AD model.',
-    m:{ctrl:156.2,sham:155.2,scp:75.5,pretx:150.4,cotx:140.3,posttx:135.9,don:128.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:162.2,sham:160.2,scp:105.4,pretx:155.0,cotx:145.2,posttx:140.1,don:133.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
-  { key:'NisslCount', name:'Neuronal Cell Density (Nissl)', domain:'Histology', unit:'cells/field', dir:'higher_better',
-    clinical:'Hippocampal CA1-CA4 neuronal count. SCP males: 209 (−66% vs Control 605). Pre-Tx: 600 — near-complete neuroprotection. Females: 330 in SCP.',
-    m:{ctrl:605,sham:603,scp:209,pretx:600,cotx:579,posttx:591,don:546,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
-    f:{ctrl:615,sham:612,scp:330,pretx:615,cotx:600,posttx:610,don:570,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}}
-];
-
-function cinnamonStars(p) {
-  if (!p && p !== 0) return '—';
-  if (p < 0.0001) return '****';
-  if (p < 0.001)  return '***';
-  if (p < 0.01)   return '**';
-  if (p < 0.05)   return '*';
-  return 'ns';
-}
-
-function cinnamonRecovery(pretx, scp, ctrl, dir) {
-  if (ctrl === scp) return 0;
-  let raw = (pretx - scp) / (ctrl - scp) * 100;
-  return Math.min(120, Math.max(-20, parseFloat(raw.toFixed(1))));
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   CINNAMON PANEL FUNCTIONS
-   ═══════════════════════════════════════════════════════════════ */
-
-let _cinnTab = 'all';
-
-function renderCinnamonGrid(domain) {
-  const grid = document.getElementById('cinn-grid');
-  if (!grid) return;
-  const list = domain === 'all' ? CINNAMON_EVIDENCE : CINNAMON_EVIDENCE.filter(b => b.domain === domain);
-
-  grid.innerHTML = list.map(bm => {
-    const mRec = cinnamonRecovery(bm.m.pretx, bm.m.scp, bm.m.ctrl, bm.dir);
-    const fRec = cinnamonRecovery(bm.f.pretx, bm.f.scp, bm.f.ctrl, bm.dir);
-    const mW = Math.min(100, Math.max(0, mRec));
-    const fW = Math.min(100, Math.max(0, fRec));
-    const mStars = cinnamonStars(bm.m.p_pretx);
-    const fStars = cinnamonStars(bm.f.p_pretx);
-    const dirLabel = bm.dir === 'higher_better'
-      ? '<span class="dir-b hi">↑ better</span>'
-      : '<span class="dir-b lo">↓ better</span>';
-    function recColor(p) {
-      return p >= 90 ? '#27AE60' : p >= 70 ? '#E8A545' : p >= 50 ? '#D4742A' : '#E07570';
-    }
-    function fmt(v, d=2) { return (v===null||v===undefined) ? '—' : Number(v).toFixed(d); }
-    return `
-<div class="cinn-card">
-  <div class="cinn-card-top">
-    <span class="cinn-card-name">${bm.name}</span>
-    ${dirLabel}
-  </div>
-  <div class="cinn-unit">${bm.unit} &nbsp;·&nbsp; <em>${bm.domain}</em></div>
-  <div class="cinn-clin">${bm.clinical}</div>
-  <div class="cinn-rec-lbl">Pre-Treatment Recovery vs SCP (best strategy)</div>
-  <div class="cinn-bar-row">
-    <span class="cinn-sex" style="color:#5BA4D4;">♂</span>
-    <div class="cinn-bar-bg"><div class="cinn-bar-fill m" style="width:${mW}%"></div></div>
-    <span class="cinn-pct" style="color:${recColor(mRec)}">${mRec}%</span>
-    <span class="cinn-stars">${mStars}</span>
-  </div>
-  <div class="cinn-bar-row">
-    <span class="cinn-sex" style="color:#E07570;">♀</span>
-    <div class="cinn-bar-bg"><div class="cinn-bar-fill f" style="width:${fW}%"></div></div>
-    <span class="cinn-pct" style="color:${recColor(fRec)}">${fRec}%</span>
-    <span class="cinn-stars">${fStars}</span>
-  </div>
-  <div class="cinn-means">
-    <div class="cinn-mc"><div class="mg">Control</div><div class="mv"><span class="mx">♂${fmt(bm.m.ctrl)}</span> / <span class="fx">♀${fmt(bm.f.ctrl)}</span></div></div>
-    <div class="cinn-mc"><div class="mg">SCP (disease)</div><div class="mv"><span class="mx">♂${fmt(bm.m.scp)}</span> / <span class="fx">♀${fmt(bm.f.scp)}</span></div></div>
-    <div class="cinn-mc"><div class="mg">Pre-Tx ✦ Best</div><div class="mv"><span class="mx">♂${fmt(bm.m.pretx)}</span> / <span class="fx">♀${fmt(bm.f.pretx)}</span></div></div>
-    <div class="cinn-mc"><div class="mg">Donepezil (ref)</div><div class="mv"><span class="mx">♂${fmt(bm.m.don)}</span> / <span class="fx">♀${fmt(bm.f.don)}</span></div></div>
-  </div>
-</div>`;
-  }).join('');
-}
-
-function openCinnamonPanel() {
-  const panel = document.getElementById('cinn-panel');
-  if (!panel) return;
-  panel.classList.add('active');
-  // Navigate to herbs page if not there
-  if (typeof showPage === 'function') showPage('herbs');
-  setTimeout(() => {
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    renderCinnamonGrid(_cinnTab);
-  }, 200);
-}
-
-// Hook into herb gallery — watch for cinnamon cards being clicked
-function initCinnamonPanelTrigger() {
-  const panel = document.getElementById('cinn-panel');
-  if (!panel) return;
-
-  // Tab navigation
-  const tabsEl = document.getElementById('cinn-tabs');
-  if (tabsEl) {
-    tabsEl.addEventListener('click', e => {
-      const tab = e.target.closest('.cinn-tab');
-      if (!tab) return;
-      tabsEl.querySelectorAll('.cinn-tab').forEach(t => t.classList.remove('ct-active'));
-      tab.classList.add('ct-active');
-      _cinnTab = tab.dataset.d;
-      renderCinnamonGrid(_cinnTab);
-    });
-  }
-
-  // Auto-open: if URL hash is #cinnamon or button clicked from researcher
-  if (window.location.hash === '#cinnamon') openCinnamonPanel();
-
-  // If herbs page already loaded, render grid immediately
-  renderCinnamonGrid('all');
-}
-
-function downloadCinnamonCSV() {
-  const headers = ['biomarker','domain','unit','direction',
-    'm_ctrl','m_scp','m_pretx','m_cotx','m_posttx','m_don',
-    'f_ctrl','f_scp','f_pretx','f_cotx','f_posttx','f_don',
-    'm_pretx_p','f_pretx_p'];
-  const rows = CINNAMON_EVIDENCE.map(b => [
-    b.name, b.domain, b.unit, b.dir,
-    b.m.ctrl, b.m.scp, b.m.pretx, b.m.cotx, b.m.posttx, b.m.don,
-    b.f.ctrl, b.f.scp, b.f.pretx, b.f.cotx, b.f.posttx, b.f.don,
-    b.m.p_pretx, b.f.p_pretx
-  ]);
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = 'Cinnamon_Evidence_ANHRL_UniIlorin.csv';
-  a.click();
-}
-
 
 /* ═══════════════════════════════════════════════════════════════
    PAIN STUDY — STROKE RISK INTEGRATION
@@ -4992,7 +4348,7 @@ async function runPainStrokeRisk(payload) {
   const catEl    = document.getElementById('psr-category');
   const factorsEl= document.getElementById('psr-factors');
 
-  if (!resultEl) return;
+  if (!resultEl) return null;
   resultEl.classList.add('visible');
   scoreEl.textContent  = 'Calculating…';
   catEl.textContent    = '';
@@ -5036,24 +4392,16 @@ async function runPainStrokeRisk(payload) {
         ? '<strong style="color:#7a9cb8;">Contributing vascular factors detected:</strong><br>' + factors.map(f => '• ' + f).join('<br>')
         : '<span style="color:#22C55E;">No major vascular risk flags detected in this entry.</span>';
 
-      // Save risk score back to Supabase pain_stroke_study record
-      // (update the last inserted row with the predicted risk)
-      if (supa) {
-        try {
-          await supa.from('pain_stroke_study')
-            .update({ predicted_stroke_risk: prob, risk_category: cat.replace(/[⚠️⚡✅]/g,'').trim() })
-            .eq('participant_name', payload.participant_name)
-            .order('created_at', { ascending: false })
-            .limit(1);
-        } catch(_) { /* non-critical — don't surface this error */ }
-      }
+      return { prob, risk_category: cat.replace(/[⚠️⚡✅]/g,'').trim() };
     } else {
       scoreEl.textContent = 'Risk score unavailable.';
+    return null;
     }
   } catch (err) {
     scoreEl.textContent = 'Could not connect to risk model.';
     scoreEl.style.color = '#9E7D5A';
-    factorsEl.textContent = err.message;
+    factorsEl.textContent = 'Risk estimate unavailable. The study record can still be reviewed before saving.';
+    return null;
   }
 }
 
