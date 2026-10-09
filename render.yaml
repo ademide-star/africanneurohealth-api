@@ -7,3 +7,14 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     plan: free
     healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: AUTH_SECRET
+        sync: false
+      - key: RESEARCHER_PASSWORD
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
