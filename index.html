@@ -301,6 +301,15 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
 #reg-extra{border:1px solid var(--border);border-radius:9px;padding:.7rem .85rem;margin:.4rem 0 1rem;}
 #reg-extra summary{cursor:pointer;color:var(--gold);font-size:.82rem;font-weight:600;}
 
+
+.neuromap-filters{display:flex;align-items:end;gap:.7rem;flex-wrap:wrap;margin:.25rem 0 1rem;padding:.75rem;background:rgba(255,255,255,.035);border:1px solid var(--border);border-radius:12px}
+.neuromap-filters label{display:flex;flex-direction:column;gap:.3rem;color:var(--mist);font-size:.74rem;min-width:150px;flex:1}
+.neuromap-filters select{width:100%;background:#101a2d;color:var(--white);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:.6rem .65rem;font:inherit;font-size:.8rem;outline:none}
+.neuromap-filters option{background:#101a2d;color:var(--white)}
+.map-data-status{font-size:.76rem;color:var(--mist);line-height:1.55;margin:0 0 .8rem}
+body:not(.researcher-view) #neuromap{display:none!important}
+@media(max-width:600px){.neuromap-filters{gap:.5rem}.neuromap-filters label{min-width:calc(50% - .25rem)}}
+
 </style>
 </head>
 <body class="public-view">
@@ -400,6 +409,13 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 <strong>Principal Investigator:</strong> Prof. Mayowa Owolabi<br>
 <strong>Collaborative Program:</strong> GRASP / NIH / DSI Collaborative Program
 </p>
+<div class="card" style="margin-bottom:1.25rem;border:1px solid rgba(201,168,76,.25);">
+  <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;">Mentorship &amp; Research Guidance</div>
+  <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;margin-bottom:.65rem;">Mentors and Supervisors</h3>
+  <p class="section-sub" style="font-size:.9rem;line-height:1.8;margin:0;">
+    Prof. Mayowa Owolabi · Godwin Ogbole · Benjamin Aribisala · Adesola Ogunniyi · Segun Fatumo · Bruce Ovbiagele · Judit Kumuthini
+  </p>
+</div>
         <div class="card card-gold"><p style="font-style:italic;font-size:.92rem;color:var(--smoke);" data-i18n="aboutQuote">"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." <br><strong style="color:var(--gold);">— Adebimpe-John O.E., PhD.&amp; African NeuroHealth Research Lab</strong></p></div>
 
         <!-- ANHRL Page Link -->
@@ -516,14 +532,20 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <span class="section-label" data-i18n="mapLabel">// NeuroMap Africa</span>
     <h2 class="section-title" style="margin-bottom:.5rem;" data-i18n="mapTitle">Interactive Brain Health Geography of Africa</h2>
     <p class="section-sub" style="margin-bottom:2rem;" data-i18n="mapDesc">Stroke hotspots, dementia prevalence, herbal medicine use, pollution overlays, sex-stratified data — across Nigeria and 54 African nations.</p>
-    <div class="map-controls">
-      <button class="map-btn active" data-layer="stroke" onclick="setMapLayer(this)">🫀 Stroke Hotspots</button>
-      <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Dementia Zones</button>
-      <button class="map-btn" data-layer="herbal" onclick="setMapLayer(this)">🌿 Herbal Use</button>
+    <div class="map-controls" role="group" aria-label="NeuroMap data layer">
+      <button class="map-btn active" data-layer="stroke" onclick="setMapLayer(this)">🫀 Stroke</button>
+      <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Memory symptoms</button>
+      <button class="map-btn" data-layer="herbal" onclick="setMapLayer(this)">🌿 Herbal use</button>
       <button class="map-btn" data-layer="pollution" onclick="setMapLayer(this)">💨 Pollution</button>
-      <button class="map-btn" data-layer="sex" onclick="setMapLayer(this)">⚥ Sex Differences</button>
+      <button class="map-btn" data-layer="sex" onclick="setMapLayer(this)">⚥ Sex differences</button>
     </div>
-    <div id="map-el"></div>
+    <div class="neuromap-filters" aria-label="Geographic filters">
+      <label>Country<select id="map-country" onchange="updateMapRegionOptions()"><option value="All Africa">All Africa</option></select></label>
+      <label>Region / Nigerian zone<select id="map-region" onchange="applyMapFilters()"><option value="All regions">All regions</option></select></label>
+      <label id="map-study-zone-wrap" style="display:none;">Ogun study zone<select id="map-study-zone" onchange="applyMapFilters()"><option value="All study zones">All study zones</option><option value="Egba Zone">Egba</option><option value="Ijebu Zone">Ijebu</option><option value="Remo Zone">Remo</option></select></label>
+    </div>
+    <p id="map-data-status" class="map-data-status" role="status">Current configured field-survey summaries cover selected Ogun State sites. Other locations will show no data until eligible aggregated records are available.</p>
+    <div id="map-el" role="application" aria-label="Interactive African neurohealth research map"></div>
     <div class="map-legend">
       <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div>Highest third of LGAs</div>
       <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div>Middle third</div>
@@ -1563,9 +1585,9 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <table class="data-table">
       <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td>ADM-001</td><td>Prof. B.V. Owoyele</td><td><span class="tag tag-gold">PI / Admin</span></td><td><span class="tag tag-green">Active</span></td></tr>
-        <tr><td>RES-001</td><td>Adebimpe-John O.E.</td><td><span class="tag tag-purple">Researcher</span></td><td><span class="tag tag-green">Active</span></td></tr>
-        <tr><td>SUP-001</td><td>Prof. Owolabi Mayowa</td><td><span class="tag tag-purple">Co-Supervisor</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>ADM-001</td><td>Adebimpe-John O.E</td><td><span class="tag tag-gold">PI / Admin</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>RES-001</td><td>Annanias Evelyn Nnashiru.</td><td><span class="tag tag-purple">Researcher</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>SUP-001</td><td>Prof. Owolabi Mayowa</td><td><span class="tag tag-purple">Supervisor</span></td><td><span class="tag tag-green">Active</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -1722,7 +1744,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <div class="fg"><label>Your Full Name</label><input type="text" id="login-name" placeholder="Prof. / Dr. / Mr. / Ms. ..."></div>
     <div class="fg"><label>Access Password</label><input type="password" id="login-pass" placeholder="Enter your assigned password"></div>
     <button class="btn btn-gold btn-full" style="margin-top:.5rem;" onclick="handleLogin()">Login &#x2192;</button>
-    <p style="text-align:center;font-size:.72rem;color:var(--mist);margin-top:.75rem;">Principal Researcher: Adebimpe-John O.E. &nbsp;|&nbsp; Supervisors: Prof. Owoyele &amp; Prof. Owolabi</p>
+    <p style="text-align:center;font-size:.72rem;color:var(--mist);margin-top:.75rem;">Principal Researcher: Adebimpe-John O.E. &nbsp;|&nbsp; Mentors &amp; Supervisors: Prof. Mayowa Owolabi, Godwin Ogbole, Benjamin Aribisala, Adesola Ogunniyi, Segun Fatumo, Bruce Ovbiagele &amp; Judit Kumuthini</p>
   </div>
 </div>
 
@@ -1843,9 +1865,10 @@ async function saveRecord(table, payload) {
   } catch (e) { console.warn('Research API error:', e); toast('Could not connect to research storage.'); return false; }
 }
 
-/* After any assessment is stored, refresh the public numbers and the map */
+/* Refresh aggregate statistics after an eligible research assessment is stored. */
 function onRecordSaved(table) {
   if (table !== 'stroke_predictions' && table !== 'alzheimer_predictions') return;
+  if (typeof _mapAggregateCache !== 'undefined') _mapAggregateCache.at = 0;
   setTimeout(() => {
     loadLiveStats();
     if (typeof neuroMap !== 'undefined' && neuroMap) refreshMapMarkers(window._mapLayer || 'stroke', { silent:true, keepView:true });
@@ -1879,8 +1902,11 @@ function restoreBrowserSession() {
 function applyAccessView() {
   const unlocked = !!(SESSION.participant || SESSION.researcher || SESSION.admin);
   document.body.classList.toggle('public-view', !unlocked);
+  document.body.classList.toggle('researcher-view', !!(SESSION.researcher || SESSION.admin));
   const researchLinks = document.querySelectorAll('.nav-links li[data-private-nav="true"]');
   researchLinks.forEach(el => { el.style.display = unlocked ? '' : 'none'; });
+  const mapNav = document.querySelector('.nav-links li[data-private-nav="true"] a[onclick*="neuromap"]');
+  if (mapNav && mapNav.parentElement) mapNav.parentElement.style.display = (SESSION.researcher || SESSION.admin) ? '' : 'none';
   const assessBtn = document.getElementById('nav-btn-assess');
   if (assessBtn) assessBtn.textContent = unlocked ? '🩺 Open Assessments' : '🩺 Start Assessment';
   const loginBtn = document.getElementById('nav-btn-researcher');
@@ -2779,6 +2805,75 @@ function runCounters(scope) {
 const statsObs = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting) { runCounters(document.getElementById('stats')); statsObs.disconnect(); }
 }, { threshold: 0.3 });
+
+let SURVEY_LGA = [{"lga": "Abeokuta North", "zone": "Egba Zone", "lat": 7.1667, "lng": 3.3167, "n": 500, "hyp": 26.4, "hbp": 28.8, "forget": 44.8, "herb": 57.6, "poll": 23.2, "hypM": 26.0, "hypF": 26.7, "nM": 242, "nF": 258}, {"lga": "Abeokuta South", "zone": "Egba Zone", "lat": 7.1475, "lng": 3.3619, "n": 500, "hyp": 27.2, "hbp": 31.6, "forget": 42.0, "herb": 61.0, "poll": 23.2, "hypM": 24.2, "hypF": 30.0, "nM": 240, "nF": 260}, {"lga": "Ewekoro", "zone": "Egba Zone", "lat": 6.9333, "lng": 3.2167, "n": 500, "hyp": 27.4, "hbp": 30.0, "forget": 40.8, "herb": 61.2, "poll": 67.8, "hypM": 25.7, "hypF": 29.3, "nM": 261, "nF": 239}, {"lga": "Ijebu North", "zone": "Ijebu Zone", "lat": 6.97, "lng": 4.01, "n": 500, "hyp": 27.2, "hbp": 30.6, "forget": 42.2, "herb": 59.4, "poll": 23.0, "hypM": 28.1, "hypF": 26.2, "nM": 260, "nF": 240}, {"lga": "Ijebu Ode", "zone": "Ijebu Zone", "lat": 6.82, "lng": 3.92, "n": 500, "hyp": 28.2, "hbp": 31.2, "forget": 44.0, "herb": 60.6, "poll": 19.4, "hypM": 30.5, "hypF": 26.1, "nM": 239, "nF": 261}, {"lga": "Ikenne", "zone": "Remo Zone", "lat": 6.8667, "lng": 3.7167, "n": 500, "hyp": 27.6, "hbp": 30.8, "forget": 42.0, "herb": 63.0, "poll": 20.6, "hypM": 29.4, "hypF": 25.7, "nM": 255, "nF": 245}, {"lga": "Odogbolu", "zone": "Ijebu Zone", "lat": 6.8333, "lng": 3.75, "n": 500, "hyp": 29.2, "hbp": 31.4, "forget": 44.0, "herb": 59.2, "poll": 20.6, "hypM": 28.1, "hypF": 30.1, "nM": 231, "nF": 269}, {"lga": "Sagamu", "zone": "Remo Zone", "lat": 6.8333, "lng": 3.65, "n": 500, "hyp": 30.4, "hbp": 32.0, "forget": 36.2, "herb": 59.8, "poll": 47.8, "hypM": 31.7, "hypF": 28.9, "nM": 268, "nF": 232}];
+const SURVEY_LGA_DEFAULT = SURVEY_LGA.slice();
+let neuroMap = null;
+let mapMarkersLayer = null;
+
+const AFRICAN_COUNTRIES = ['Algeria','Angola','Benin','Botswana','Burkina Faso','Burundi','Cabo Verde','Cameroon','Central African Republic','Chad','Comoros','Republic of the Congo','Democratic Republic of the Congo','Côte d’Ivoire','Djibouti','Egypt','Equatorial Guinea','Eritrea','Eswatini','Ethiopia','Gabon','Gambia','Ghana','Guinea','Guinea-Bissau','Kenya','Lesotho','Liberia','Libya','Madagascar','Malawi','Mali','Mauritania','Mauritius','Morocco','Mozambique','Namibia','Niger','Nigeria','Rwanda','São Tomé and Príncipe','Senegal','Seychelles','Sierra Leone','Somalia','South Africa','South Sudan','Sudan','Tanzania','Togo','Tunisia','Uganda','Zambia','Zimbabwe'];
+const AFRICAN_REGIONS = ['North Africa','West Africa','Central Africa','East Africa','Southern Africa'];
+const AFRICA_COUNTRY_REGION = {'Algeria':'North Africa','Egypt':'North Africa','Libya':'North Africa','Morocco':'North Africa','Sudan':'North Africa','Tunisia':'North Africa','Benin':'West Africa','Burkina Faso':'West Africa','Cabo Verde':'West Africa','Côte d’Ivoire':'West Africa','Gambia':'West Africa','Ghana':'West Africa','Guinea':'West Africa','Guinea-Bissau':'West Africa','Liberia':'West Africa','Mali':'West Africa','Mauritania':'West Africa','Niger':'West Africa','Nigeria':'West Africa','Senegal':'West Africa','Sierra Leone':'West Africa','Togo':'West Africa','Cameroon':'Central Africa','Central African Republic':'Central Africa','Chad':'Central Africa','Republic of the Congo':'Central Africa','Democratic Republic of the Congo':'Central Africa','Equatorial Guinea':'Central Africa','Gabon':'Central Africa','São Tomé and Príncipe':'Central Africa','Burundi':'East Africa','Comoros':'East Africa','Djibouti':'East Africa','Eritrea':'East Africa','Ethiopia':'East Africa','Kenya':'East Africa','Madagascar':'East Africa','Mauritius':'East Africa','Rwanda':'East Africa','Seychelles':'East Africa','Somalia':'East Africa','South Sudan':'East Africa','Tanzania':'East Africa','Uganda':'East Africa','Angola':'Southern Africa','Botswana':'Southern Africa','Eswatini':'Southern Africa','Lesotho':'Southern Africa','Malawi':'Southern Africa','Mozambique':'Southern Africa','Namibia':'Southern Africa','South Africa':'Southern Africa','Zambia':'Southern Africa','Zimbabwe':'Southern Africa'};
+const MAP_COUNTRY_CENTERS = {'Algeria':[28,2.6],'Angola':[-12.3,17.5],'Benin':[9.3,2.3],'Botswana':[-22,24],'Burkina Faso':[12.3,-1.6],'Burundi':[-3.4,29.9],'Cabo Verde':[15.1,-23.6],'Cameroon':[5.7,12.7],'Central African Republic':[6.6,20.9],'Chad':[15.4,18.7],'Comoros':[-11.7,43.3],'Republic of the Congo':[-1,15.8],'Democratic Republic of the Congo':[-2.9,23.7],'Côte d’Ivoire':[7.5,-5.5],'Djibouti':[11.8,42.6],'Egypt':[26.8,30.8],'Equatorial Guinea':[1.6,10.5],'Eritrea':[15.2,39],'Eswatini':[-26.5,31.5],'Ethiopia':[9.1,40.5],'Gabon':[-0.6,11.6],'Gambia':[13.4,-16.6],'Ghana':[7.9,-1.0],'Guinea':[10.4,-10.8],'Guinea-Bissau':[12,-15.2],'Kenya':[0.2,37.9],'Lesotho':[-29.6,28.2],'Liberia':[6.4,-9.4],'Libya':[26.3,17.2],'Madagascar':[-19,46.7],'Malawi':[-13.3,34.3],'Mali':[17,-3.5],'Mauritania':[20.3,-10.5],'Mauritius':[-20.2,57.5],'Morocco':[31.8,-7.1],'Mozambique':[-18.7,35.5],'Namibia':[-22.1,17.2],'Niger':[17.6,8.1],'Nigeria':[9.1,8.7],'Rwanda':[-2,29.9],'São Tomé and Príncipe':[0.2,6.6],'Senegal':[14.5,-14.5],'Seychelles':[-4.7,55.5],'Sierra Leone':[8.5,-11.8],'Somalia':[5.2,46.2],'South Africa':[-29,24],'South Sudan':[7.3,30.3],'Sudan':[15.5,32.5],'Tanzania':[-6.4,35.5],'Togo':[8.6,1.2],'Tunisia':[34,9.5],'Uganda':[1.4,32.3],'Zambia':[-13.1,27.8],'Zimbabwe':[-19,29.9]};
+const NIGERIA_STATE_CENTERS = {'Abia':[5.45,7.5],'Adamawa':[9.3,12.5],'Akwa Ibom':[5.0,7.9],'Anambra':[6.2,7.0],'Bauchi':[10.5,10.0],'Bayelsa':[4.8,6.0],'Benue':[7.3,8.8],'Borno':[11.8,13.2],'Cross River':[5.9,8.6],'Delta':[5.5,6.0],'Ebonyi':[6.3,8.1],'Edo':[6.5,5.9],'Ekiti':[7.7,5.3],'Enugu':[6.5,7.5],'FCT (Abuja)':[9.1,7.5],'Gombe':[10.3,11.2],'Imo':[5.5,7.0],'Jigawa':[12.2,9.8],'Kaduna':[10.5,7.4],'Kano':[12.0,8.5],'Katsina':[12.5,7.5],'Kebbi':[11.5,4.2],'Kogi':[7.8,6.7],'Kwara':[8.9,4.5],'Lagos':[6.5,3.4],'Nasarawa':[8.5,8.3],'Niger':[9.9,6.0],'Ogun':[7.0,3.6],'Ondo':[7.1,5.1],'Osun':[7.5,4.5],'Oyo':[8.0,3.9],'Plateau':[9.2,9.2],'Rivers':[4.9,6.9],'Sokoto':[13.0,5.2],'Taraba':[7.9,10.8],'Yobe':[12.0,11.5],'Zamfara':[12.2,6.2]};
+let _mapAggregateCache = {at:0, layer:null, rows:[]};
+function initMap() {
+  const mapEl = document.getElementById('map-el');
+  if (!mapEl || mapEl._leaflet_id || !(SESSION.researcher || SESSION.admin)) return;
+  if (!window.L) { mapEl.innerHTML = '<div style="min-height:360px;display:grid;place-items:center;color:var(--mist);padding:2rem;text-align:center">Map library unavailable. Check your internet connection and reload.</div>'; return; }
+  populateMapCountryOptions(); updateMapRegionOptions(false);
+  neuroMap = L.map('map-el', {zoomControl:true, scrollWheelZoom:false}).setView([1,18],3);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors', maxZoom:18}).addTo(neuroMap);
+  mapMarkersLayer = L.layerGroup().addTo(neuroMap);
+  refreshMapMarkers('stroke', {silent:true, keepView:true});
+  setTimeout(()=>{ if(neuroMap) neuroMap.invalidateSize(); },350);
+}
+function populateMapCountryOptions() {
+  const sel=document.getElementById('map-country'); if(!sel || sel.dataset.ready==='1') return;
+  AFRICAN_COUNTRIES.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);}); sel.dataset.ready='1';
+}
+function updateMapRegionOptions(refresh=true) {
+  const country=(document.getElementById('map-country')||{}).value||'All Africa'; const region=document.getElementById('map-region'); const localWrap=document.getElementById('map-study-zone-wrap'); if(!region)return;
+  const old=region.value; let options=country==='All Africa'?['All regions',...AFRICAN_REGIONS]:country==='Nigeria'?['All zones','North Central','North East','North West','South East','South South','South West']:['All regions',...((typeof COUNTRIES!=='undefined'&&COUNTRIES[country])?COUNTRIES[country]:[])];
+  region.innerHTML=''; options.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;region.appendChild(o);}); if(options.includes(old))region.value=old;
+  if(localWrap)localWrap.style.display=(country==='Nigeria'&&['All zones','South West'].includes(region.value))?'flex':'none'; if(refresh)applyMapFilters();
+}
+function applyMapFilters() {
+  const country=(document.getElementById('map-country')||{}).value||'All Africa'; const region=(document.getElementById('map-region')||{}).value||'All regions';
+  if(neuroMap){if(country==='All Africa')neuroMap.setView([1,18],3);else if(country==='Nigeria'&&['All zones','South West'].includes(region))neuroMap.setView([7.1,4.1],6);else neuroMap.setView(MAP_COUNTRY_CENTERS[country]||[1,18],4.5);}
+  refreshMapMarkers(window._mapLayer||'stroke',{silent:true,keepView:true});
+}
+
+/* Only grouped aggregate data are requested from the protected backend. */
+async function loadResearchMapAggregates(layer) {
+  if (!AUTH_TOKEN) return [];
+  if (_mapAggregateCache.layer===layer && Date.now()-_mapAggregateCache.at<60000) return _mapAggregateCache.rows;
+  try {
+    const res=await fetch(API_BASE+'/research/map/aggregates?layer='+encodeURIComponent(layer),{headers:{'Authorization':'Bearer '+AUTH_TOKEN}});
+    const data=await res.json().catch(()=>({})); if(!res.ok) throw new Error(data.detail||'Aggregate map data unavailable');
+    _mapAggregateCache={at:Date.now(),layer,rows:Array.isArray(data.aggregates)?data.aggregates:[]}; return _mapAggregateCache.rows;
+  } catch(e) { console.warn('NeuroMap aggregate endpoint:',e); return []; }
+}
+function currentMapFilters(){return{country:(document.getElementById('map-country')||{}).value||'All Africa',region:(document.getElementById('map-region')||{}).value||'All regions',local:(document.getElementById('map-study-zone')||{}).value||'All study zones'};}
+function mapStaticSitesForFilters(){const f=currentMapFilters();if(f.country!=='All Africa'&&f.country!=='Nigeria')return[];if(f.country==='All Africa'&&f.region!=='All regions'&&f.region!=='West Africa')return[];if(f.country==='Nigeria'&&!['All zones','South West'].includes(f.region))return[];let rows=SURVEY_LGA.slice();if(f.local!=='All study zones')rows=rows.filter(d=>d.zone===f.local);return rows;}
+function drawSurveyLayer(layer,sites){
+  const cfg=({stroke:{key:'hbp',label:'with high blood pressure (≥140/90 measured)'},dementia:{key:'forget',label:'reporting forgetfulness / misplacing items'},herbal:{key:'herb',label:'reporting herbal remedy use'},pollution:{key:'poll',label:'reporting high pollution exposure'},sex:{key:'hyp',label:'reporting hypertension'}})[layer]||{key:'hbp',label:'with high blood pressure'};
+  if(!sites.length)return;const vals=sites.map(d=>Number(d[cfg.key])).filter(Number.isFinite).sort((a,b)=>a-b);const mid=vals[Math.floor(vals.length/3)]||0,hi=vals[Math.floor(vals.length*2/3)]||0;
+  sites.forEach(d=>{const v=Number(d[cfg.key]);const color=v>=hi?'#EF4444':v>=mid?'#F59E0B':'#10B981';const sexLine=layer==='sex'?'<br>♂ hypertension: '+d.hypM+'% (n='+d.nM+') · ♀ '+d.hypF+'% (n='+d.nF+')':'';L.circleMarker([d.lat,d.lng],{radius:13,fillColor:color,color:'#3B82F6',weight:2,dashArray:'4 3',opacity:.9,fillOpacity:.58}).addTo(mapMarkersLayer).bindPopup('<div style="font-family:Outfit,sans-serif;min-width:190px"><strong>'+d.lga+'</strong> <span style="font-size:.7rem;color:#888">('+d.zone+')</span><br><b>'+v+'%</b> '+cfg.label+sexLine+'<br><span style="font-size:.72rem;color:#888">Configured Ogun field-survey summary · n='+d.n+'</span></div>');});
+}
+async function refreshMapMarkers(layer,opts){
+  if(!neuroMap||!mapMarkersLayer)return;const silent=!!(opts&&opts.silent);window._mapLayer=layer;mapMarkersLayer.clearLayers();const sites=mapStaticSitesForFilters();drawSurveyLayer(layer,sites);const aggregates=await loadResearchMapAggregates(layer);const f=currentMapFilters();let aggregateMarkers=0;
+  aggregates.forEach(d=>{if(f.local!=='All study zones')return;if(f.country!=='All Africa'&&d.country!==f.country)return;if(f.country==='All Africa'&&f.region!=='All regions'&&AFRICA_COUNTRY_REGION[d.country]!==f.region)return;if(f.country==='Nigeria'&&f.region!=='All zones'&&d.geopolitical_zone!==f.region&&d.region!==f.region)return;const n=Number(d.n||0);if(n<10)return;let coords=null;if(d.country==='Nigeria'&&d.province)coords=NIGERIA_STATE_CENTERS[d.province]||NIGERIA_STATE_CENTERS[d.province.replace(/ State$/,'')];if(!coords)coords=MAP_COUNTRY_CENTERS[d.country];if(!coords)return;const highPct=Number(d.high_risk_pct||0);const color=highPct>=40?'#EF4444':highPct>=20?'#F59E0B':'#10B981';L.circleMarker(coords,{radius:Math.max(8,Math.min(22,7+Math.sqrt(n))),fillColor:color,color:'#c9a84c',weight:2,opacity:.9,fillOpacity:.58}).addTo(mapMarkersLayer).bindPopup('<div style="font-family:Outfit,sans-serif;min-width:190px"><strong>'+String(d.area||d.province||d.country)+'</strong><br><span style="font-size:.78rem">'+n+' eligible assessments (aggregated)</span><br><span style="font-size:.78rem">High-risk share among modelled records: '+Math.round(highPct)+'%</span><br><span style="font-size:.7rem;color:#888">Research records only; group size ≥ 10</span></div>');aggregateMarkers++;});
+  const status=document.getElementById('map-data-status');if(status){if(sites.length||aggregateMarkers)status.textContent='Showing '+sites.length+' configured Ogun field-survey site(s) and '+aggregateMarkers+' protected aggregate location(s). Other areas are not assigned a risk level without eligible data.';else status.textContent='No eligible aggregated research data are available for this geographic selection yet. This means “no data”, not low risk.';}if(!silent&&typeof toast==='function')toast(sites.length||aggregateMarkers?'NeuroMap updated. Only aggregate data are displayed.':'No eligible data for this selection yet.');
+}
+
+function setMapLayer(btn) {
+  document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const layer = btn.getAttribute('data-layer') || 'stroke';
+  refreshMapMarkers(layer, {silent:true, keepView:true});
+}
+
 
 // Independent retry: if initMap() didn't fire successfully via the
 // window 'load' timer (e.g. the load event behaved unexpectedly in a
