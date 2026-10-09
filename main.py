@@ -50,11 +50,12 @@ app.add_middleware(
 # ── Load models once at startup ──
 stroke_model  = None
 dementia_model = None
+cognitive_symptom_bundle = None
 
 
 @app.on_event("startup")
 def load_models():
-    global stroke_model, dementia_model
+    global stroke_model, dementia_model, cognitive_symptom_bundle
 
     stroke_paths = [
         "stroke_REAL_model.pkl",
@@ -89,6 +90,20 @@ def load_models():
     if not dementia_model:
         logger.warning("⚠️  Dementia model not loaded — predictions will return demo values")
 
+    # Load the cognitive-symptom model independently. Failure to load this new
+    # bundle must not prevent the existing stroke/dementia endpoints from starting.
+    cognitive_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "models", "african_cognitive_symptom_rf_platt.joblib")
+    if os.path.exists(cognitive_path):
+        try:
+            cognitive_symptom_bundle = joblib.load(cognitive_path)
+            logger.info("Cognitive-symptom model loaded from %s", cognitive_path)
+        except Exception as e:
+            cognitive_symptom_bundle = None
+            logger.exception("Could not load cognitive-symptom model: %s", e)
+    else:
+        logger.warning("Cognitive-symptom model not found at %s", cognitive_path)
+
 
 # ── Health check ──
 @app.get("/")
@@ -98,6 +113,7 @@ def root():
         "status": "running",
         "stroke_model":  "loaded" if stroke_model  else "demo mode",
         "dementia_model": "loaded" if dementia_model else "demo mode",
+        "cognitive_symptom_model": "loaded" if cognitive_symptom_bundle else "not loaded",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -106,7 +122,8 @@ def root():
 def health():
     return {"status": "ok", "models": {
         "stroke":   stroke_model  is not None,
-        "dementia": dementia_model is not None
+        "dementia": dementia_model is not None,
+        "cognitive_symptoms": cognitive_symptom_bundle is not None
     }}
 
 
@@ -569,6 +586,111 @@ def _dementia_recommendations(d: DementiaInput, level: str) -> list:
     r.append("Regular cognitive screening every 6–12 months")
     if level == "HIGH":          r.append("Urgent referral to a neurologist")
     return r
+
+
+# ════════════════════════════════════════════
+#  SELF-REPORTED COGNITIVE-SYMPTOM SCREENING
+#  Separate endpoint: existing stroke and dementia routes remain unchanged.
+# ════════════════════════════════════════════
+
+COGNITIVE_DEFAULTS = {
+    "AGE": 55,
+    "SEX": "M",
+    "EDU- L": "SECONDARY",
+    "S- BP": 120,
+    "D-BP": 80,
+    "DIABETES": "NO",
+    "HYPERTENSION": "NO",
+    "HEART- D": "NO",
+    "STRESS- L": "M",
+    "SLEEP HOURS": 7,
+    "CHRONIC- PAIN": "NO",
+    "NUTRITION SCORE": 6,
+    "HEART RATE": 72,
+    "POLLUTION": "L",
+    "OCCUPATION HAZZARD": "NO",
+    "ACCESS TO HEALTH CARE": "YES",
+    "SMOKING STATUS (CORRECTED)": "Non-smoker / not reported",
+    "HYPERTENSION TREATMENT (CORRECTED)": "Not applicable",
+    "FRUIT_INTAKE": 2,
+    "VEGETABLE_INTAKE": 2,
+    "HYDRATION_LITERS": 2.0,
+    "LIFESTYLE_CHOICES": "Homemade Food",
+    "Total_Salt Intake Score": 8,
+    "ZONE": "Ijebu Zone",
+}
+
+COGNITIVE_NUMERIC_FIELDS = [
+    "AGE", "S- BP", "D-BP", "SLEEP HOURS", "NUTRITION SCORE",
+    "HEART RATE", "HYDRATION_LITERS", "Total_Salt Intake Score"
+]
+
+@app.post("/predict/cognitive-symptoms")
+def predict_cognitive_symptoms(payload: dict):
+    """Estimate self-reported cognitive-symptom likelihood, not dementia diagnosis."""
+    if cognitive_symptom_bundle is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Cognitive-symptom model is not loaded. Confirm the model file is deployed under models/.",
+        )
+
+    try:
+        predictors = list(cognitive_symptom_bundle["predictors"])
+        values = dict(COGNITIVE_DEFAULTS)
+        # Accept only fields known to this model; missing fields use documented defaults.
+        for field in predictors:
+            if field in payload and payload[field] is not None and payload[field] != "":
+                values[field] = payload[field]
+
+        # Friendly aliases from the HTML form/API clients.
+        sex = str(values["SEX"]).strip().lower()
+        values["SEX"] = "F" if sex in ("f", "female", "woman") else "M" if sex in ("m", "male", "man") else values["SEX"]
+        for field in ("DIABETES", "HYPERTENSION", "HEART- D", "OCCUPATION HAZZARD", "ACCESS TO HEALTH CARE"):
+            val = str(values[field]).strip().upper()
+            values[field] = "YES" if val in ("YES", "Y", "TRUE", "1") else "NO" if val in ("NO", "N", "FALSE", "0") else values[field]
+        for field in COGNITIVE_NUMERIC_FIELDS:
+            try:
+                values[field] = float(values[field])
+            except (TypeError, ValueError):
+                values[field] = float(COGNITIVE_DEFAULTS[field])
+        for field in ("FRUIT_INTAKE", "VEGETABLE_INTAKE"):
+            try:
+                values[field] = int(float(values[field]))
+            except (TypeError, ValueError):
+                values[field] = COGNITIVE_DEFAULTS[field]
+
+        X = pd.DataFrame([{field: values[field] for field in predictors}], columns=predictors)
+        raw_probability = cognitive_symptom_bundle["model"].predict_proba(X)[:, 1]
+        calibrated_probability = cognitive_symptom_bundle["calibrator"].predict_proba(
+            raw_probability.reshape(-1, 1)
+        )[0, 1]
+        risk_score = float(calibrated_probability)
+        risk_pct = round(risk_score * 100, 1)
+        risk_level = "LOW" if risk_pct < 30 else "MEDIUM" if risk_pct < 60 else "HIGH"
+
+        return {
+            "risk_score": round(risk_score, 6),
+            "risk_pct": risk_pct,
+            "cognitive_symptom_risk_pct": risk_pct,
+            "risk_level": risk_level,
+            "risk_factors": [],
+            "recommendations": [
+                "If memory or thinking concerns persist, arrange an assessment with a qualified healthcare professional.",
+                "Continue monitoring blood pressure, sleep, nutrition, and other relevant health factors.",
+            ],
+            "model_used": "trained",
+            "model_name": "African Cognitive Symptom Risk Model",
+            "note": (
+                "Screening estimate for self-reported cognitive symptoms. It is not a diagnosis of dementia or Alzheimer's disease. "
+                "Some fields use defaults when not supplied; interpret the estimate accordingly."
+            ),
+            "timestamp": datetime.now().isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Cognitive-symptom prediction error: %s", e)
+        raise HTTPException(status_code=400, detail=f"Cognitive-symptom prediction failed: {e}")
 
 
 if __name__ == "__main__":
