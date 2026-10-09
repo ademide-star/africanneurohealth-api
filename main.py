@@ -4,7 +4,7 @@ Loads your trained .pkl models and serves predictions to the HTML frontend.
 Deploy on Render (free tier) at: https://africanneurohealth-api-jhke.onrender.com
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -13,7 +13,18 @@ import pandas as pd
 import numpy as np
 import os
 import logging
-from datetime import datetime
+import re
+import json
+import uuid
+import time
+import hmac
+import hashlib
+import base64
+import secrets
+import urllib.request
+import urllib.error
+from urllib.parse import urlencode
+from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -691,6 +702,299 @@ def predict_cognitive_symptoms(payload: dict):
     except Exception as e:
         logger.exception("Cognitive-symptom prediction error: %s", e)
         raise HTTPException(status_code=400, detail=f"Cognitive-symptom prediction failed: {e}")
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# PRIVACY-FIRST RESEARCH DATA + SERVER-SIDE AUTHENTICATION
+# Required Render environment variables:
+# SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, AUTH_SECRET,
+# RESEARCHER_PASSWORD, ADMIN_PASSWORD
+# Never put the service-role key or access passwords in the HTML.
+# ═══════════════════════════════════════════════════════════════════════
+
+ALLOWED_RESEARCH_RECORD_TYPES = {
+    "stroke_predictions", "alzheimer_predictions", "cognitive_symptom_assessments",
+    "nutrition_tracker", "stress_assessments", "pain_stroke_study"
+}
+IDENTITY_KEYS = {
+    "name", "full_name", "patient_name", "participant_name", "email", "phone",
+    "phone_number", "address", "hospital_number", "national_id", "passport_number",
+    "date_of_birth", "contact_details", "notes", "comment", "comments", "free_text", "narrative", "custom_notes", "created_at", "submitted_at", "registered_at"
+}
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
+
+
+def _auth_secret() -> bytes:
+    secret = os.getenv("AUTH_SECRET", "")
+    if len(secret) < 32:
+        raise HTTPException(status_code=503, detail="Authentication is not configured. Set AUTH_SECRET (at least 32 characters) in the backend environment.")
+    return secret.encode("utf-8")
+
+
+def _make_token(claims: dict, expires_seconds: int = 43200) -> str:
+    now = int(time.time())
+    payload = {**claims, "iat": now, "exp": now + expires_seconds}
+    encoded = _b64url(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
+    signature = _b64url(hmac.new(_auth_secret(), encoded.encode("ascii"), hashlib.sha256).digest())
+    return encoded + "." + signature
+
+
+def _read_token(token: str) -> dict:
+    try:
+        encoded, supplied_sig = token.split(".", 1)
+        expected_sig = _b64url(hmac.new(_auth_secret(), encoded.encode("ascii"), hashlib.sha256).digest())
+        if not hmac.compare_digest(supplied_sig, expected_sig):
+            raise ValueError("bad signature")
+        padding = "=" * (-len(encoded) % 4)
+        claims = json.loads(base64.urlsafe_b64decode(encoded + padding))
+        if int(claims.get("exp", 0)) < int(time.time()):
+            raise ValueError("expired")
+        if claims.get("role") not in {"participant", "researcher", "admin"}:
+            raise ValueError("bad role")
+        return claims
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Session is invalid or expired. Please sign in again.")
+
+
+def _claims_from_request(authorization: Optional[str]) -> dict:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    return _read_token(authorization.split(" ", 1)[1].strip())
+
+
+def _require_researcher(authorization: Optional[str]) -> dict:
+    claims = _claims_from_request(authorization)
+    if claims.get("role") not in {"researcher", "admin"}:
+        raise HTTPException(status_code=403, detail="Researcher or administrator access required.")
+    return claims
+
+
+def _supabase_rest(table: str, method: str = "POST", payload=None, query: str = "", prefer: str = "return=minimal"):
+    base_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    if not base_url or not service_key:
+        raise HTTPException(status_code=503, detail="Research storage is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the backend.")
+    url = f"{base_url}/rest/v1/{table}" + (f"?{query}" if query else "")
+    body = None if payload is None else json.dumps(payload, allow_nan=False).encode("utf-8")
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Prefer": prefer,
+    }
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as response:
+            raw = response.read().decode("utf-8")
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        logger.error("Supabase REST error (%s %s): %s", method, table, detail)
+        raise HTTPException(status_code=502, detail="Research database operation failed. Check the backend database schema and permissions.")
+    except (urllib.error.URLError, TimeoutError) as exc:
+        logger.error("Supabase connection error: %s", exc)
+        raise HTTPException(status_code=502, detail="Research database is temporarily unavailable.")
+
+
+class ResearchParticipantCreate(BaseModel):
+    consent: bool
+    consent_version: str = "ANHRL-NRF-2026-v1"
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    country: str
+    province: Optional[str] = None
+    region: Optional[str] = None
+    study_site: Optional[str] = None
+    geopolitical_zone: Optional[str] = None
+
+
+class ResearchRecordCreate(BaseModel):
+    record_type: str
+    payload: dict
+    model_name: Optional[str] = None
+    model_version: Optional[str] = None
+
+
+class ResearchOutcomeCreate(BaseModel):
+    research_id: str
+    outcome_type: str
+    outcome_value: str
+    assessed_at: Optional[datetime] = None
+    label_source: Optional[str] = None
+    verified_by_code: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "researcher"
+
+
+@app.post("/auth/login")
+def auth_login(payload: LoginRequest):
+    requested_role = payload.role.lower().strip()
+    username = payload.username.strip()[:120]
+    password = payload.password
+    if requested_role not in {"researcher", "admin"}:
+        raise HTTPException(status_code=400, detail="Unsupported account role.")
+    env_name = "ADMIN_PASSWORD" if requested_role == "admin" else "RESEARCHER_PASSWORD"
+    expected = os.getenv(env_name, "")
+    if len(expected) < 12:
+        raise HTTPException(status_code=503, detail=f"{env_name} is not configured securely on the backend.")
+    if not username or not hmac.compare_digest(password, expected):
+        raise HTTPException(status_code=401, detail="Invalid credentials.")
+    claims = {"sub": username, "role": requested_role}
+    token = _make_token(claims, expires_seconds=28800)
+    return {"access_token": token, "token_type": "bearer", "role": requested_role, "expires_in": 28800}
+
+
+@app.get("/auth/verify")
+def auth_verify(authorization: Optional[str] = Header(default=None)):
+    claims = _claims_from_request(authorization)
+    return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
+
+
+@app.post("/research/participants")
+def create_research_participant(payload: ResearchParticipantCreate):
+    """Create a pseudonymous participant ID. No name, email, phone, or direct identifier is accepted."""
+    if not payload.consent:
+        raise HTTPException(status_code=400, detail="Participant consent is required before creating a research record.")
+    country = payload.country.strip()
+    if not country or len(country) > 100:
+        raise HTTPException(status_code=422, detail="A valid country is required.")
+    if payload.age is not None and not 1 <= payload.age <= 120:
+        raise HTTPException(status_code=422, detail="Age must be between 1 and 120, or left blank.")
+    _auth_secret()  # fail before writing a row if signed-session configuration is missing
+    research_id = "ANH-" + uuid.uuid4().hex.upper()
+    participant_row = {
+        "research_id": research_id,
+        "consent": True,
+        "consent_version": payload.consent_version[:80],
+        "age": payload.age,
+        "gender": (payload.gender or "")[:40] or None,
+        "country": country,
+        "province": (payload.province or "")[:100] or None,
+        "region": (payload.region or "")[:100] or None,
+        "study_site": (payload.study_site or "")[:150] or None,
+        "geopolitical_zone": (payload.geopolitical_zone or "")[:100] or None,
+    }
+    _supabase_rest("research_participants", "POST", [participant_row], prefer="return=minimal")
+    token = _make_token({"sub": research_id, "role": "participant"}, expires_seconds=43200)
+    return {"research_id": research_id, "participant_token": token, "expires_in": 43200,
+            "message": "Research ID created. No direct identity details were requested."}
+
+
+@app.post("/research/records")
+def save_research_record(payload: ResearchRecordCreate, authorization: Optional[str] = Header(default=None)):
+    """Store only de-identified study variables in the separate research dataset."""
+    claims = _claims_from_request(authorization)
+    record_type = payload.record_type.strip()
+    if record_type not in ALLOWED_RESEARCH_RECORD_TYPES:
+        raise HTTPException(status_code=400, detail="This record type is not approved for the research dataset.")
+    if claims.get("role") == "participant":
+        research_id = claims.get("sub")
+    elif claims.get("role") in {"researcher", "admin"}:
+        research_id = str(payload.payload.get("research_id", "")).strip()
+    else:
+        raise HTTPException(status_code=403, detail="This session cannot save research records.")
+    if not research_id or len(research_id) > 80:
+        raise HTTPException(status_code=400, detail="A valid research ID is required.")
+    if len(json.dumps(payload.payload, default=str)) > 100_000:
+        raise HTTPException(status_code=413, detail="Research record is too large.")
+
+    normalized_identity_keys = {
+        "name", "fullname", "patientname", "participantname", "email", "emailaddress",
+        "phone", "phonenumber", "address", "hospitalnumber", "nationalid", "passportnumber",
+        "dateofbirth", "contactdetails", "notes", "comment", "comments", "freetext",
+        "narrative", "customnotes", "createdat", "submittedat", "registeredat", "userid", "researchid"
+    }
+
+    def scrub(value):
+        if isinstance(value, dict):
+            cleaned = {}
+            for key, nested_value in value.items():
+                key_text = str(key)[:100]
+                normalized = re.sub(r"[^a-z0-9]", "", key_text.lower())
+                if normalized in normalized_identity_keys or any(term in normalized for term in ("patientname", "participantname", "emailaddress", "phonenumber")):
+                    continue
+                cleaned[key_text] = scrub(nested_value)
+            return cleaned
+        if isinstance(value, list):
+            return [scrub(item) for item in value[:500]]
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            return value
+        return None
+
+    safe_payload = scrub(payload.payload)
+    row = {
+        "research_id": research_id,
+        "record_type": record_type,
+        "payload": safe_payload,
+        "model_name": (payload.model_name or "")[:120] or None,
+        "model_version": (payload.model_version or "")[:80] or None,
+    }
+    _supabase_rest("research_records", "POST", [row], prefer="return=minimal")
+    return {"saved": True, "research_id": research_id, "record_type": record_type}
+
+
+@app.get("/research/records")
+def get_research_records(authorization: Optional[str] = Header(default=None), limit: int = 500):
+    _require_researcher(authorization)
+    limit = max(1, min(int(limit), 2000))
+    query = urlencode({"select": "id,research_id,record_type,payload,model_name,model_version,created_at",
+                       "order": "created_at.desc", "limit": str(limit)})
+    rows = _supabase_rest("research_records", "GET", query=query, prefer="return=representation") or []
+    return {"count": len(rows), "records": rows}
+
+
+@app.get("/research/participants/summary")
+def research_participant_summary(authorization: Optional[str] = Header(default=None)):
+    _require_researcher(authorization)
+    query = urlencode({"select": "research_id", "limit": "2000"})
+    participants = _supabase_rest("research_participants", "GET", query=query, prefer="return=representation") or []
+    query_records = urlencode({"select": "record_type", "limit": "5000"})
+    records = _supabase_rest("research_records", "GET", query=query_records, prefer="return=representation") or []
+    query_outcomes = urlencode({"select": "outcome_type", "limit": "5000"})
+    outcomes = _supabase_rest("research_outcomes", "GET", query=query_outcomes, prefer="return=representation") or []
+    counts = {}
+    for row in records:
+        counts[row.get("record_type", "unknown")] = counts.get(row.get("record_type", "unknown"), 0) + 1
+    outcome_counts = {}
+    for row in outcomes:
+        outcome_counts[row.get("outcome_type", "unknown")] = outcome_counts.get(row.get("outcome_type", "unknown"), 0) + 1
+    return {"participants_returned": len(participants), "records_returned": len(records), "records_by_type": counts,
+            "outcomes_returned": len(outcomes), "outcomes_by_type": outcome_counts,
+            "note": "Counts reflect the rows returned by the configured query limits."}
+
+
+@app.post("/research/outcomes")
+def save_research_outcome(payload: ResearchOutcomeCreate, authorization: Optional[str] = Header(default=None)):
+    """Store a structured, verified follow-up label for future model evaluation/retraining."""
+    _require_researcher(authorization)
+    research_id = payload.research_id.strip()
+    outcome_type = payload.outcome_type.strip().lower()
+    outcome_value = payload.outcome_value.strip()
+    if not research_id.startswith("ANH-") or len(research_id) > 80:
+        raise HTTPException(status_code=422, detail="A valid research ID is required.")
+    if not outcome_type or len(outcome_type) > 80 or not outcome_value or len(outcome_value) > 100:
+        raise HTTPException(status_code=422, detail="Outcome type and categorical outcome value are required.")
+    row = {
+        "research_id": research_id,
+        "outcome_type": outcome_type,
+        "outcome_value": outcome_value,
+        "assessed_at": payload.assessed_at.isoformat() if payload.assessed_at else None,
+        "label_source": (payload.label_source or "")[:100] or None,
+        "verified_by_code": (payload.verified_by_code or "")[:80] or None,
+    }
+    _supabase_rest("research_outcomes", "POST", [row], prefer="return=minimal")
+    return {"saved": True, "research_id": research_id, "outcome_type": outcome_type,
+            "note": "Use verified study outcomes for model evaluation; do not treat model predictions as ground-truth labels."}
 
 
 if __name__ == "__main__":
