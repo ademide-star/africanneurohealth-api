@@ -973,6 +973,43 @@ def research_participant_summary(authorization: Optional[str] = Header(default=N
             "note": "Counts reflect the rows returned by the configured query limits."}
 
 
+@app.get("/research/map/aggregates")
+def research_map_aggregates(layer: str = "stroke", authorization: Optional[str] = Header(default=None)):
+    """Return grouped aggregates for the protected NeuroMap, never participant-level rows."""
+    _require_researcher(authorization)
+    layer = (layer or "stroke").lower().strip()
+    allowed_types = {"stroke": {"stroke_predictions"}, "dementia": {"alzheimer_predictions"}}
+    if layer not in allowed_types:
+        return {"aggregates": [], "min_group_size": 10, "note": "This layer uses configured field-survey summaries; no participant-level data are returned."}
+    participant_query = urlencode({"select":"research_id,country,province,region,geopolitical_zone,study_site", "limit":"5000"})
+    record_query = urlencode({"select":"research_id,record_type,payload", "record_type":"in.({})".format(",".join(sorted(allowed_types[layer]))), "order":"created_at.desc", "limit":"5000"})
+    participants = _supabase_rest("research_participants", "GET", query=participant_query, prefer="return=representation") or []
+    records = _supabase_rest("research_records", "GET", query=record_query, prefer="return=representation") or []
+    by_id = {str(p.get("research_id")):p for p in participants if p.get("research_id")}
+    grouped = {}
+    for record in records:
+        participant = by_id.get(str(record.get("research_id")))
+        if not participant: continue
+        country = str(participant.get("country") or "").strip()
+        province = str(participant.get("province") or "").strip()
+        if country.lower() == "nigeria" and province: area, group_province = province, province
+        else: area, group_province = country, None
+        if not area: continue
+        key = (country, area, record.get("record_type"))
+        group = grouped.setdefault(key, {"country":country,"province":group_province,"region":participant.get("region"),"geopolitical_zone":participant.get("geopolitical_zone"),"area":area,"record_type":record.get("record_type"),"n":0,"high_risk_n":0})
+        group["n"] += 1
+        data = record.get("payload") or {}
+        if isinstance(data, dict) and str(data.get("risk_level", "")).upper() == "HIGH": group["high_risk_n"] += 1
+    min_group_size = 10
+    aggregates = []
+    for group in grouped.values():
+        if group["n"] < min_group_size: continue
+        group["high_risk_pct"] = round(100 * group["high_risk_n"] / group["n"], 1) if group["n"] else 0
+        group.pop("high_risk_n", None)
+        aggregates.append(group)
+    return {"aggregates":aggregates,"min_group_size":min_group_size,"note":"Aggregates only. Groups smaller than 10 records are suppressed. Model outputs are not disease prevalence estimates."}
+
+
 @app.post("/research/outcomes")
 def save_research_outcome(payload: ResearchOutcomeCreate, authorization: Optional[str] = Header(default=None)):
     """Store a structured, verified follow-up label for future model evaluation/retraining."""
