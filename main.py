@@ -23,7 +23,7 @@ import base64
 import secrets
 import urllib.request
 import urllib.error
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.INFO)
@@ -385,10 +385,10 @@ class DementiaInput(BaseModel):
     EducationLevel:          float = 12.0
     AlcoholConsumption:      float = 0.0
     PhysicalActivity:        float = 3.0
-    DietQuality:              float = 5.0
+    DietQuality:             float = 5.0
     SleepQuality:            float = 6.0
     SystolicBP:              float = 120.0
-    DiastolicBP:              float = 80.0
+    DiastolicBP:             float = 80.0
     CholesterolTotal:        float = 200.0
     CholesterolLDL:          float = 120.0
     CholesterolHDL:          float = 50.0
@@ -825,7 +825,7 @@ def _supabase_rest(
         "Supabase request: method=%s table=%s host=%s key_present=%s",
         method,
         table,
-        urllib.parse.urlparse(url).netloc,
+        urlparse(url).netloc,
         bool(service_key),
     )
 
@@ -947,103 +947,51 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
     return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
 
 
-@app.get("/debug/research-table")
-def debug_research_table():
-    result = _supabase_rest(
+def _participant_registration(research_id: str) -> dict:
+    """Fetch the minimal registration metadata needed for a research record."""
+    query = urlencode({
+        "select": (
+            "research_id,country,african_subregion,nigeria_geopolitical_zone,"
+            "state_province,district_lga,study_site,consent_confirmed,consent_version"
+        ),
+        "research_id": f"eq.{research_id}",
+        "assessment_type": "eq.participant_registration",
+        "limit": "1",
+    })
+    rows = _supabase_rest(
         "neurohealth_research_records",
         "GET",
-        query="select=id&limit=1",
+        query=query,
         prefer="return=representation",
-    )
-    return {
-        "reachable": True,
-        "rows_returned": len(result or [])
-    }
-
-
-@app.post("/research/participants")
-def create_research_participant(payload: ResearchParticipantCreate):
-    """Create a pseudonymous participant ID without collecting direct identifiers."""
-
-    if not payload.consent:
-        raise HTTPException(
-            status_code=400,
-            detail="Participant consent is required before creating a research record."
-        )
-
-    country = payload.country.strip()
-    if not country or len(country) > 100:
-        raise HTTPException(
-            status_code=422,
-            detail="A valid country is required."
-        )
-
-    if payload.age is not None and not 1 <= payload.age <= 120:
-        raise HTTPException(
-            status_code=422,
-            detail="Age must be between 1 and 120, or left blank."
-        )
-
-    _auth_secret()
-
-    research_id = "ANH-" + uuid.uuid4().hex.upper()
-
-    # Match the actual neurohealth_research_records table.
-    research_row = {
-        "research_id": research_id,
-        "country": country,
-        "african_subregion": (payload.region or "")[:100] or None,
-        "nigeria_geopolitical_zone": (
-            (payload.geopolitical_zone or "")[:100] or None
-        ),
-        "state_province": (payload.province or "")[:100] or None,
-        "study_site": (payload.study_site or "")[:150] or None,
-        "assessment_type": "participant_registration",
-        "data_json": {
-            "age": payload.age,
-            "gender": (payload.gender or "")[:40] or None,
-        },
-        "consent_confirmed": True,
-        "consent_version": (payload.consent_version or "")[:80] or None,
-    }
-
-    # Save the record before issuing the participant token.
-    _supabase_rest(
-        "neurohealth_research_records",
-        "POST",
-        [research_row],
-        prefer="return=minimal"
-    )
-
-    token = _make_token(
-        {"sub": research_id, "role": "participant"},
-        expires_seconds=43200
-    )
-
-    return {
-        "research_id": research_id,
-        "participant_token": token,
-        "expires_in": 43200,
-        "message": (
-            "Research ID created. No direct identity details were requested."
-        )
-    }
+    ) or []
+    return rows[0] if rows else {}
 
 
 @app.post("/research/records")
-def save_research_record(payload: ResearchRecordCreate, authorization: Optional[str] = Header(default=None)):
-    """Store only de-identified study variables in the separate research dataset."""
+def save_research_record(
+    payload: ResearchRecordCreate,
+    authorization: Optional[str] = Header(default=None),
+):
+    """Store de-identified assessments in the privacy-first research table."""
     claims = _claims_from_request(authorization)
     record_type = payload.record_type.strip()
     if record_type not in ALLOWED_RESEARCH_RECORD_TYPES:
-        raise HTTPException(status_code=400, detail="This record type is not approved for the research dataset.")
+        raise HTTPException(
+            status_code=400,
+            detail="This record type is not approved for the research dataset.",
+        )
+
     if claims.get("role") == "participant":
-        research_id = claims.get("sub")
+        research_id = str(claims.get("sub", "")).strip()
     elif claims.get("role") in {"researcher", "admin"}:
         research_id = str(payload.payload.get("research_id", "")).strip()
     else:
-        raise HTTPException(status_code=403, detail="This session cannot save research records.")
-    if not research_id or len(research_id) > 80:
+        raise HTTPException(
+            status_code=403,
+            detail="This session cannot save research records.",
+        )
+
+    if not research_id.startswith("ANH-") or len(research_id) > 80:
         raise HTTPException(status_code=400, detail="A valid research ID is required.")
     if len(json.dumps(payload.payload, default=str)) > 100_000:
         raise HTTPException(status_code=413, detail="Research record is too large.")
@@ -1052,7 +1000,7 @@ def save_research_record(payload: ResearchRecordCreate, authorization: Optional[
         "name", "fullname", "patientname", "participantname", "email", "emailaddress",
         "phone", "phonenumber", "address", "hospitalnumber", "nationalid", "passportnumber",
         "dateofbirth", "contactdetails", "notes", "comment", "comments", "freetext",
-        "narrative", "customnotes", "createdat", "submittedat", "registeredat", "userid", "researchid"
+        "narrative", "customnotes", "createdat", "submittedat", "registeredat", "userid", "researchid",
     }
 
     def scrub(value):
@@ -1061,7 +1009,10 @@ def save_research_record(payload: ResearchRecordCreate, authorization: Optional[
             for key, nested_value in value.items():
                 key_text = str(key)[:100]
                 normalized = re.sub(r"[^a-z0-9]", "", key_text.lower())
-                if normalized in normalized_identity_keys or any(term in normalized for term in ("patientname", "participantname", "emailaddress", "phonenumber")):
+                if normalized in normalized_identity_keys or any(
+                    term in normalized
+                    for term in ("patientname", "participantname", "emailaddress", "phonenumber")
+                ):
                     continue
                 cleaned[key_text] = scrub(nested_value)
             return cleaned
@@ -1072,87 +1023,196 @@ def save_research_record(payload: ResearchRecordCreate, authorization: Optional[
         return None
 
     safe_payload = scrub(payload.payload)
+    registration = _participant_registration(research_id)
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="No participant registration was found for this research ID.",
+        )
+    if not registration.get("consent_confirmed"):
+        raise HTTPException(
+            status_code=403,
+            detail="A consent-confirmed participant record is required.",
+        )
+
     row = {
         "research_id": research_id,
-        "record_type": record_type,
-        "payload": safe_payload,
+        "country": registration["country"],
+        "african_subregion": registration.get("african_subregion"),
+        "nigeria_geopolitical_zone": registration.get("nigeria_geopolitical_zone"),
+        "state_province": registration.get("state_province"),
+        "district_lga": registration.get("district_lga"),
+        "study_site": registration.get("study_site"),
+        "assessment_type": record_type,
+        "data_json": safe_payload,
         "model_name": (payload.model_name or "")[:120] or None,
         "model_version": (payload.model_version or "")[:80] or None,
+        "consent_confirmed": True,
+        "consent_version": registration.get("consent_version"),
     }
-    _supabase_rest("research_records", "POST", [row], prefer="return=minimal")
+    _supabase_rest(
+        "neurohealth_research_records", "POST", [row], prefer="return=minimal"
+    )
     return {"saved": True, "research_id": research_id, "record_type": record_type}
 
 
 @app.get("/research/records")
-def get_research_records(authorization: Optional[str] = Header(default=None), limit: int = 500):
+def get_research_records(
+    authorization: Optional[str] = Header(default=None),
+    limit: int = 500,
+):
     _require_researcher(authorization)
     limit = max(1, min(int(limit), 2000))
-    query = urlencode({"select": "id,research_id,record_type,payload,model_name,model_version,created_at",
-                       "order": "created_at.desc", "limit": str(limit)})
-    rows = _supabase_rest("research_records", "GET", query=query, prefer="return=representation") or []
-    return {"count": len(rows), "records": rows}
+    query = urlencode({
+        "select": (
+            "id,research_id,assessment_type,data_json,model_name,model_version,created_at"
+        ),
+        "assessment_type": "not.in.(participant_registration,verified_outcome)",
+        "order": "created_at.desc",
+        "limit": str(limit),
+    })
+    rows = _supabase_rest(
+        "neurohealth_research_records", "GET", query=query,
+        prefer="return=representation",
+    ) or []
+    # Keep the previous API response keys for existing frontend compatibility.
+    records = [
+        {
+            "id": row.get("id"),
+            "research_id": row.get("research_id"),
+            "record_type": row.get("assessment_type"),
+            "payload": row.get("data_json") or {},
+            "model_name": row.get("model_name"),
+            "model_version": row.get("model_version"),
+            "created_at": row.get("created_at"),
+        }
+        for row in rows
+    ]
+    return {"count": len(records), "records": records}
 
 
 @app.get("/research/participants/summary")
 def research_participant_summary(authorization: Optional[str] = Header(default=None)):
     _require_researcher(authorization)
-    query = urlencode({"select": "research_id", "limit": "2000"})
-    participants = _supabase_rest("research_participants", "GET", query=query, prefer="return=representation") or []
-    query_records = urlencode({"select": "record_type", "limit": "5000"})
-    records = _supabase_rest("research_records", "GET", query=query_records, prefer="return=representation") or []
-    query_outcomes = urlencode({"select": "outcome_type", "limit": "5000"})
-    outcomes = _supabase_rest("research_outcomes", "GET", query=query_outcomes, prefer="return=representation") or []
-    counts = {}
-    for row in records:
-        counts[row.get("record_type", "unknown")] = counts.get(row.get("record_type", "unknown"), 0) + 1
+    query = urlencode({
+        "select": "research_id,assessment_type,observed_outcome_json",
+        "limit": "5000",
+        "order": "created_at.desc",
+    })
+    rows = _supabase_rest(
+        "neurohealth_research_records", "GET", query=query,
+        prefer="return=representation",
+    ) or []
+
+    participants = {
+        row.get("research_id") for row in rows
+        if row.get("assessment_type") == "participant_registration" and row.get("research_id")
+    }
+    record_counts = {}
     outcome_counts = {}
-    for row in outcomes:
-        outcome_counts[row.get("outcome_type", "unknown")] = outcome_counts.get(row.get("outcome_type", "unknown"), 0) + 1
-    return {"participants_returned": len(participants), "records_returned": len(records), "records_by_type": counts,
-            "outcomes_returned": len(outcomes), "outcomes_by_type": outcome_counts,
-            "note": "Counts reflect the rows returned by the configured query limits."}
+    record_total = 0
+    outcome_total = 0
+    for row in rows:
+        assessment_type = row.get("assessment_type", "unknown")
+        if assessment_type == "participant_registration":
+            continue
+        if assessment_type == "verified_outcome":
+            outcome_total += 1
+            outcome = row.get("observed_outcome_json") or {}
+            outcome_type = outcome.get("outcome_type", "unknown") if isinstance(outcome, dict) else "unknown"
+            outcome_counts[outcome_type] = outcome_counts.get(outcome_type, 0) + 1
+            continue
+        record_total += 1
+        record_counts[assessment_type] = record_counts.get(assessment_type, 0) + 1
+
+    return {
+        "participants_returned": len(participants),
+        "records_returned": record_total,
+        "records_by_type": record_counts,
+        "outcomes_returned": outcome_total,
+        "outcomes_by_type": outcome_counts,
+        "note": "Counts reflect rows returned by the configured query limit.",
+    }
 
 
 @app.get("/research/map/aggregates")
-def research_map_aggregates(layer: str = "stroke", authorization: Optional[str] = Header(default=None)):
-    """Return grouped aggregates for the protected NeuroMap, never participant-level rows."""
+def research_map_aggregates(
+    layer: str = "stroke",
+    authorization: Optional[str] = Header(default=None),
+):
+    """Return grouped aggregates only; suppress groups smaller than ten records."""
     _require_researcher(authorization)
     layer = (layer or "stroke").lower().strip()
-    allowed_types = {"stroke": {"stroke_predictions"}, "dementia": {"alzheimer_predictions"}}
+    allowed_types = {
+        "stroke": {"stroke_predictions"},
+        "dementia": {"alzheimer_predictions"},
+    }
     if layer not in allowed_types:
-        return {"aggregates": [], "min_group_size": 10, "note": "This layer uses configured field-survey summaries; no participant-level data are returned."}
-    participant_query = urlencode({"select":"research_id,country,province,region,geopolitical_zone,study_site", "limit":"5000"})
-    record_query = urlencode({"select":"research_id,record_type,payload", "record_type":"in.({})".format(",".join(sorted(allowed_types[layer]))), "order":"created_at.desc", "limit":"5000"})
-    participants = _supabase_rest("research_participants", "GET", query=participant_query, prefer="return=representation") or []
-    records = _supabase_rest("research_records", "GET", query=record_query, prefer="return=representation") or []
-    by_id = {str(p.get("research_id")):p for p in participants if p.get("research_id")}
+        return {
+            "aggregates": [],
+            "min_group_size": 10,
+            "note": "No configured aggregate layer exists for this request.",
+        }
+
+    query = urlencode({
+        "select": (
+            "research_id,country,african_subregion,nigeria_geopolitical_zone,"
+            "state_province,assessment_type,data_json"
+        ),
+        "assessment_type": "in.({})".format(",".join(sorted(allowed_types[layer]))),
+        "limit": "5000",
+        "order": "created_at.desc",
+    })
+    rows = _supabase_rest(
+        "neurohealth_research_records", "GET", query=query,
+        prefer="return=representation",
+    ) or []
+
     grouped = {}
-    for record in records:
-        participant = by_id.get(str(record.get("research_id")))
-        if not participant: continue
-        country = str(participant.get("country") or "").strip()
-        province = str(participant.get("province") or "").strip()
-        if country.lower() == "nigeria" and province: area, group_province = province, province
-        else: area, group_province = country, None
-        if not area: continue
-        key = (country, area, record.get("record_type"))
-        group = grouped.setdefault(key, {"country":country,"province":group_province,"region":participant.get("region"),"geopolitical_zone":participant.get("geopolitical_zone"),"area":area,"record_type":record.get("record_type"),"n":0,"high_risk_n":0})
+    for record in rows:
+        country = str(record.get("country") or "").strip()
+        province = str(record.get("state_province") or "").strip()
+        area = province if country.lower() == "nigeria" and province else country
+        if not area:
+            continue
+        record_type = record.get("assessment_type", "unknown")
+        key = (country, area, record_type)
+        group = grouped.setdefault(key, {
+            "country": country,
+            "province": province or None if country.lower() == "nigeria" else None,
+            "region": record.get("african_subregion"),
+            "geopolitical_zone": record.get("nigeria_geopolitical_zone"),
+            "area": area,
+            "record_type": record_type,
+            "n": 0,
+            "high_risk_n": 0,
+        })
         group["n"] += 1
-        data = record.get("payload") or {}
-        if isinstance(data, dict) and str(data.get("risk_level", "")).upper() == "HIGH": group["high_risk_n"] += 1
+        data = record.get("data_json") or {}
+        if isinstance(data, dict) and str(data.get("risk_level", "")).upper() == "HIGH":
+            group["high_risk_n"] += 1
+
     min_group_size = 10
     aggregates = []
     for group in grouped.values():
-        if group["n"] < min_group_size: continue
-        group["high_risk_pct"] = round(100 * group["high_risk_n"] / group["n"], 1) if group["n"] else 0
+        if group["n"] < min_group_size:
+            continue
+        group["high_risk_pct"] = round(100 * group["high_risk_n"] / group["n"], 1)
         group.pop("high_risk_n", None)
         aggregates.append(group)
-    return {"aggregates":aggregates,"min_group_size":min_group_size,"note":"Aggregates only. Groups smaller than 10 records are suppressed. Model outputs are not disease prevalence estimates."}
+    return {
+        "aggregates": aggregates,
+        "min_group_size": min_group_size,
+        "note": "Aggregates only. Groups smaller than 10 records are suppressed. Model outputs are not disease prevalence estimates.",
+    }
 
 
 @app.post("/research/outcomes")
-def save_research_outcome(payload: ResearchOutcomeCreate, authorization: Optional[str] = Header(default=None)):
-    """Store a structured, verified follow-up label for future model evaluation/retraining."""
+def save_research_outcome(
+    payload: ResearchOutcomeCreate,
+    authorization: Optional[str] = Header(default=None),
+):
+    """Store a verified outcome in the shared privacy-first research table."""
     _require_researcher(authorization)
     research_id = payload.research_id.strip()
     outcome_type = payload.outcome_type.strip().lower()
@@ -1160,20 +1220,54 @@ def save_research_outcome(payload: ResearchOutcomeCreate, authorization: Optiona
     if not research_id.startswith("ANH-") or len(research_id) > 80:
         raise HTTPException(status_code=422, detail="A valid research ID is required.")
     if not outcome_type or len(outcome_type) > 80 or not outcome_value or len(outcome_value) > 100:
-        raise HTTPException(status_code=422, detail="Outcome type and categorical outcome value are required.")
+        raise HTTPException(
+            status_code=422,
+            detail="Outcome type and categorical outcome value are required.",
+        )
+
+    registration = _participant_registration(research_id)
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="No participant registration was found for this research ID.",
+        )
+    if not registration.get("consent_confirmed"):
+        raise HTTPException(
+            status_code=403,
+            detail="A consent-confirmed participant record is required.",
+        )
+
     row = {
         "research_id": research_id,
-        "outcome_type": outcome_type,
-        "outcome_value": outcome_value,
-        "assessed_at": payload.assessed_at.isoformat() if payload.assessed_at else None,
-        "label_source": (payload.label_source or "")[:100] or None,
-        "verified_by_code": (payload.verified_by_code or "")[:80] or None,
+        "country": registration["country"],
+        "african_subregion": registration.get("african_subregion"),
+        "nigeria_geopolitical_zone": registration.get("nigeria_geopolitical_zone"),
+        "state_province": registration.get("state_province"),
+        "district_lga": registration.get("district_lga"),
+        "study_site": registration.get("study_site"),
+        "assessment_type": "verified_outcome",
+        "data_json": {},
+        "observed_outcome_json": {
+            "outcome_type": outcome_type,
+            "outcome_value": outcome_value,
+            "assessed_at": payload.assessed_at.isoformat() if payload.assessed_at else None,
+            "label_source": (payload.label_source or "")[:100] or None,
+            "verified_by_code": (payload.verified_by_code or "")[:80] or None,
+        },
+        "consent_confirmed": True,
+        "consent_version": registration.get("consent_version"),
     }
-    _supabase_rest("research_outcomes", "POST", [row], prefer="return=minimal")
-    return {"saved": True, "research_id": research_id, "outcome_type": outcome_type,
-            "note": "Use verified study outcomes for model evaluation; do not treat model predictions as ground-truth labels."}
+    _supabase_rest(
+        "neurohealth_research_records", "POST", [row], prefer="return=minimal"
+    )
+    return {
+        "saved": True,
+        "research_id": research_id,
+        "outcome_type": outcome_type,
+        "note": "Use verified study outcomes for model evaluation; do not treat model predictions as ground-truth labels.",
+    }
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn  # type: ignore[import-not-found]
     uvicorn.run(app, host="0.0.0.0", port=8000)
