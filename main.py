@@ -860,34 +860,74 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
     return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
 
 
+
 @app.post("/research/participants")
 def create_research_participant(payload: ResearchParticipantCreate):
-    """Create a pseudonymous participant ID. No name, email, phone, or direct identifier is accepted."""
+    """Create a pseudonymous participant ID without collecting direct identifiers."""
+
     if not payload.consent:
-        raise HTTPException(status_code=400, detail="Participant consent is required before creating a research record.")
+        raise HTTPException(
+            status_code=400,
+            detail="Participant consent is required before creating a research record."
+        )
+
     country = payload.country.strip()
     if not country or len(country) > 100:
-        raise HTTPException(status_code=422, detail="A valid country is required.")
+        raise HTTPException(
+            status_code=422,
+            detail="A valid country is required."
+        )
+
     if payload.age is not None and not 1 <= payload.age <= 120:
-        raise HTTPException(status_code=422, detail="Age must be between 1 and 120, or left blank.")
-    _auth_secret()  # fail before writing a row if signed-session configuration is missing
+        raise HTTPException(
+            status_code=422,
+            detail="Age must be between 1 and 120, or left blank."
+        )
+
+    _auth_secret()
+
     research_id = "ANH-" + uuid.uuid4().hex.upper()
-    participant_row = {
+
+    # Match the actual neurohealth_research_records table.
+    research_row = {
         "research_id": research_id,
-        "consent": True,
-        "consent_version": payload.consent_version[:80],
-        "age": payload.age,
-        "gender": (payload.gender or "")[:40] or None,
         "country": country,
-        "province": (payload.province or "")[:100] or None,
-        "region": (payload.region or "")[:100] or None,
+        "african_subregion": (payload.region or "")[:100] or None,
+        "nigeria_geopolitical_zone": (
+            (payload.geopolitical_zone or "")[:100] or None
+        ),
+        "state_province": (payload.province or "")[:100] or None,
         "study_site": (payload.study_site or "")[:150] or None,
-        "geopolitical_zone": (payload.geopolitical_zone or "")[:100] or None,
+        "assessment_type": "participant_registration",
+        "data_json": {
+            "age": payload.age,
+            "gender": (payload.gender or "")[:40] or None,
+        },
+        "consent_confirmed": True,
+        "consent_version": (payload.consent_version or "")[:80] or None,
     }
-    _supabase_rest("research_participants", "POST", [participant_row], prefer="return=minimal")
-    token = _make_token({"sub": research_id, "role": "participant"}, expires_seconds=43200)
-    return {"research_id": research_id, "participant_token": token, "expires_in": 43200,
-            "message": "Research ID created. No direct identity details were requested."}
+
+    # Save the record before issuing the participant token.
+    _supabase_rest(
+        "neurohealth_research_records",
+        "POST",
+        [research_row],
+        prefer="return=minimal"
+    )
+
+    token = _make_token(
+        {"sub": research_id, "role": "participant"},
+        expires_seconds=43200
+    )
+
+    return {
+        "research_id": research_id,
+        "participant_token": token,
+        "expires_in": 43200,
+        "message": (
+            "Research ID created. No direct identity details were requested."
+        )
+    }
 
 
 @app.post("/research/records")
