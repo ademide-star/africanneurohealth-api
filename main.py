@@ -815,11 +815,10 @@ def _supabase_rest(
     }
 
 # Explicitly target the public schema, where our tables exist.
-if method.upper() in ("GET", "HEAD"):
-    headers["Accept-Profile"] = "public"
-else:
-    headers["Content-Profile"] = "public"
-
+    if method.upper() in ("GET", "HEAD"):
+        headers["Accept-Profile"] = "public"
+    else:
+        headers["Content-Profile"] = "public"
 
     # Log request details without exposing credentials or participant data.
     logger.info(
