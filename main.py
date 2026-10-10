@@ -807,7 +807,14 @@ def _supabase_rest(
         "Accept": "application/json",
         "Prefer": prefer,
     }
-
+    logger.info(
+    "Supabase request: method=%s table=%s host=%s key_present=%s",
+    method,
+    table,
+    urllib.request.urlparse(url).netloc
+    if hasattr(urllib.request, "urlparse") else url.split("/")[2],
+    bool(service_key),
+    )
     req = urllib.request.Request(
         url, data=body, headers=headers, method=method
     )
