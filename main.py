@@ -775,12 +775,13 @@ def _require_researcher(authorization: Optional[str]) -> dict:
 
 
 
+
 def _supabase_rest(
     table: str,
     method: str = "POST",
     payload=None,
     query: str = "",
-    prefer: str = "return=minimal"
+    prefer: str = "return=minimal",
 ):
     base_url = os.getenv("SUPABASE_URL", "").rstrip("/")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
@@ -791,12 +792,16 @@ def _supabase_rest(
             detail=(
                 "Research storage is not configured. Set SUPABASE_URL "
                 "and SUPABASE_SERVICE_ROLE_KEY on the backend."
-            )
+            ),
         )
 
-    url = f"{base_url}/rest/v1/{table}" + (f"?{query}" if query else "")
+    url = f"{base_url}/rest/v1/{table}"
+    if query:
+        url += f"?{query}"
+
     body = (
-        None if payload is None
+        None
+        if payload is None
         else json.dumps(payload, allow_nan=False).encode("utf-8")
     )
 
@@ -807,16 +812,21 @@ def _supabase_rest(
         "Accept": "application/json",
         "Prefer": prefer,
     }
+
+    # Log request details without exposing credentials or participant data.
     logger.info(
-    "Supabase request: method=%s table=%s host=%s key_present=%s",
-    method,
-    table,
-    urllib.request.urlparse(url).netloc
-    if hasattr(urllib.request, "urlparse") else url.split("/")[2],
-    bool(service_key),
+        "Supabase request: method=%s table=%s host=%s key_present=%s",
+        method,
+        table,
+        urllib.parse.urlparse(url).netloc,
+        bool(service_key),
     )
+
     req = urllib.request.Request(
-        url, data=body, headers=headers, method=method
+        url,
+        data=body,
+        headers=headers,
+        method=method,
     )
 
     try:
@@ -824,7 +834,7 @@ def _supabase_rest(
             raw = response.read().decode("utf-8", errors="replace")
             return json.loads(raw) if raw else None
 
-        except urllib.error.HTTPError as exc:
+    except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")[:1500]
 
         logger.error(
@@ -837,16 +847,39 @@ def _supabase_rest(
             exc.reason,
             detail or "<empty response body>",
             dict(exc.headers) if exc.headers else {},
-    )
+        )
 
         raise HTTPException(
             status_code=502,
             detail=(
                 f"Research database operation failed "
                 f"(Supabase HTTP {exc.code}). Check backend logs."
-        ),
-    )
+            ),
+        ) from exc
 
+    except (urllib.error.URLError, TimeoutError) as exc:
+        logger.error(
+            "Supabase connection failure: method=%s table=%s error=%r",
+            method,
+            table,
+            exc,
+        )
+        raise HTTPException(
+            status_code=502,
+            detail="Research database is temporarily unavailable.",
+        ) from exc
+
+    except (ValueError, TypeError) as exc:
+        logger.error(
+            "Supabase request preparation or response parsing failed: "
+            "table=%s error=%r",
+            table,
+            exc,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Research request could not be processed.",
+        ) from exc
 
 
 class ResearchParticipantCreate(BaseModel):
