@@ -824,26 +824,26 @@ def _supabase_rest(
             raw = response.read().decode("utf-8", errors="replace")
             return json.loads(raw) if raw else None
 
-    except urllib.error.HTTPError as exc:
-    detail = exc.read().decode("utf-8", errors="replace")[:1500]
+        except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:1500]
 
-    logger.error(
-        "SUPABASE DIAGNOSTIC | method=%s | url=%s | "
-        "status=%s | reason=%s | response_body=%r | "
-        "response_headers=%r",
-        method,
-        url,
-        exc.code,
-        exc.reason,
-        detail or "<empty response body>",
-        dict(exc.headers) if exc.headers else {},
+        logger.error(
+            "SUPABASE DIAGNOSTIC | method=%s | url=%s | "
+            "status=%s | reason=%s | response_body=%r | "
+            "response_headers=%r",
+            method,
+            url,
+            exc.code,
+            exc.reason,
+            detail or "<empty response body>",
+            dict(exc.headers) if exc.headers else {},
     )
 
-    raise HTTPException(
-        status_code=502,
-        detail=(
-            f"Research database operation failed "
-            f"(Supabase HTTP {exc.code}). Check backend logs."
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                f"Research database operation failed "
+                f"(Supabase HTTP {exc.code}). Check backend logs."
         ),
     )
 
