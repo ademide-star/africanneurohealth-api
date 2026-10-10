@@ -825,50 +825,27 @@ def _supabase_rest(
             return json.loads(raw) if raw else None
 
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:1500]
+    detail = exc.read().decode("utf-8", errors="replace")[:1500]
 
-        # Log the diagnostic details, never the request headers or keys.
-        logger.error(
-            "Supabase REST failure: method=%s table=%s status=%s "
-            "reason=%s response_body=%r",
-            method,
-            table,
-            exc.code,
-            exc.reason,
-            detail or "<empty response body>",
-        )
+    logger.error(
+        "SUPABASE DIAGNOSTIC | method=%s | url=%s | "
+        "status=%s | reason=%s | response_body=%r | "
+        "response_headers=%r",
+        method,
+        url,
+        exc.code,
+        exc.reason,
+        detail or "<empty response body>",
+        dict(exc.headers) if exc.headers else {},
+    )
 
-        raise HTTPException(
-            status_code=502,
-            detail=(
-                f"Research database operation failed "
-                f"(Supabase HTTP {exc.code}). Check backend logs."
-            )
-        )
-
-    except (urllib.error.URLError, TimeoutError) as exc:
-        logger.error(
-            "Supabase connection failure: method=%s table=%s error=%r",
-            method,
-            table,
-            exc,
-        )
-        raise HTTPException(
-            status_code=502,
-            detail="Research database is temporarily unavailable."
-        )
-
-    except (ValueError, TypeError) as exc:
-        logger.error(
-            "Supabase request preparation or response parsing failed: "
-            "table=%s error=%r",
-            table,
-            exc,
-        )
-        raise HTTPException(
-            status_code=500,
-            detail="Research request could not be processed."
-        )
+    raise HTTPException(
+        status_code=502,
+        detail=(
+            f"Research database operation failed "
+            f"(Supabase HTTP {exc.code}). Check backend logs."
+        ),
+    )
 
 
 
