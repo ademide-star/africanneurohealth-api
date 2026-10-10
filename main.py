@@ -930,6 +930,19 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
     return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
 
 
+@app.get("/debug/research-table")
+def debug_research_table():
+    result = _supabase_rest(
+        "neurohealth_research_records",
+        "GET",
+        query="select=id&limit=1",
+        prefer="return=representation",
+    )
+    return {
+        "reachable": True,
+        "rows_returned": len(result or [])
+    }
+
 
 @app.post("/research/participants")
 def create_research_participant(payload: ResearchParticipantCreate):
