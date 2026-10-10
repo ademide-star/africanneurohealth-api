@@ -648,17 +648,60 @@ def predict_cognitive_symptoms(payload: dict):
     try:
         predictors = list(cognitive_symptom_bundle["predictors"])
         values = dict(COGNITIVE_DEFAULTS)
-        # Accept only fields known to this model; missing fields use documented defaults.
-        for field in predictors:
-            if field in payload and payload[field] is not None and payload[field] != "":
-                values[field] = payload[field]
 
-        # Friendly aliases from the HTML form/API clients.
-        sex = str(values["SEX"]).strip().lower()
-        values["SEX"] = "F" if sex in ("f", "female", "woman") else "M" if sex in ("m", "male", "man") else values["SEX"]
+        # Match keys case-insensitively and tolerate spaces/punctuation differences.
+        # This supports inputs such as age/gender as well as AGE/SEX and Systolic BP.
+        normalized_payload = {
+            re.sub(r"[^a-z0-9]", "", str(key).lower()): value
+            for key, value in payload.items()
+        }
+        supplied_fields = []
+        for field in predictors:
+            normalized_field = re.sub(r"[^a-z0-9]", "", str(field).lower())
+            if normalized_field in normalized_payload:
+                value = normalized_payload[normalized_field]
+                if value is not None and value != "":
+                    values[field] = value
+                    supplied_fields.append(field)
+
+        # A participant-registration payload (e.g. consent, country, age, gender)
+        # is not a cognitive assessment. Do not produce a score from defaults alone.
+        if len(supplied_fields) < 5:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": (
+                        "Insufficient cognitive assessment inputs. This endpoint requires "
+                        "at least 5 recognized model predictor fields; registration details "
+                        "alone are not a cognitive assessment."
+                    ),
+                    "recognized_predictor_fields": supplied_fields,
+                    "recognized_predictor_count": len(supplied_fields),
+                    "minimum_predictor_count": 5,
+                    "example_fields": [
+                        "AGE", "SEX", "EDU- L", "S- BP", "D-BP",
+                        "DIABETES", "HYPERTENSION", "STRESS- L", "SLEEP HOURS",
+                    ],
+                },
+            )
+
+        # Normalize common categorical values before model inference.
+        sex = str(values.get("SEX", "")).strip().lower()
+        values["SEX"] = (
+            "F" if sex in ("f", "female", "woman")
+            else "M" if sex in ("m", "male", "man")
+            else values.get("SEX", "M")
+        )
         for field in ("DIABETES", "HYPERTENSION", "HEART- D", "OCCUPATION HAZZARD", "ACCESS TO HEALTH CARE"):
+            if field not in values:
+                continue
             val = str(values[field]).strip().upper()
-            values[field] = "YES" if val in ("YES", "Y", "TRUE", "1") else "NO" if val in ("NO", "N", "FALSE", "0") else values[field]
+            values[field] = (
+                "YES" if val in ("YES", "Y", "TRUE", "1")
+                else "NO" if val in ("NO", "N", "FALSE", "0")
+                else values[field]
+            )
+
         for field in COGNITIVE_NUMERIC_FIELDS:
             try:
                 values[field] = float(values[field])
@@ -670,6 +713,7 @@ def predict_cognitive_symptoms(payload: dict):
             except (TypeError, ValueError):
                 values[field] = COGNITIVE_DEFAULTS[field]
 
+        defaulted_fields = [field for field in predictors if field not in supplied_fields]
         X = pd.DataFrame([{field: values[field] for field in predictors}], columns=predictors)
         raw_probability = cognitive_symptom_bundle["model"].predict_proba(X)[:, 1]
         calibrated_probability = cognitive_symptom_bundle["calibrator"].predict_proba(
@@ -685,6 +729,8 @@ def predict_cognitive_symptoms(payload: dict):
             "cognitive_symptom_risk_pct": risk_pct,
             "risk_level": risk_level,
             "risk_factors": [],
+            "recognized_predictor_fields": supplied_fields,
+            "fields_defaulted": defaulted_fields,
             "recommendations": [
                 "If memory or thinking concerns persist, arrange an assessment with a qualified healthcare professional.",
                 "Continue monitoring blood pressure, sleep, nutrition, and other relevant health factors.",
@@ -693,7 +739,8 @@ def predict_cognitive_symptoms(payload: dict):
             "model_name": "African Cognitive Symptom Risk Model",
             "note": (
                 "Screening estimate for self-reported cognitive symptoms. It is not a diagnosis of dementia or Alzheimer's disease. "
-                "Some fields use defaults when not supplied; interpret the estimate accordingly."
+                "Fields listed in fields_defaulted used model defaults and may materially affect this estimate. "
+                "Risk factors are not currently inferred by this endpoint."
             ),
             "timestamp": datetime.now().isoformat(),
         }
