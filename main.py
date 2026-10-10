@@ -806,13 +806,13 @@ def _supabase_rest(
     )
 
    
-headers = {
-    "apikey": service_key,
-    "Authorization": f"Bearer {service_key}",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-    "Prefer": prefer,
-}
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Prefer": prefer,
+    }
 
 # Explicitly target the public schema, where our tables exist.
 if method.upper() in ("GET", "HEAD"):
