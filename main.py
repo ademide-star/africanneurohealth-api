@@ -774,13 +774,32 @@ def _require_researcher(authorization: Optional[str]) -> dict:
     return claims
 
 
-def _supabase_rest(table: str, method: str = "POST", payload=None, query: str = "", prefer: str = "return=minimal"):
+
+def _supabase_rest(
+    table: str,
+    method: str = "POST",
+    payload=None,
+    query: str = "",
+    prefer: str = "return=minimal"
+):
     base_url = os.getenv("SUPABASE_URL", "").rstrip("/")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
     if not base_url or not service_key:
-        raise HTTPException(status_code=503, detail="Research storage is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the backend.")
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Research storage is not configured. Set SUPABASE_URL "
+                "and SUPABASE_SERVICE_ROLE_KEY on the backend."
+            )
+        )
+
     url = f"{base_url}/rest/v1/{table}" + (f"?{query}" if query else "")
-    body = None if payload is None else json.dumps(payload, allow_nan=False).encode("utf-8")
+    body = (
+        None if payload is None
+        else json.dumps(payload, allow_nan=False).encode("utf-8")
+    )
+
     headers = {
         "apikey": service_key,
         "Authorization": f"Bearer {service_key}",
@@ -788,18 +807,62 @@ def _supabase_rest(table: str, method: str = "POST", payload=None, query: str = 
         "Accept": "application/json",
         "Prefer": prefer,
     }
-    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+
+    req = urllib.request.Request(
+        url, data=body, headers=headers, method=method
+    )
+
     try:
         with urllib.request.urlopen(req, timeout=15) as response:
-            raw = response.read().decode("utf-8")
+            raw = response.read().decode("utf-8", errors="replace")
             return json.loads(raw) if raw else None
+
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:500]
-        logger.error("Supabase REST error (%s %s): %s", method, table, detail)
-        raise HTTPException(status_code=502, detail="Research database operation failed. Check the backend database schema and permissions.")
+        detail = exc.read().decode("utf-8", errors="replace")[:1500]
+
+        # Log the diagnostic details, never the request headers or keys.
+        logger.error(
+            "Supabase REST failure: method=%s table=%s status=%s "
+            "reason=%s response_body=%r",
+            method,
+            table,
+            exc.code,
+            exc.reason,
+            detail or "<empty response body>",
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                f"Research database operation failed "
+                f"(Supabase HTTP {exc.code}). Check backend logs."
+            )
+        )
+
     except (urllib.error.URLError, TimeoutError) as exc:
-        logger.error("Supabase connection error: %s", exc)
-        raise HTTPException(status_code=502, detail="Research database is temporarily unavailable.")
+        logger.error(
+            "Supabase connection failure: method=%s table=%s error=%r",
+            method,
+            table,
+            exc,
+        )
+        raise HTTPException(
+            status_code=502,
+            detail="Research database is temporarily unavailable."
+        )
+
+    except (ValueError, TypeError) as exc:
+        logger.error(
+            "Supabase request preparation or response parsing failed: "
+            "table=%s error=%r",
+            table,
+            exc,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Research request could not be processed."
+        )
+
 
 
 class ResearchParticipantCreate(BaseModel):
