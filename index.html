@@ -409,13 +409,6 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 <strong>Principal Investigator:</strong> Prof. Mayowa Owolabi<br>
 <strong>Collaborative Program:</strong> GRASP / NIH / DSI Collaborative Program
 </p>
-<div class="card" style="margin-bottom:1.25rem;border:1px solid rgba(201,168,76,.25);">
-  <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;">Mentorship &amp; Research Guidance</div>
-  <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;margin-bottom:.65rem;">Mentors and Supervisors</h3>
-  <p class="section-sub" style="font-size:.9rem;line-height:1.8;margin:0;">
-    Prof. Mayowa Owolabi · Godwin Ogbole · Benjamin Aribisala · Adesola Ogunniyi · Segun Fatumo · Bruce Ovbiagele · Judit Kumuthini
-  </p>
-</div>
         <div class="card card-gold"><p style="font-style:italic;font-size:.92rem;color:var(--smoke);" data-i18n="aboutQuote">"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." <br><strong style="color:var(--gold);">— Adebimpe-John O.E., PhD.&amp; African NeuroHealth Research Lab</strong></p></div>
 
         <!-- ANHRL Page Link -->
@@ -868,6 +861,55 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 <div id="page-dementia" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
+
+  <!-- Separate cognitive-symptom model assessment. Kept separate from the existing dementia-risk model. -->
+  <div class="asmt-section" id="cognitive-symptom-assessment" style="margin:1.5rem 0 2rem;padding:1.5rem;border:1px solid rgba(201,168,76,.35);border-radius:16px;background:rgba(201,168,76,.035);">
+    <span class="section-label">// Community Cognitive Symptom Screening</span>
+    <h2 class="section-title" style="margin:.5rem 0 1rem;">🧠 Cognitive Symptom Assessment</h2>
+    <p style="color:var(--mist);font-size:.88rem;line-height:1.65;margin-bottom:1.2rem;">This is a separate lifestyle and health-factor assessment using the African Cognitive Symptom Risk Model. It does not diagnose dementia and does not replace the dementia-risk assessment below. Complete the fields with the participant's reported or measured information.</p>
+    <div class="form-row">
+      <div class="fg"><label>Age</label><input type="number" id="cs-age" min="18" max="120" value="45"></div>
+      <div class="fg"><label>Sex</label><select id="cs-sex"><option value="M">Male</option><option value="F">Female</option></select></div>
+      <div class="fg"><label>Education level</label><select id="cs-edu"><option value="NONE">None</option><option value="PRIMARY">Primary</option><option value="SECONDARY" selected>Secondary</option><option value="TERTIARY">Tertiary</option><option value="POSTGRADUATE">Postgraduate</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Systolic BP (mmHg)</label><input type="number" id="cs-sbp" min="60" max="260" value="120"></div>
+      <div class="fg"><label>Diastolic BP (mmHg)</label><input type="number" id="cs-dbp" min="30" max="160" value="80"></div>
+      <div class="fg"><label>Heart rate (bpm)</label><input type="number" id="cs-hr" min="25" max="240" value="72"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Diabetes</label><select id="cs-diabetes"><option>NO</option><option>YES</option></select></div>
+      <div class="fg"><label>Hypertension</label><select id="cs-htn"><option>NO</option><option>YES</option></select></div>
+      <div class="fg"><label>Heart disease</label><select id="cs-heart"><option>NO</option><option>YES</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Stress level</label><select id="cs-stress"><option value="L">Low</option><option value="M" selected>Moderate</option><option value="H">High</option></select></div>
+      <div class="fg"><label>Sleep (hours/night)</label><input type="number" id="cs-sleep" min="0" max="24" step="0.5" value="7"></div>
+      <div class="fg"><label>Chronic pain</label><select id="cs-pain"><option>NO</option><option>YES</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Nutrition score (model scale)</label><input type="number" id="cs-nutrition" min="0" max="10" step="1" value="3"></div>
+      <div class="fg"><label>Environmental pollution</label><select id="cs-pollution"><option value="L">Low</option><option value="M">Moderate</option><option value="H">High</option></select></div>
+      <div class="fg"><label>Occupational hazard</label><select id="cs-hazard"><option>NO</option><option>YES</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Access to healthcare</label><select id="cs-access"><option>YES</option><option>NO</option></select></div>
+      <div class="fg"><label>Smoking status</label><select id="cs-smoking"><option>Non-smoker / not reported</option><option>Current smoker</option><option>Former smoker</option></select></div>
+      <div class="fg"><label>Hypertension treatment</label><select id="cs-treatment"><option>Not applicable</option><option>Treated</option><option>Untreated</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Fruit intake (servings/day)</label><input type="number" id="cs-fruit" min="0" max="20" value="2"></div>
+      <div class="fg"><label>Vegetable intake (servings/day)</label><input type="number" id="cs-vegetable" min="0" max="20" value="3"></div>
+      <div class="fg"><label>Hydration (litres/day)</label><input type="number" id="cs-water" min="0" max="15" step="0.1" value="2"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Lifestyle choice</label><select id="cs-lifestyle"><option>Homemade Food</option><option>Mixed Diet</option><option>Mostly Processed Food</option></select></div>
+      <div class="fg"><label>Total salt-intake score</label><input type="number" id="cs-salt" min="0" max="30" value="5"></div>
+      <div class="fg"><label>Zone</label><select id="cs-zone"><option>Ijebu Zone</option><option>Egba Zone</option><option>Remo Zone</option><option>Yewa Zone</option><option>Other / outside Ogun</option></select></div>
+    </div>
+    <button class="btn btn-gold btn-full" id="btn-run-cognitive-symptoms" onclick="runCognitiveSymptomAssessment()" style="margin-top:1rem;">🧠 Run Cognitive Symptom Assessment</button>
+    <div id="cognitive-symptom-result" class="result-card" style="display:none;margin-top:1.2rem;" aria-live="polite"></div>
+  </div>
 
   <!-- Quick Form (default) -->
   <div id="dementia-form-wrap">
@@ -1585,9 +1627,9 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <table class="data-table">
       <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td>ADM-001</td><td>Adebimpe-John O.E</td><td><span class="tag tag-gold">PI / Admin</span></td><td><span class="tag tag-green">Active</span></td></tr>
-        <tr><td>RES-001</td><td>Annanias Evelyn Nnashiru.</td><td><span class="tag tag-purple">Researcher</span></td><td><span class="tag tag-green">Active</span></td></tr>
-        <tr><td>SUP-001</td><td>Prof. Owolabi Mayowa</td><td><span class="tag tag-purple">Supervisor</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>ADM-001</td><td>Prof. B.V. Owoyele</td><td><span class="tag tag-gold">PI / Admin</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>RES-001</td><td>Adebimpe-John O.E.</td><td><span class="tag tag-purple">Researcher</span></td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>SUP-001</td><td>Prof. Owolabi Mayowa</td><td><span class="tag tag-purple">Co-Supervisor</span></td><td><span class="tag tag-green">Active</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -1744,7 +1786,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <div class="fg"><label>Your Full Name</label><input type="text" id="login-name" placeholder="Prof. / Dr. / Mr. / Ms. ..."></div>
     <div class="fg"><label>Access Password</label><input type="password" id="login-pass" placeholder="Enter your assigned password"></div>
     <button class="btn btn-gold btn-full" style="margin-top:.5rem;" onclick="handleLogin()">Login &#x2192;</button>
-    <p style="text-align:center;font-size:.72rem;color:var(--mist);margin-top:.75rem;">Principal Researcher: Adebimpe-John O.E. &nbsp;|&nbsp; Mentors &amp; Supervisors: Prof. Mayowa Owolabi, Godwin Ogbole, Benjamin Aribisala, Adesola Ogunniyi, Segun Fatumo, Bruce Ovbiagele &amp; Judit Kumuthini</p>
+    <p style="text-align:center;font-size:.72rem;color:var(--mist);margin-top:.75rem;">Principal Researcher: Adebimpe-John O.E. &nbsp;|&nbsp; Supervisors:Prof. Owolabi</p>
   </div>
 </div>
 
@@ -3222,6 +3264,59 @@ function estimateCulturalMMSE(age) {
   else if (age > 60) mmseScore *= 0.97;
 
   return Math.max(0, Math.min(30, Math.round(mmseScore)));
+}
+
+async function runCognitiveSymptomAssessment() {
+  const byId = id => document.getElementById(id);
+  const num = (id, label) => {
+    const el = byId(id); const n = Number(el.value);
+    if (el.value.trim() === '' || !Number.isFinite(n)) throw new Error('Please enter a valid value for ' + label + '.');
+    return n;
+  };
+  let payload;
+  try {
+    payload = {
+      "AGE": num('cs-age','age'), "SEX": byId('cs-sex').value,
+      "EDU- L": byId('cs-edu').value, "S- BP": num('cs-sbp','systolic blood pressure'),
+      "D-BP": num('cs-dbp','diastolic blood pressure'), "DIABETES": byId('cs-diabetes').value,
+      "HYPERTENSION": byId('cs-htn').value, "HEART- D": byId('cs-heart').value,
+      "STRESS- L": byId('cs-stress').value, "SLEEP HOURS": num('cs-sleep','sleep hours'),
+      "CHRONIC- PAIN": byId('cs-pain').value, "NUTRITION SCORE": num('cs-nutrition','nutrition score'),
+      "HEART RATE": num('cs-hr','heart rate'), "POLLUTION": byId('cs-pollution').value,
+      "OCCUPATION HAZZARD": byId('cs-hazard').value, "ACCESS TO HEALTH CARE": byId('cs-access').value,
+      "SMOKING STATUS (CORRECTED)": byId('cs-smoking').value,
+      "HYPERTENSION TREATMENT (CORRECTED)": byId('cs-treatment').value,
+      "FRUIT_INTAKE": num('cs-fruit','fruit intake'), "VEGETABLE_INTAKE": num('cs-vegetable','vegetable intake'),
+      "HYDRATION_LITERS": num('cs-water','hydration'), "LIFESTYLE_CHOICES": byId('cs-lifestyle').value,
+      "Total_Salt Intake Score": num('cs-salt','salt-intake score'), "ZONE": byId('cs-zone').value
+    };
+  } catch (e) { toast('⚠️ ' + e.message); return; }
+
+  const btn = byId('btn-run-cognitive-symptoms');
+  const out = byId('cognitive-symptom-result');
+  btn.disabled = true; btn.textContent = '⏳ Assessing…';
+  out.style.display = 'block';
+  out.innerHTML = '<p style="color:var(--mist);">Sending all 24 model predictors to the cognitive-symptom endpoint…</p>';
+  try {
+    const response = await fetch(API_BASE + '/predict/cognitive-symptoms', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.detail || result.message || ('API error ' + response.status));
+    const pct = Number(result.risk_pct ?? result.risk_percent ?? result.probability_percent ?? result.probability);
+    const level = String(result.risk_level ?? result.risk_category ?? result.category ?? 'RESULT').toUpperCase();
+    const summary = result.note || result.interpretation || result.message || result.summary || 'Model prediction returned successfully.';
+    out.innerHTML = '<h3 style="margin-bottom:.7rem;">Cognitive symptom model result</h3>' +
+      (Number.isFinite(pct) ? '<p style="font-size:1.5rem;color:var(--gold);font-weight:700;">' + Math.round(pct* (pct <= 1 ? 100 : 1)) + '%</p>' : '') +
+      '<p><strong>' + level.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</strong></p>' +
+      '<p style="color:var(--smoke);line-height:1.6;">' + String(summary).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</p>' +
+      ((Array.isArray(result.recommendations) && result.recommendations.length) ? '<h4 style="margin:.8rem 0 .4rem;">Suggested next steps</h4><ul>' + result.recommendations.map(x => '<li>' + String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</li>').join('') + '</ul>' : '') +
+      ((Array.isArray(result.fields_defaulted) && result.fields_defaulted.length) ? '<p style="font-size:.78rem;color:var(--mist);margin-top:.7rem;">Model defaults used for: ' + result.fields_defaulted.map(x => String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))).join(', ') + '</p>' : '') +
+      '<p style="font-size:.78rem;color:var(--mist);margin-top:.8rem;">This is a model-based symptom-risk estimate, not a diagnosis. Seek clinical assessment for persistent or worsening cognitive concerns.</p>';
+    await saveRecord('cognitive_symptom_assessments', { assessment_type:'cognitive_symptom_assessment', inputs:payload, model_response:result, model_name:result.model_used || 'African Cognitive Symptom Risk Model', model_version:result.model_version || null, assessment_date:new Date().toISOString() });
+  } catch (e) {
+    out.innerHTML = '<p style="color:#EF4444;">The cognitive-symptom assessment could not be completed: ' + String(e.message || e).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</p><p style="color:var(--mist);font-size:.82rem;">Your existing dementia-risk assessment remains available below.</p>';
+  } finally { btn.disabled = false; btn.textContent = '🧠 Run Cognitive Symptom Assessment'; }
 }
 
 function runDementiaAssessment() {
