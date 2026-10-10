@@ -805,13 +805,21 @@ def _supabase_rest(
         else json.dumps(payload, allow_nan=False).encode("utf-8")
     )
 
-    headers = {
-        "apikey": service_key,
-        "Authorization": f"Bearer {service_key}",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Prefer": prefer,
-    }
+   
+headers = {
+    "apikey": service_key,
+    "Authorization": f"Bearer {service_key}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Prefer": prefer,
+}
+
+# Explicitly target the public schema, where our tables exist.
+if method.upper() in ("GET", "HEAD"):
+    headers["Accept-Profile"] = "public"
+else:
+    headers["Content-Profile"] = "public"
+
 
     # Log request details without exposing credentials or participant data.
     logger.info(
