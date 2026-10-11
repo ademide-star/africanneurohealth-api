@@ -867,6 +867,9 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <span class="section-label">// Community Cognitive Symptom Screening</span>
     <h2 class="section-title" style="margin:.5rem 0 1rem;">🧠 Cognitive Symptom Assessment</h2>
     <p style="color:var(--mist);font-size:.88rem;line-height:1.65;margin-bottom:1.2rem;">This is a separate lifestyle and health-factor assessment using the African Cognitive Symptom Risk Model. It does not diagnose dementia and does not replace the dementia-risk assessment below. Complete the fields with the participant's reported or measured information.</p>
+    <div id="cognitive-protocol-notice" role="status" aria-live="polite" style="background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.35);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;color:var(--amber);font-size:.82rem;line-height:1.6;">
+      Checking study approval status…
+    </div>
     <div class="form-row">
       <div class="fg"><label>Age</label><input type="number" id="cs-age" min="18" max="120" value="45"></div>
       <div class="fg"><label>Sex</label><select id="cs-sex"><option value="M">Male</option><option value="F">Female</option></select></div>
@@ -1888,6 +1891,12 @@ async function refreshProtocolGate() {
       statusEl.style.borderColor = protocolCollectionEnabled ? 'rgba(78,203,130,.35)' : 'rgba(240,207,114,.3)';
     }
     if (submit) submit.disabled = !protocolCollectionEnabled;
+    const cognitiveNotice = document.getElementById('cognitive-protocol-notice');
+    if (cognitiveNotice) {
+      cognitiveNotice.textContent = protocolCollectionEnabled
+        ? 'The backend reports that research collection is enabled. Research assessments may only be saved after the approved consent and eligibility process is completed.'
+        : 'RESEARCH COLLECTION IS DISABLED. Use synthetic test values only. Do not enter real participant data. Predictions are not saved as research records while approval is pending.';
+    }
     // The server exposes the approved consent version only to the registration handler via configuration;
     // the client must not invent or hard-code a version. Request it only when the gate is enabled.
     if (protocolCollectionEnabled) {
@@ -1902,6 +1911,8 @@ async function refreshProtocolGate() {
     protocolCollectionEnabled = false;
     if (submit) submit.disabled = true;
     if (statusEl) statusEl.textContent = 'Cannot verify study approval configuration with the server. Research collection remains blocked.';
+    const cognitiveNotice = document.getElementById('cognitive-protocol-notice');
+    if (cognitiveNotice) cognitiveNotice.textContent = 'RESEARCH COLLECTION IS DISABLED because the backend approval status could not be verified. Use synthetic test values only. Do not enter real participant data.';
   }
 }
 
@@ -1936,6 +1947,11 @@ async function saveRecord(table, payload) {
     }
     const allowed = ['stroke_predictions','alzheimer_predictions','cognitive_symptom_assessments','nutrition_tracker','stress_assessments','pain_stroke_study'];
     if (!allowed.includes(table)) { console.warn('Blocked non-approved research record type:', table); return false; }
+    // Client-side convenience guard only. The backend protocol gate remains authoritative.
+    if (!protocolCollectionEnabled) {
+      console.info('Research record not saved because the backend protocol gate is closed.');
+      return false;
+    }
     const token = currentSessionToken();
     if (!token) { toast('Please start a participant session before saving an assessment.'); return false; }
     const clean = {};
@@ -3379,7 +3395,14 @@ async function runCognitiveSymptomAssessment() {
       ((Array.isArray(result.recommendations) && result.recommendations.length) ? '<h4 style="margin:.8rem 0 .4rem;">Suggested next steps</h4><ul>' + result.recommendations.map(x => '<li>' + String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</li>').join('') + '</ul>' : '') +
       ((Array.isArray(result.fields_defaulted) && result.fields_defaulted.length) ? '<p style="font-size:.78rem;color:var(--mist);margin-top:.7rem;">Model defaults used for: ' + result.fields_defaulted.map(x => String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))).join(', ') + '</p>' : '') +
       '<p style="font-size:.78rem;color:var(--mist);margin-top:.8rem;">This is a model-based symptom-risk estimate, not a diagnosis. Seek clinical assessment for persistent or worsening cognitive concerns.</p>';
-    await saveRecord('cognitive_symptom_assessments', { assessment_type:'cognitive_symptom_assessment', inputs:payload, model_response:result, model_name:result.model_used || 'African Cognitive Symptom Risk Model', model_version:result.model_version || null, assessment_date:new Date().toISOString() });
+    if (protocolCollectionEnabled) {
+      const saved = await saveRecord('cognitive_symptom_assessments', { assessment_type:'cognitive_symptom_assessment', inputs:payload, model_response:result, model_name:result.model_used || 'African Cognitive Symptom Risk Model', model_version:result.model_version || null, assessment_date:new Date().toISOString() });
+      if (!saved) {
+        out.insertAdjacentHTML('beforeend', '<p style="font-size:.8rem;color:var(--mist);margin-top:.8rem;">Prediction returned, but no research record was saved. Check the approved consent workflow and backend response.</p>');
+      }
+    } else {
+      out.insertAdjacentHTML('beforeend', '<p style="font-size:.8rem;color:var(--amber);margin-top:.8rem;">Synthetic-test mode: the protocol gate is closed, so this prediction was not saved as a research record.</p>');
+    }
   } catch (e) {
     out.innerHTML = '<p style="color:#EF4444;">The cognitive-symptom assessment could not be completed: ' + String(e.message || e).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</p><p style="color:var(--mist);font-size:.82rem;">Your existing dementia-risk assessment remains available below.</p>';
   } finally { btn.disabled = false; btn.textContent = '🧠 Run Cognitive Symptom Assessment'; }
