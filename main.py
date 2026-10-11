@@ -385,10 +385,10 @@ class DementiaInput(BaseModel):
     EducationLevel:          float = 12.0
     AlcoholConsumption:      float = 0.0
     PhysicalActivity:        float = 3.0
-    DietQuality:             float = 5.0
+    DietQuality:              float = 5.0
     SleepQuality:            float = 6.0
     SystolicBP:              float = 120.0
-    DiastolicBP:             float = 80.0
+    DiastolicBP:              float = 80.0
     CholesterolTotal:        float = 200.0
     CholesterolLDL:          float = 120.0
     CholesterolHDL:          float = 50.0
@@ -648,60 +648,17 @@ def predict_cognitive_symptoms(payload: dict):
     try:
         predictors = list(cognitive_symptom_bundle["predictors"])
         values = dict(COGNITIVE_DEFAULTS)
-
-        # Match keys case-insensitively and tolerate spaces/punctuation differences.
-        # This supports inputs such as age/gender as well as AGE/SEX and Systolic BP.
-        normalized_payload = {
-            re.sub(r"[^a-z0-9]", "", str(key).lower()): value
-            for key, value in payload.items()
-        }
-        supplied_fields = []
+        # Accept only fields known to this model; missing fields use documented defaults.
         for field in predictors:
-            normalized_field = re.sub(r"[^a-z0-9]", "", str(field).lower())
-            if normalized_field in normalized_payload:
-                value = normalized_payload[normalized_field]
-                if value is not None and value != "":
-                    values[field] = value
-                    supplied_fields.append(field)
+            if field in payload and payload[field] is not None and payload[field] != "":
+                values[field] = payload[field]
 
-        # A participant-registration payload (e.g. consent, country, age, gender)
-        # is not a cognitive assessment. Do not produce a score from defaults alone.
-        if len(supplied_fields) < 5:
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": (
-                        "Insufficient cognitive assessment inputs. This endpoint requires "
-                        "at least 5 recognized model predictor fields; registration details "
-                        "alone are not a cognitive assessment."
-                    ),
-                    "recognized_predictor_fields": supplied_fields,
-                    "recognized_predictor_count": len(supplied_fields),
-                    "minimum_predictor_count": 5,
-                    "example_fields": [
-                        "AGE", "SEX", "EDU- L", "S- BP", "D-BP",
-                        "DIABETES", "HYPERTENSION", "STRESS- L", "SLEEP HOURS",
-                    ],
-                },
-            )
-
-        # Normalize common categorical values before model inference.
-        sex = str(values.get("SEX", "")).strip().lower()
-        values["SEX"] = (
-            "F" if sex in ("f", "female", "woman")
-            else "M" if sex in ("m", "male", "man")
-            else values.get("SEX", "M")
-        )
+        # Friendly aliases from the HTML form/API clients.
+        sex = str(values["SEX"]).strip().lower()
+        values["SEX"] = "F" if sex in ("f", "female", "woman") else "M" if sex in ("m", "male", "man") else values["SEX"]
         for field in ("DIABETES", "HYPERTENSION", "HEART- D", "OCCUPATION HAZZARD", "ACCESS TO HEALTH CARE"):
-            if field not in values:
-                continue
             val = str(values[field]).strip().upper()
-            values[field] = (
-                "YES" if val in ("YES", "Y", "TRUE", "1")
-                else "NO" if val in ("NO", "N", "FALSE", "0")
-                else values[field]
-            )
-
+            values[field] = "YES" if val in ("YES", "Y", "TRUE", "1") else "NO" if val in ("NO", "N", "FALSE", "0") else values[field]
         for field in COGNITIVE_NUMERIC_FIELDS:
             try:
                 values[field] = float(values[field])
@@ -713,7 +670,6 @@ def predict_cognitive_symptoms(payload: dict):
             except (TypeError, ValueError):
                 values[field] = COGNITIVE_DEFAULTS[field]
 
-        defaulted_fields = [field for field in predictors if field not in supplied_fields]
         X = pd.DataFrame([{field: values[field] for field in predictors}], columns=predictors)
         raw_probability = cognitive_symptom_bundle["model"].predict_proba(X)[:, 1]
         calibrated_probability = cognitive_symptom_bundle["calibrator"].predict_proba(
@@ -729,8 +685,6 @@ def predict_cognitive_symptoms(payload: dict):
             "cognitive_symptom_risk_pct": risk_pct,
             "risk_level": risk_level,
             "risk_factors": [],
-            "recognized_predictor_fields": supplied_fields,
-            "fields_defaulted": defaulted_fields,
             "recommendations": [
                 "If memory or thinking concerns persist, arrange an assessment with a qualified healthcare professional.",
                 "Continue monitoring blood pressure, sleep, nutrition, and other relevant health factors.",
@@ -739,8 +693,7 @@ def predict_cognitive_symptoms(payload: dict):
             "model_name": "African Cognitive Symptom Risk Model",
             "note": (
                 "Screening estimate for self-reported cognitive symptoms. It is not a diagnosis of dementia or Alzheimer's disease. "
-                "Fields listed in fields_defaulted used model defaults and may materially affect this estimate. "
-                "Risk factors are not currently inferred by this endpoint."
+                "Some fields use defaults when not supplied; interpret the estimate accordingly."
             ),
             "timestamp": datetime.now().isoformat(),
         }
@@ -938,7 +891,14 @@ def _supabase_rest(
 
 class ResearchParticipantCreate(BaseModel):
     consent: bool
-    consent_version: str = "ANHRL-NRF-2026-v1"
+    consent_version: str
+    consent_method: str
+    consent_language: str
+    information_sheet_reviewed: bool
+    eligibility_confirmed: bool
+    non_literate: bool = False
+    independent_witness_confirmed: bool = False
+    research_assistant_code: str
     age: Optional[int] = None
     gender: Optional[str] = None
     country: str
@@ -994,6 +954,104 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
     return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
 
 
+def _protocol_collection_status() -> dict:
+    """Fail closed unless study approval and protocol configuration are explicitly verified."""
+    required = {
+        "collection_enabled": os.getenv("RESEARCH_COLLECTION_ENABLED", "").strip().lower() == "true",
+        "ethics_approval_status": os.getenv("STUDY_ETHICS_APPROVAL_STATUS", "").strip().lower() == "approved",
+        "ethics_approval_reference": bool(os.getenv("STUDY_ETHICS_APPROVAL_REFERENCE", "").strip()),
+        "protocol_version": bool(os.getenv("STUDY_PROTOCOL_VERSION", "").strip()),
+        "consent_version": bool(os.getenv("STUDY_CONSENT_VERSION", "").strip()),
+        "administrative_permission": os.getenv("STUDY_ADMIN_PERMISSION_CONFIRMED", "").strip().lower() == "true",
+        "community_permission": os.getenv("STUDY_COMMUNITY_PERMISSION_CONFIRMED", "").strip().lower() == "true",
+    }
+    enabled = all(required.values())
+    return {
+        "collection_enabled": enabled,
+        "status": "enabled" if enabled else "blocked_pending_protocol_verification",
+        "required_checks": required,
+        "message": (
+            "Research collection is enabled by backend configuration. Confirm that the configured approval and versions match the current approved documents."
+            if enabled else
+            "Research data collection is disabled until ethics approval, protocol and consent versions, administrative permission, community permission, and explicit activation are configured on the backend. Synthetic model testing may continue."
+        ),
+    }
+
+
+@app.get("/research/protocol-status")
+def research_protocol_status():
+    """Expose only whether the server-side protocol gate is open, not confidential approval documents."""
+    status = _protocol_collection_status()
+    return {
+        "collection_enabled": status["collection_enabled"],
+        "status": status["status"],
+        "message": status["message"],
+        "consent_version": os.getenv("STUDY_CONSENT_VERSION", "").strip() if status["collection_enabled"] else None,
+    }
+
+
+@app.post("/research/participants")
+def create_research_participant(payload: ResearchParticipantCreate):
+    """Create a pseudonymous participant registration only after protocol and consent checks pass."""
+    status = _protocol_collection_status()
+    if not status["collection_enabled"]:
+        raise HTTPException(status_code=423, detail=status["message"])
+    if not payload.consent:
+        raise HTTPException(status_code=403, detail="Documented voluntary consent is required before registration.")
+    configured_consent_version = os.getenv("STUDY_CONSENT_VERSION", "").strip()
+    configured_protocol_version = os.getenv("STUDY_PROTOCOL_VERSION", "").strip()
+    if not configured_consent_version or payload.consent_version != configured_consent_version:
+        raise HTTPException(status_code=409, detail="The consent form version does not match the approved version configured by the study team.")
+    if not payload.information_sheet_reviewed or not payload.eligibility_confirmed:
+        raise HTTPException(status_code=403, detail="The approved participant information process and eligibility check must be completed first.")
+    method = payload.consent_method.strip().lower()
+    if method not in {"written_signed", "thumbprint_witnessed"}:
+        raise HTTPException(status_code=422, detail="Consent method must match the approved written-signature or witnessed-thumbprint process.")
+    if payload.non_literate and (method != "thumbprint_witnessed" or not payload.independent_witness_confirmed):
+        raise HTTPException(status_code=403, detail="For a non-literate participant, record the approved local-language explanation and independent witness confirmation before proceeding.")
+    if not payload.consent_language.strip() or len(payload.consent_language.strip()) > 60:
+        raise HTTPException(status_code=422, detail="Record the language used for the consent discussion.")
+    assistant_code = payload.research_assistant_code.strip()
+    if not assistant_code or len(assistant_code) > 80:
+        raise HTTPException(status_code=422, detail="A study research-assistant code is required.")
+    country = payload.country.strip()
+    if not country or len(country) > 100:
+        raise HTTPException(status_code=422, detail="A valid country is required.")
+    if payload.age is not None and not 1 <= payload.age <= 120:
+        raise HTTPException(status_code=422, detail="Age must be between 1 and 120, or left blank.")
+
+    research_id = "ANH-" + uuid.uuid4().hex.upper()
+    registration = {
+        "research_id": research_id,
+        "country": country,
+        "african_subregion": (payload.region or "")[:100] or None,
+        "nigeria_geopolitical_zone": (payload.geopolitical_zone or "")[:100] or None,
+        "state_province": (payload.province or "")[:100] or None,
+        "district_lga": None,
+        "study_site": (payload.study_site or "")[:150] or None,
+        "assessment_type": "participant_registration",
+        "data_json": {
+            "age": payload.age,
+            "gender": (payload.gender or "")[:30] or None,
+            "consent_method": method,
+            "consent_language": payload.consent_language.strip()[:60],
+            "information_sheet_reviewed": True,
+            "eligibility_confirmed": True,
+            "non_literate": bool(payload.non_literate),
+            "independent_witness_confirmed": bool(payload.independent_witness_confirmed),
+            "research_assistant_code": assistant_code,
+            "protocol_version": configured_protocol_version,
+            "ethics_approval_reference": os.getenv("STUDY_ETHICS_APPROVAL_REFERENCE", "").strip()[:120],
+            "consent_document_version": configured_consent_version,
+        },
+        "consent_confirmed": True,
+        "consent_version": configured_consent_version,
+    }
+    _supabase_rest("neurohealth_research_records", "POST", [registration], prefer="return=minimal")
+    token = _make_token({"sub": research_id, "role": "participant"}, expires_seconds=43200)
+    return {"research_id": research_id, "participant_token": token, "consent_confirmed": True, "protocol_version": configured_protocol_version}
+
+
 def _participant_registration(research_id: str) -> dict:
     """Fetch the minimal registration metadata needed for a research record."""
     query = urlencode({
@@ -1020,6 +1078,9 @@ def save_research_record(
     authorization: Optional[str] = Header(default=None),
 ):
     """Store de-identified assessments in the privacy-first research table."""
+    status = _protocol_collection_status()
+    if not status["collection_enabled"]:
+        raise HTTPException(status_code=423, detail=status["message"])
     claims = _claims_from_request(authorization)
     record_type = payload.record_type.strip()
     if record_type not in ALLOWED_RESEARCH_RECORD_TYPES:
@@ -1260,6 +1321,9 @@ def save_research_outcome(
     authorization: Optional[str] = Header(default=None),
 ):
     """Store a verified outcome in the shared privacy-first research table."""
+    status = _protocol_collection_status()
+    if not status["collection_enabled"]:
+        raise HTTPException(status_code=423, detail=status["message"])
     _require_researcher(authorization)
     research_id = payload.research_id.strip()
     outcome_type = payload.outcome_type.strip().lower()
@@ -1316,5 +1380,5 @@ def save_research_outcome(
 
 
 if __name__ == "__main__":
-    import uvicorn  # type: ignore[import-not-found]
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
