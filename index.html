@@ -1823,15 +1823,38 @@ For researchers, the same platform doubles as live research infrastructure: uplo
       </div>
       <div class="fg"><label>Study site / local zone</label><input type="text" id="reg-study-site" maxlength="150" placeholder="e.g., Egba Zone, Ijebu Zone, Remo Zone"></div>
     </details>
+    <div id="protocol-gate-status" role="status" aria-live="polite" style="background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.3);border-radius:8px;padding:.85rem;margin:.8rem 0 1rem;font-size:.82rem;color:var(--amber);line-height:1.6;">
+      Checking the study approval and protocol configuration. Research registration remains blocked until the server confirms the required checks.
+    </div>
+    <div class="form-row">
+      <div class="fg"><label for="reg-consent-method">Documented consent method *</label><select id="reg-consent-method" required><option value="">Select method</option><option value="written_signed">Written consent with signature</option><option value="thumbprint_witnessed">Thumbprint with independent witness (non-literate participant)</option></select></div>
+      <div class="fg"><label for="reg-consent-language">Language used for consent *</label><select id="reg-consent-language" required><option value="">Select language</option><option>English</option><option>Yoruba</option><option>Other approved local language</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label for="reg-ra-code">Research assistant code *</label><input id="reg-ra-code" maxlength="80" required placeholder="Study team code, not name"></div>
+      <div class="fg"><label for="reg-nonliterate">Participant literacy process *</label><select id="reg-nonliterate" required><option value="false">Participant can read consent materials</option><option value="true">Consent read aloud to non-literate participant</option></select></div>
+    </div>
+    <label style="display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;line-height:1.55;color:var(--smoke);margin:.45rem 0;">
+      <input type="checkbox" id="reg-info-reviewed" style="margin-top:.25rem;flex-shrink:0;">
+      <span>The approved participant information sheet has been provided and explained, including purpose, procedures, risks, benefits, confidentiality, voluntariness and withdrawal rights.</span>
+    </label>
+    <label style="display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;line-height:1.55;color:var(--smoke);margin:.45rem 0;">
+      <input type="checkbox" id="reg-eligibility" style="margin-top:.25rem;flex-shrink:0;">
+      <span>Eligibility has been checked against the current approved inclusion and exclusion criteria.</span>
+    </label>
+    <label style="display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;line-height:1.55;color:var(--smoke);margin:.45rem 0;">
+      <input type="checkbox" id="reg-witness-confirmed" style="margin-top:.25rem;flex-shrink:0;">
+      <span>For a non-literate participant only: the approved information and consent form were read aloud in the participant's local language and an independent literate witness confirmed the thumbprint consent. Witness identity/signature stays on the approved paper form, not in this dashboard.</span>
+    </label>
     <label style="display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;line-height:1.55;color:var(--smoke);margin:.8rem 0 1rem;">
       <input type="checkbox" id="reg-consent" style="margin-top:.25rem;flex-shrink:0;">
-      <span>I have read the data notice and agree to collection of the de-identified assessment and geographic variables described here for research. This online agreement does not replace any additional consent required by the approved study protocol.</span>
+      <span>The participant has freely and voluntarily consented using the approved process. They understand participation is voluntary and they may decline questions/procedures or withdraw without penalty.</span>
     </label>
     <div style="background:rgba(78,203,130,.07);border:1px solid rgba(78,203,130,.18);border-radius:8px;padding:.85rem;margin-bottom:1.1rem;font-size:.78rem;color:var(--mist);line-height:1.6;">
-      🔒 A research ID links your assessment records. Names and contact details are not collected in this form. Research data are stored separately from any optional identity records.
+      🔒 No participant name, address, phone number, witness name or witness contact details are entered here. Keep signed consent documents securely in the approved physical record system. The research ID is pseudonymous, not a guarantee of anonymity.
     </div>
-    <button class="btn btn-gold btn-full" id="reg-submit" onclick="handleRegister()">Create Research ID &amp; Continue &#x2192;</button>
-    <p class="access-note">Only proceed when the collection and consent process matches the approved study protocol.</p>
+    <button class="btn btn-gold btn-full" id="reg-submit" onclick="handleRegister()" disabled>Create Research ID &amp; Continue &#x2192;</button>
+    <p class="access-note">Research registration, assessment saving and outcome recording remain blocked unless the backend confirms the approved study configuration is active.</p>
   </div>
 </div>
 
@@ -1850,6 +1873,38 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 ══════════════════════════════════════════════ */
 /* ══ API ENDPOINT — your FastAPI backend on Render ══ */
 const API_BASE = 'https://africanneurohealth-api-jhke.onrender.com';
+let protocolCollectionEnabled = false;
+let approvedConsentVersion = '';
+async function refreshProtocolGate() {
+  const statusEl = document.getElementById('protocol-gate-status');
+  const submit = document.getElementById('reg-submit');
+  try {
+    const res = await fetch(API_BASE + '/research/protocol-status', {cache:'no-store'});
+    const data = await res.json().catch(() => ({}));
+    protocolCollectionEnabled = !!(res.ok && data.collection_enabled === true);
+    if (statusEl) {
+      statusEl.textContent = data.message || 'Protocol status could not be confirmed. Research collection remains blocked.';
+      statusEl.style.color = protocolCollectionEnabled ? 'var(--mint)' : 'var(--amber)';
+      statusEl.style.borderColor = protocolCollectionEnabled ? 'rgba(78,203,130,.35)' : 'rgba(240,207,114,.3)';
+    }
+    if (submit) submit.disabled = !protocolCollectionEnabled;
+    // The server exposes the approved consent version only to the registration handler via configuration;
+    // the client must not invent or hard-code a version. Request it only when the gate is enabled.
+    if (protocolCollectionEnabled) {
+      approvedConsentVersion = data.consent_version || '';
+      if (!approvedConsentVersion) {
+        protocolCollectionEnabled = false;
+        if (submit) submit.disabled = true;
+        if (statusEl) statusEl.textContent = 'The backend has not exposed a configured consent version. Research collection remains blocked until the API configuration is corrected.';
+      }
+    }
+  } catch (err) {
+    protocolCollectionEnabled = false;
+    if (submit) submit.disabled = true;
+    if (statusEl) statusEl.textContent = 'Cannot verify study approval configuration with the server. Research collection remains blocked.';
+  }
+}
+
 
 // ── Global state (defined early so all functions can access it) ──
 const appState = { page: 'home', loginRole: 'researcher' };
@@ -2713,14 +2768,25 @@ async function handleRegister() {
   const geopoliticalZone = (document.getElementById('reg-zone').value || '').trim() || null;
   const studySite = (document.getElementById('reg-study-site').value || '').trim() || null;
   const consent = !!document.getElementById('reg-consent').checked;
+  const consentMethod = document.getElementById('reg-consent-method').value;
+  const consentLanguage = document.getElementById('reg-consent-language').value;
+  const nonLiterate = document.getElementById('reg-nonliterate').value === 'true';
+  const infoReviewed = !!document.getElementById('reg-info-reviewed').checked;
+  const eligibilityConfirmed = !!document.getElementById('reg-eligibility').checked;
+  const witnessConfirmed = !!document.getElementById('reg-witness-confirmed').checked;
+  const assistantCode = (document.getElementById('reg-ra-code').value || '').trim();
+  if (!protocolCollectionEnabled) { toast('Research collection is blocked until the approved protocol is verified on the backend.'); return; }
   if (!country) { toast('Please select a country.'); return; }
   if (age !== null && (!Number.isFinite(age) || age < 1 || age > 120)) { toast('Enter a valid age or leave it blank.'); return; }
-  if (!consent) { toast('Please review and confirm the data notice before continuing.'); return; }
+  if (!consent || !infoReviewed || !eligibilityConfirmed) { toast('Complete the approved information, eligibility and voluntary consent steps first.'); return; }
+  if (!consentMethod || !consentLanguage || !assistantCode) { toast('Select the consent method and language and enter the research assistant code.'); return; }
+  if (nonLiterate && (consentMethod !== 'thumbprint_witnessed' || !witnessConfirmed)) { toast('For a non-literate participant, use witnessed thumbprint consent and confirm the approved read-aloud process.'); return; }
+  if (!nonLiterate && consentMethod === 'thumbprint_witnessed') { toast('Use witnessed thumbprint consent only when the approved process for a non-literate participant applies.'); return; }
   const submit = document.getElementById('reg-submit'); if (submit) { submit.disabled = true; submit.textContent = 'Creating secure research ID…'; }
   try {
     const response = await fetch(API_BASE + '/research/participants', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ consent, consent_version:'ANHRL-NRF-2026-v1', age, gender, country, province, region, geopolitical_zone:geopoliticalZone, study_site:studySite })
+      body: JSON.stringify({ consent, consent_version:approvedConsentVersion, consent_method:consentMethod, consent_language:consentLanguage, information_sheet_reviewed:infoReviewed, eligibility_confirmed:eligibilityConfirmed, non_literate:nonLiterate, independent_witness_confirmed:witnessConfirmed, research_assistant_code:assistantCode, age, gender, country, province, region, geopolitical_zone:geopoliticalZone, study_site:studySite })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.detail || 'Research ID could not be created. Please try again later.');
@@ -4597,6 +4663,7 @@ async function runPainStrokeRisk(payload) {
 
 // Initialise everything on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
+  refreshProtocolGate();
   setTimeout(initCinnamonPanelTrigger, 600);
 });
 
