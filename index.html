@@ -1768,7 +1768,8 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <button class="modal-close" onclick="closeModal('modal-assess')">&#x2715;</button>
 <svg viewBox="0 0 64 64" style="width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG3)" stroke-width="2.2" stroke-linejoin="round"/></svg>
     <h2>Start Your Assessment</h2>
-    <p>Free, confidential, 7 languages. No login required. All records saved securely.</p>
+    <p>Free screening and synthetic testing. Research records are not saved while study approval is pending.</p>
+    <div id="assessment-test-mode-note" style="display:none;background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.3);border-radius:8px;padding:.75rem;margin:.75rem 0 1rem;color:var(--amber);font-size:.8rem;line-height:1.5;">Protocol gate is closed. Use synthetic test values only. Do not enter real participant data; predictions will not be saved as research records.</div>
     <div class="modal-opts">
       <button class="modal-opt" onclick="closeModal('modal-assess');showPage('stroke')"><span style="font-size:1.5rem;">&#x1FA7A;</span><div><strong>Stroke Risk Assessment</strong><span>BP, BMI, lifestyle, environment · AI scoring · PDF report · ~5 min</span></div></button>
       <button class="modal-opt" onclick="closeModal('modal-assess');showPage('dementia')"><span style="font-size:1.5rem;">&#x1F9EC;</span><div><strong>Dementia Risk Screening</strong><span>MMSE, metabolic, cognitive symptoms · AI scoring · PDF · ~7 min</span></div></button>
@@ -1788,6 +1789,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <p id="login-desc" style="font-size:.88rem;">Researcher &amp; Admin access is restricted. Enter your <strong>name</strong> and the <strong>access password</strong>.<br><span style="color:var(--gold);">Contact Adebimpe-John O.E. to be assigned a password.</span></p>
     <div class="fg"><label>Your Full Name</label><input type="text" id="login-name" placeholder="Prof. / Dr. / Mr. / Ms. ..."></div>
     <div class="fg"><label>Access Password</label><input type="password" id="login-pass" placeholder="Enter your assigned password"></div>
+    <p id="login-error" role="alert" style="color:#FCA5A5;font-size:.82rem;min-height:1.2rem;margin:.35rem 0;" aria-live="polite"></p>
     <button class="btn btn-gold btn-full" style="margin-top:.5rem;" onclick="handleLogin()">Login &#x2192;</button>
     <p style="text-align:center;font-size:.72rem;color:var(--mist);margin-top:.75rem;">Principal Researcher: Adebimpe-John O.E. &nbsp;|&nbsp; Supervisors:Prof. Owolabi</p>
   </div>
@@ -1891,6 +1893,8 @@ async function refreshProtocolGate() {
       statusEl.style.borderColor = protocolCollectionEnabled ? 'rgba(78,203,130,.35)' : 'rgba(240,207,114,.3)';
     }
     if (submit) submit.disabled = !protocolCollectionEnabled;
+    const testModeNote = document.getElementById('assessment-test-mode-note');
+    if (testModeNote) testModeNote.style.display = protocolCollectionEnabled ? 'none' : 'block';
     const cognitiveNotice = document.getElementById('cognitive-protocol-notice');
     if (cognitiveNotice) {
       cognitiveNotice.textContent = protocolCollectionEnabled
@@ -1910,6 +1914,8 @@ async function refreshProtocolGate() {
   } catch (err) {
     protocolCollectionEnabled = false;
     if (submit) submit.disabled = true;
+    const testModeNote = document.getElementById('assessment-test-mode-note');
+    if (testModeNote) testModeNote.style.display = 'block';
     if (statusEl) statusEl.textContent = 'Cannot verify study approval configuration with the server. Research collection remains blocked.';
     const cognitiveNotice = document.getElementById('cognitive-protocol-notice');
     if (cognitiveNotice) cognitiveNotice.textContent = 'RESEARCH COLLECTION IS DISABLED because the backend approval status could not be verified. Use synthetic test values only. Do not enter real participant data.';
@@ -2678,10 +2684,17 @@ function logoutSession() {
 function showPage(id) {
   const researcherPages = new Set(['researcher']);
   const adminPages = new Set(['admin']);
-  const participantPages = new Set(['stroke','dementia','nutrition','stress','memory','herbs','painstudy']);
+  const assessmentPages = new Set(['stroke','dementia','nutrition','stress','memory']);
+  const restrictedPages = new Set(['painstudy']);
   if (researcherPages.has(id) && !SESSION.researcher && !SESSION.admin) { openLoginModal('researcher'); return; }
   if (adminPages.has(id) && !SESSION.admin) { openLoginModal('admin'); return; }
-  if (participantPages.has(id) && !SESSION.participant) {
+  // When the approved research gate is closed, allow assessment pages to open in
+  // synthetic-test mode. saveRecord() independently refuses all research writes.
+  // Once the backend gate is active, require participant registration/consent first.
+  if (assessmentPages.has(id) && !SESSION.participant && protocolCollectionEnabled) {
+    const rm = document.getElementById('modal-register'); if (rm) rm.classList.add('open'); return;
+  }
+  if (restrictedPages.has(id) && !SESSION.participant && !SESSION.researcher && !SESSION.admin) {
     const rm = document.getElementById('modal-register'); if (rm) rm.classList.add('open'); return;
   }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2735,11 +2748,16 @@ function toast(msg) {
    REGISTRATION MODAL — opens before assessment
 ══════════════════════════════════════════════ */
 function openAssessModal() {
-  if (!SESSION.participant) {
+  // A closed protocol gate permits synthetic prediction testing only. Do not
+  // force users into registration, which the backend correctly blocks.
+  if (protocolCollectionEnabled && !SESSION.participant) {
     const rm = document.getElementById('modal-register'); if (rm) rm.classList.add('open');
     return;
   }
   const am = document.getElementById('modal-assess'); if (am) am.classList.add('open');
+  if (!protocolCollectionEnabled) {
+    toast('Synthetic-test mode: assessments can run, but research records will not be saved. Do not enter real participant data.');
+  }
 }
 
 function openLoginModal(role) {
@@ -2831,11 +2849,16 @@ function skipRegistration() {
    also grants researcher visibility). Researcher password unlocks only
    the Researcher portal. Manage both from Admin → Access Control. */
 async function handleLogin() {
-  const name = (document.getElementById('login-name').value || '').trim();
+  const enteredName = (document.getElementById('login-name').value || '').trim();
   const pass = (document.getElementById('login-pass').value || '').trim();
   const role = appState.loginRole || 'researcher';
-  if (!name) { toast('Please enter your staff username or name.'); return; }
-  if (!pass) { toast('Please enter your assigned password.'); return; }
+  const name = role === 'admin' ? (enteredName || 'admin') : enteredName;
+  const loginError = document.getElementById('login-error');
+  if (loginError) loginError.textContent = '';
+  if (role !== 'admin' && !name) { if (loginError) loginError.textContent = 'Please enter your staff username or name.'; toast('Please enter your staff username or name.'); return; }
+  if (!pass) { if (loginError) loginError.textContent = 'Please enter your assigned password.'; toast('Please enter your assigned password.'); return; }
+  const loginButton = document.querySelector('#modal-login button[onclick="handleLogin()"]');
+  if (loginButton) { loginButton.disabled = true; loginButton.textContent = 'Signing in…'; }
   try {
     const response = await fetch(API_BASE + '/auth/login', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -2859,7 +2882,12 @@ async function handleLogin() {
     toast('Secure sign-in successful.');
   } catch (e) {
     console.error('Login failed:', e);
-    toast(e.message || 'Login failed. Check your credentials and backend configuration.');
+    const message = e.message || 'Login failed. Check your credentials and backend configuration.';
+    const loginError = document.getElementById('login-error');
+    if (loginError) loginError.textContent = message;
+    toast(message);
+  } finally {
+    if (loginButton) { loginButton.disabled = false; loginButton.textContent = 'Login →'; }
   }
 }
 
@@ -4684,10 +4712,252 @@ async function runPainStrokeRisk(payload) {
   }
 }
 
+/* ── Cinnamon Evidence Data (embedded from AD_model_verified_data.xlsx) ── */
+const CINNAMON_EVIDENCE = [
+  { key:'Nrf2', name:'Nrf2/ARE Pathway', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Master antioxidant regulator. Suppressed in AD. Cinnamaldehyde activates via Keap1 interaction — the same pathway targeted by sulforaphane.',
+    m:{ctrl:100.2,sham:98.1,scp:40.3,pretx:85.2,cotx:82.1,posttx:79.3,don:74.8,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.0008},
+    f:{ctrl:102.1,sham:100.3,scp:55.1,pretx:90.2,cotx:88.1,posttx:86.0,don:80.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
+  { key:'pCREB', name:'pCREB/CREB Ratio', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Memory consolidation transcription factor. Links cholinergic signalling to BDNF gene expression. Reduced in AD and cognitive decline.',
+    m:{ctrl:100.1,sham:98.2,scp:35.1,pretx:80.3,cotx:78.1,posttx:72.2,don:70.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0003},
+    f:{ctrl:102.3,sham:100.1,scp:55.2,pretx:85.1,cotx:84.2,posttx:78.3,don:75.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002}},
+  { key:'PSD95', name:'PSD-95 Synaptic Protein', domain:'Signalling', unit:'rel. units', dir:'higher_better',
+    clinical:'Postsynaptic scaffolding protein. Loss indicates synapse deterioration. Strong predictor of cognitive function — reduced in MCI and AD.',
+    m:{ctrl:100.2,sham:98.1,scp:45.2,pretx:90.1,cotx:88.2,posttx:82.3,don:78.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:103.1,sham:101.2,scp:60.1,pretx:94.2,cotx:92.1,posttx:86.2,don:82.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'BDNF', name:'BDNF', domain:'Neurotrophic', unit:'pg/mg protein', dir:'higher_better',
+    clinical:'Neuronal survival and plasticity factor. Depleted in AD, depression, and chronic stress. Exercise, sleep, and certain polyphenols upregulate BDNF.',
+    m:{ctrl:62.1,sham:60.2,scp:38.1,pretx:58.2,cotx:55.1,posttx:52.1,don:50.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:66.2,sham:65.1,scp:46.2,pretx:63.1,cotx:61.2,posttx:59.1,don:54.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'Caspase3', name:'Caspase-3', domain:'Neurotrophic', unit:'ng/mg protein', dir:'lower_better',
+    clinical:'Apoptosis executioner. Elevated in AD and neuroinflammatory states. Cinnamon suppresses via BDNF/pCREB survival signalling cascade.',
+    m:{ctrl:1.06,sham:1.00,scp:2.20,pretx:1.25,cotx:1.36,posttx:1.41,don:1.53,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
+    f:{ctrl:0.98,sham:0.95,scp:1.80,pretx:1.00,cotx:1.18,posttx:1.22,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.001}},
+  { key:'TNFa', name:'TNF-α', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Primary pro-inflammatory cytokine. Elevated in stroke, hypertension, and AD. Cinnamon suppresses NF-κB upstream, reducing TNF-α production.',
+    m:{ctrl:82.0,sham:83.0,scp:220.0,pretx:98.0,cotx:100.0,posttx:101.9,don:108.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:86.0,sham:85.0,scp:210.1,pretx:92.0,cotx:96.0,posttx:98.3,don:105.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'IL6', name:'IL-6', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Pleiotropic inflammatory cytokine. Elevated in obesity, hypertension, and neuroinflammation. Notably showed no sex difference in our study.',
+    m:{ctrl:21.5,sham:20.7,scp:78.9,pretx:24.0,cotx:24.8,posttx:25.0,don:27.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:23.0,sham:22.9,scp:75.0,pretx:21.0,cotx:22.0,posttx:22.7,don:25.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'IL10', name:'IL-10', domain:'Inflammation', unit:'pg/mg tissue', dir:'higher_better',
+    clinical:'Anti-inflammatory cytokine. Suppressed in the AD model. Cinnamon partially restores IL-10 — supporting its immunomodulatory, not just suppressive, profile.',
+    m:{ctrl:23.0,sham:22.8,scp:14.0,pretx:21.0,cotx:20.2,posttx:19.9,don:17.5,p_pretx:0.0001,p_cotx:0.0002,p_posttx:0.0003,p_don:0.001},
+    f:{ctrl:24.0,sham:23.0,scp:16.0,pretx:22.0,cotx:21.4,posttx:20.6,don:19.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0002,p_don:0.0005}},
+  { key:'NFkB', name:'NF-κB', domain:'Inflammation', unit:'pg/mg tissue', dir:'lower_better',
+    clinical:'Master inflammatory transcription factor. Upstream of TNF-α, IL-6, and COX-2. Key cinnamon target — cinnamaldehyde blocks IκB kinase directly.',
+    m:{ctrl:85.7,sham:85.0,scp:235.1,pretx:100.0,cotx:105.0,posttx:102.0,don:125.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:82.0,sham:80.0,scp:170.0,pretx:90.0,cotx:92.0,posttx:94.8,don:115.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'AChE', name:'Acetylcholinesterase', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Degrades acetylcholine — cholinergic neurotransmission. Overactivated in AD. Same target as Donepezil. Our study shows cinnamon comparable efficacy.',
+    m:{ctrl:10.1,sham:10.0,scp:15.0,pretx:9.5,cotx:11.0,posttx:12.0,don:13.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.7,sham:9.6,scp:13.0,pretx:9.2,cotx:10.5,posttx:11.5,don:12.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MAOA', name:'MAO-A', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Metabolises serotonin and norepinephrine. Elevated in depression and AD. Cinnamon OUTPERFORMS Donepezil on MAO suppression — a key finding.',
+    m:{ctrl:1.01,sham:1.00,scp:1.70,pretx:1.10,cotx:1.13,posttx:1.18,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0005},
+    f:{ctrl:1.05,sham:1.03,scp:1.50,pretx:1.02,cotx:1.08,posttx:1.12,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0003}},
+  { key:'MAOB', name:'MAO-B', domain:'Neurotransmitters', unit:'nmol/min/mg', dir:'lower_better',
+    clinical:'Metabolises dopamine. Elevated in Parkinson\'s and AD. Cinnamon strongly suppresses both MAO-A and MAO-B — a dual-inhibition profile rare in natural products.',
+    m:{ctrl:1.30,sham:1.27,scp:2.03,pretx:1.20,cotx:1.15,posttx:1.08,don:1.30,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:1.20,sham:1.18,scp:1.80,pretx:1.00,cotx:1.13,posttx:1.17,don:1.20,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Serotonin', name:'Serotonin (5-HT)', domain:'Neurotransmitters', unit:'ng/mg protein', dir:'higher_better',
+    clinical:'Mood, cognition, and sleep regulation. Depleted in depression, AD, and chronic stress. Cinnamon MAO-A inhibition preserves serotonin levels.',
+    m:{ctrl:90.1,sham:88.2,scp:55.1,pretx:87.2,cotx:83.1,posttx:80.2,don:78.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0002},
+    f:{ctrl:95.2,sham:93.1,scp:60.2,pretx:90.1,cotx:88.2,posttx:85.1,don:82.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.0001}},
+  { key:'Glutamate', name:'Glutamate', domain:'Neurotransmitters', unit:'µmol/g tissue', dir:'lower_better',
+    clinical:'Excitotoxic at high levels. Elevated in the SCP model — contributes to neuronal death. Cinnamon reduces excitotoxic burden across all treatment windows.',
+    m:{ctrl:10.0,sham:10.0,scp:20.0,pretx:12.0,cotx:12.5,posttx:11.7,don:14.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.5,sham:9.5,scp:18.0,pretx:10.5,cotx:11.5,posttx:11.0,don:12.0,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'SOD', name:'Superoxide Dismutase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
+    clinical:'Primary superoxide scavenger. Depleted in oxidative stress including AD and hypertension. Restored by Nrf2 activation — cinnamon\'s core mechanism.',
+    m:{ctrl:9.1,sham:9.1,scp:3.5,pretx:8.8,cotx:8.5,posttx:8.4,don:7.5,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.5,sham:9.2,scp:5.5,pretx:9.0,cotx:8.7,posttx:8.5,don:7.8,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'CAT', name:'Catalase', domain:'Oxidative', unit:'U/mg protein', dir:'higher_better',
+    clinical:'Detoxifies hydrogen peroxide. Works with SOD in the antioxidant cascade. Both SOD and CAT are Nrf2/ARE target genes activated by cinnamaldehyde.',
+    m:{ctrl:19.8,sham:19.6,scp:6.5,pretx:17.4,cotx:16.0,posttx:15.0,don:14.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:20.2,sham:20.0,scp:10.4,pretx:18.5,cotx:17.0,posttx:16.4,don:14.9,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'GSH', name:'Glutathione', domain:'Oxidative', unit:'µmol/mg protein', dir:'higher_better',
+    clinical:'Key endogenous antioxidant tripeptide. Severely depleted in AD, stroke, and chronic disease. A primary Nrf2/ARE target — cinnamon rescues GSH significantly.',
+    m:{ctrl:8.85,sham:8.81,scp:2.83,pretx:7.68,cotx:7.20,posttx:6.98,don:6.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:9.04,sham:9.00,scp:4.80,pretx:8.50,cotx:8.00,posttx:7.85,don:7.00,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MDA', name:'Malondialdehyde', domain:'Oxidative', unit:'nmol/mg', dir:'lower_better',
+    clinical:'Lipid peroxidation marker — indicator of oxidative damage. Trending upward in SCP but high variability (ns). Reflects heterogeneous oxidative damage.',
+    m:{ctrl:0.96,sham:0.95,scp:2.50,pretx:1.20,cotx:1.30,posttx:1.35,don:1.45,p_pretx:0.08,p_cotx:0.12,p_posttx:0.15,p_don:0.18},
+    f:{ctrl:0.91,sham:0.90,scp:1.90,pretx:1.00,cotx:1.18,posttx:1.25,don:1.35,p_pretx:0.10,p_cotx:0.14,p_posttx:0.16,p_don:0.20}},
+  { key:'NO', name:'Nitric Oxide', domain:'Oxidative', unit:'µmol/L', dir:'lower_better',
+    clinical:'At elevated levels causes nitrosative stress. Elevated in hypertension and neuroinflammation. Significantly increased in SCP; Pre-Tx suppressed effectively.',
+    m:{ctrl:32.1,sham:30.2,scp:72.3,pretx:38.2,cotx:43.1,posttx:40.2,don:48.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:30.1,sham:29.2,scp:60.2,pretx:33.1,cotx:36.2,posttx:38.1,don:44.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'MPO', name:'Myeloperoxidase', domain:'Oxidative', unit:'U/mg', dir:'lower_better',
+    clinical:'Neutrophil-derived enzyme — indicator of neuroinflammation and vascular damage. High variability in our model (ns); useful as a supplementary marker.',
+    m:{ctrl:0.91,sham:0.90,scp:2.25,pretx:1.05,cotx:1.18,posttx:1.20,don:1.50,p_pretx:0.09,p_cotx:0.11,p_posttx:0.13,p_don:0.16},
+    f:{ctrl:0.86,sham:0.85,scp:1.70,pretx:0.95,cotx:1.00,posttx:1.15,don:1.30,p_pretx:0.11,p_cotx:0.14,p_posttx:0.17,p_don:0.19}},
+  { key:'NOR', name:'NOR Discrimination Index', domain:'Behavioral', unit:'index (−1 to 1)', dir:'higher_better',
+    clinical:'Measures recognition memory. Negative values = severe impairment (SCP males −0.15). Pre-Tx restored to 0.64 — near-complete cognitive recovery.',
+    m:{ctrl:0.630,sham:0.620,scp:-0.149,pretx:0.643,cotx:0.614,posttx:0.584,don:0.552,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:0.656,sham:0.631,scp:0.101,pretx:0.652,cotx:0.631,posttx:0.602,don:0.571,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'EscapeLatency', name:'Escape Latency (MWM)', domain:'Behavioral', unit:'seconds', dir:'lower_better',
+    clinical:'Morris Water Maze spatial memory. SCP males: 70s (vs 29s Control). Pre-Tx reduced to 32s — near-complete recovery. Females less impaired (SCP: 52s).',
+    m:{ctrl:29.0,sham:28.4,scp:70.3,pretx:32.0,cotx:38.5,posttx:42.6,don:45.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:27.0,sham:26.6,scp:52.2,pretx:29.1,cotx:34.2,posttx:38.1,don:41.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Pathlength', name:'Pathlength (MWM)', domain:'Behavioral', unit:'cm', dir:'lower_better',
+    clinical:'Swimming distance to platform — spatial navigation efficiency. SCP males: 1208cm vs 450cm Control. Pre-Tx: 504cm. Reflects hippocampal function.',
+    m:{ctrl:450,sham:454,scp:1208,pretx:504,cotx:603,posttx:653,don:708,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:423,sham:428,scp:888,pretx:468,cotx:558,posttx:598,don:658,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Ymaze', name:'Y-Maze Alternation', domain:'Behavioral', unit:'%', dir:'higher_better',
+    clinical:'Spontaneous alternation — working memory. SCP males: 42% (vs 75% Control). Reflects short-term hippocampal-dependent memory. Pre-Tx: 73.5%.',
+    m:{ctrl:75.4,sham:73.4,scp:42.1,pretx:73.5,cotx:70.0,posttx:68.2,don:66.2,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:76.2,sham:75.1,scp:55.0,pretx:75.2,cotx:72.1,posttx:70.2,don:68.1,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'Grooming', name:'Sucrose Splash Grooming', domain:'Behavioral', unit:'seconds', dir:'higher_better',
+    clinical:'Anhedonia/depression-like measure. Reduced grooming = motivational deficit. SCP males: 75.5s (vs 156s Control). Indicates hedonic impairment in AD model.',
+    m:{ctrl:156.2,sham:155.2,scp:75.5,pretx:150.4,cotx:140.3,posttx:135.9,don:128.6,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:162.2,sham:160.2,scp:105.4,pretx:155.0,cotx:145.2,posttx:140.1,don:133.3,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}},
+  { key:'NisslCount', name:'Neuronal Cell Density (Nissl)', domain:'Histology', unit:'cells/field', dir:'higher_better',
+    clinical:'Hippocampal CA1-CA4 neuronal count. SCP males: 209 (−66% vs Control 605). Pre-Tx: 600 — near-complete neuroprotection. Females: 330 in SCP.',
+    m:{ctrl:605,sham:603,scp:209,pretx:600,cotx:579,posttx:591,don:546,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001},
+    f:{ctrl:615,sham:612,scp:330,pretx:615,cotx:600,posttx:610,don:570,p_pretx:0.0001,p_cotx:0.0001,p_posttx:0.0001,p_don:0.001}}
+];
+
+function cinnamonStars(p) {
+  if (!p && p !== 0) return '—';
+  if (p < 0.0001) return '****';
+  if (p < 0.001)  return '***';
+  if (p < 0.01)   return '**';
+  if (p < 0.05)   return '*';
+  return 'ns';
+}
+
+function cinnamonRecovery(pretx, scp, ctrl, dir) {
+  if (ctrl === scp) return 0;
+  let raw = (pretx - scp) / (ctrl - scp) * 100;
+  return Math.min(120, Math.max(-20, parseFloat(raw.toFixed(1))));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CINNAMON PANEL FUNCTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+let _cinnTab = 'all';
+
+function renderCinnamonGrid(domain) {
+  const grid = document.getElementById('cinn-grid');
+  if (!grid) return;
+  const list = domain === 'all' ? CINNAMON_EVIDENCE : CINNAMON_EVIDENCE.filter(b => b.domain === domain);
+
+  grid.innerHTML = list.map(bm => {
+    const mRec = cinnamonRecovery(bm.m.pretx, bm.m.scp, bm.m.ctrl, bm.dir);
+    const fRec = cinnamonRecovery(bm.f.pretx, bm.f.scp, bm.f.ctrl, bm.dir);
+    const mW = Math.min(100, Math.max(0, mRec));
+    const fW = Math.min(100, Math.max(0, fRec));
+    const mStars = cinnamonStars(bm.m.p_pretx);
+    const fStars = cinnamonStars(bm.f.p_pretx);
+    const dirLabel = bm.dir === 'higher_better'
+      ? '<span class="dir-b hi">↑ better</span>'
+      : '<span class="dir-b lo">↓ better</span>';
+    function recColor(p) {
+      return p >= 90 ? '#27AE60' : p >= 70 ? '#E8A545' : p >= 50 ? '#D4742A' : '#E07570';
+    }
+    function fmt(v, d=2) { return (v===null||v===undefined) ? '—' : Number(v).toFixed(d); }
+    return `
+<div class="cinn-card">
+  <div class="cinn-card-top">
+    <span class="cinn-card-name">${bm.name}</span>
+    ${dirLabel}
+  </div>
+  <div class="cinn-unit">${bm.unit} &nbsp;·&nbsp; <em>${bm.domain}</em></div>
+  <div class="cinn-clin">${bm.clinical}</div>
+  <div class="cinn-rec-lbl">Pre-Treatment Recovery vs SCP (best strategy)</div>
+  <div class="cinn-bar-row">
+    <span class="cinn-sex" style="color:#5BA4D4;">♂</span>
+    <div class="cinn-bar-bg"><div class="cinn-bar-fill m" style="width:${mW}%"></div></div>
+    <span class="cinn-pct" style="color:${recColor(mRec)}">${mRec}%</span>
+    <span class="cinn-stars">${mStars}</span>
+  </div>
+  <div class="cinn-bar-row">
+    <span class="cinn-sex" style="color:#E07570;">♀</span>
+    <div class="cinn-bar-bg"><div class="cinn-bar-fill f" style="width:${fW}%"></div></div>
+    <span class="cinn-pct" style="color:${recColor(fRec)}">${fRec}%</span>
+    <span class="cinn-stars">${fStars}</span>
+  </div>
+  <div class="cinn-means">
+    <div class="cinn-mc"><div class="mg">Control</div><div class="mv"><span class="mx">♂${fmt(bm.m.ctrl)}</span> / <span class="fx">♀${fmt(bm.f.ctrl)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">SCP (disease)</div><div class="mv"><span class="mx">♂${fmt(bm.m.scp)}</span> / <span class="fx">♀${fmt(bm.f.scp)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">Pre-Tx ✦ Best</div><div class="mv"><span class="mx">♂${fmt(bm.m.pretx)}</span> / <span class="fx">♀${fmt(bm.f.pretx)}</span></div></div>
+    <div class="cinn-mc"><div class="mg">Donepezil (ref)</div><div class="mv"><span class="mx">♂${fmt(bm.m.don)}</span> / <span class="fx">♀${fmt(bm.f.don)}</span></div></div>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function openCinnamonPanel() {
+  const panel = document.getElementById('cinn-panel');
+  if (!panel) return;
+  panel.classList.add('active');
+  // Navigate to herbs page if not there
+  if (typeof showPage === 'function') showPage('herbs');
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    renderCinnamonGrid(_cinnTab);
+  }, 200);
+}
+
+// Hook into herb gallery — watch for cinnamon cards being clicked
+function initCinnamonPanelTrigger() {
+  const panel = document.getElementById('cinn-panel');
+  if (!panel) return;
+
+  // Tab navigation
+  const tabsEl = document.getElementById('cinn-tabs');
+  if (tabsEl) {
+    tabsEl.addEventListener('click', e => {
+      const tab = e.target.closest('.cinn-tab');
+      if (!tab) return;
+      tabsEl.querySelectorAll('.cinn-tab').forEach(t => t.classList.remove('ct-active'));
+      tab.classList.add('ct-active');
+      _cinnTab = tab.dataset.d;
+      renderCinnamonGrid(_cinnTab);
+    });
+  }
+
+  // Auto-open: if URL hash is #cinnamon or button clicked from researcher
+  if (window.location.hash === '#cinnamon') openCinnamonPanel();
+
+  // If herbs page already loaded, render grid immediately
+  renderCinnamonGrid('all');
+}
+
+function downloadCinnamonCSV() {
+  const headers = ['biomarker','domain','unit','direction',
+    'm_ctrl','m_scp','m_pretx','m_cotx','m_posttx','m_don',
+    'f_ctrl','f_scp','f_pretx','f_cotx','f_posttx','f_don',
+    'm_pretx_p','f_pretx_p'];
+  const rows = CINNAMON_EVIDENCE.map(b => [
+    b.name, b.domain, b.unit, b.dir,
+    b.m.ctrl, b.m.scp, b.m.pretx, b.m.cotx, b.m.posttx, b.m.don,
+    b.f.ctrl, b.f.scp, b.f.pretx, b.f.cotx, b.f.posttx, b.f.don,
+    b.m.p_pretx, b.f.p_pretx
+  ]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'Cinnamon_Evidence_ANHRL_UniIlorin.csv';
+  a.click();
+}
+
 // Initialise everything on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
   refreshProtocolGate();
   setTimeout(initCinnamonPanelTrigger, 600);
+  const loginName = document.getElementById('login-name');
+  const loginPass = document.getElementById('login-pass');
+  [loginName, loginPass].forEach(input => {
+    if (input) input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); handleLogin(); }
+    });
+  });
 });
 
 </script>
