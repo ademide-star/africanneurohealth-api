@@ -954,6 +954,94 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
     return {"authenticated": True, "role": claims["role"], "subject": claims.get("sub")}
 
 
+# Public anonymous application storage, separate from secondary research records.
+PUBLIC_ASSESSMENT_TYPES = {"stroke_predictions", "alzheimer_predictions", "cognitive_symptom_assessments", "nutrition_tracker", "stress_assessments"}
+PUBLIC_IDENTITY_KEYS = {"name", "fullname", "patientname", "participantname", "email", "emailaddress", "phone", "phonenumber", "address", "street", "hospitalnumber", "nationalid", "passportnumber", "dateofbirth", "dob", "contactdetails", "notes", "comments", "freetext", "narrative", "customnotes", "userid", "researchid", "participantid", "sessionid", "ip", "ipaddress", "latitude", "longitude", "lat", "lng", "coordinates", "gps", "exactlocation", "studysite", "districtlga", "lga"}
+
+class PublicAssessmentCreate(BaseModel):
+    record_type: str
+    payload: dict
+    model_name: Optional[str] = None
+    model_version: Optional[str] = None
+
+def _public_clean_value(value, depth=0):
+    """Recursively remove identity/contact/precise-location keys before storage."""
+    if depth > 6:
+        return None
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, item in value.items():
+            normalized = re.sub(r"[^a-z0-9]", "", str(key).lower())
+            if normalized in PUBLIC_IDENTITY_KEYS or item is None or callable(item):
+                continue
+            safe = _public_clean_value(item, depth + 1)
+            if safe is not None:
+                cleaned[str(key)[:80]] = safe
+        return cleaned
+    if isinstance(value, (list, tuple)):
+        return [_public_clean_value(item, depth + 1) for item in value[:200]]
+    if isinstance(value, str):
+        return value[:500]
+    if isinstance(value, (bool, int, float)):
+        if isinstance(value, float) and not np.isfinite(value):
+            return None
+        return value
+    return None
+
+@app.post("/public/assessments")
+def save_public_assessment(payload: PublicAssessmentCreate):
+    """Store a non-identifying application assessment without a participant account."""
+    record_type = (payload.record_type or "").strip()
+    if record_type not in PUBLIC_ASSESSMENT_TYPES:
+        raise HTTPException(status_code=400, detail="This assessment type is not enabled for anonymous application storage.")
+    clean = _public_clean_value(payload.payload)
+    if not isinstance(clean, dict) or not clean:
+        raise HTTPException(status_code=422, detail="No eligible non-identifying assessment fields were supplied.")
+    if len(json.dumps(clean, allow_nan=False, default=str)) > 20000:
+        raise HTTPException(status_code=413, detail="Assessment payload is too large.")
+    country = str(payload.payload.get("country", "")).strip()[:80] or None
+    province = str(payload.payload.get("province", payload.payload.get("state_province", ""))).strip()[:80] or None
+    zone = str(payload.payload.get("geopolitical_zone", payload.payload.get("nigeria_geopolitical_zone", ""))).strip()[:40] or None
+    allowed_countries = {"Nigeria", "Ghana", "Kenya", "South Africa", "Uganda", "Tanzania", "Ethiopia", "Egypt", "Morocco", "Cameroon", "Zimbabwe", "Zambia", "Rwanda", "Algeria"}
+    if country not in allowed_countries:
+        country = province = zone = None
+    if country != "Nigeria":
+        zone = None
+    row = {"assessment_type": record_type, "country": country, "state_province": province, "nigeria_geopolitical_zone": zone, "data_json": clean, "model_name": (payload.model_name or "")[:120] or None, "model_version": (payload.model_version or "")[:80] or None}
+    _supabase_rest("neurohealth_public_assessments", "POST", [row], prefer="return=minimal")
+    return {"saved": True, "record_type": record_type, "identity_fields_stored": False}
+
+@app.get("/public/neuromap/aggregates")
+def public_neuromap_aggregates(layer: str = "stroke"):
+    """Return coarse public aggregates only; never return individual records."""
+    layer = (layer or "stroke").strip().lower()
+    allowed_types = {"stroke": {"stroke_predictions"}, "dementia": {"alzheimer_predictions"}, "cognitive": {"cognitive_symptom_assessments"}}
+    if layer not in allowed_types:
+        return {"aggregates": [], "min_group_size": 10, "note": "No eligible dataset is configured for this layer."}
+    query = urlencode({"select": "country,state_province,nigeria_geopolitical_zone,assessment_type,data_json", "assessment_type": "in.({})".format(",".join(sorted(allowed_types[layer]))), "limit": "10000", "order": "created_at.desc"})
+    rows = _supabase_rest("neurohealth_public_assessments", "GET", query=query, prefer="return=representation") or []
+    grouped = {}
+    for record in rows:
+        country = str(record.get("country") or "").strip()
+        province = str(record.get("state_province") or "").strip()
+        area = province if country == "Nigeria" and province else country
+        if not country or not area:
+            continue
+        key = (country, area, record.get("assessment_type"))
+        group = grouped.setdefault(key, {"country": country, "province": (province or None) if country == "Nigeria" else None, "geopolitical_zone": record.get("nigeria_geopolitical_zone"), "area": area, "record_type": record.get("assessment_type"), "n": 0, "high_risk_n": 0})
+        group["n"] += 1
+        data = record.get("data_json") or {}
+        if isinstance(data, dict) and str(data.get("risk_level", data.get("risk_category", ""))).upper() == "HIGH":
+            group["high_risk_n"] += 1
+    aggregates = []
+    for group in grouped.values():
+        if group["n"] < 10:
+            continue
+        group["high_risk_pct"] = round(100 * group["high_risk_n"] / group["n"], 1)
+        group.pop("high_risk_n", None)
+        aggregates.append(group)
+    return {"aggregates": aggregates, "min_group_size": 10, "note": "Public coarse aggregates only. Groups below 10 are suppressed. These are modelled assessment results, not disease prevalence. No eligible records means no data, not low risk."}
+
 def _protocol_collection_status() -> dict:
     """Fail closed unless study approval and protocol configuration are explicitly verified."""
     required = {
