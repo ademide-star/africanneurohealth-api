@@ -956,7 +956,7 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
 
 # Public anonymous application storage, separate from secondary research records.
 PUBLIC_ASSESSMENT_TYPES = {"stroke_predictions", "alzheimer_predictions", "cognitive_symptom_assessments", "nutrition_tracker", "stress_assessments"}
-PUBLIC_IDENTITY_KEYS = {"name", "fullname", "patientname", "participantname", "email", "emailaddress", "phone", "phonenumber", "address", "street", "hospitalnumber", "nationalid", "passportnumber", "dateofbirth", "dob", "contactdetails", "notes", "comments", "freetext", "narrative", "customnotes", "userid", "researchid", "participantid", "sessionid", "ip", "ipaddress", "latitude", "longitude", "lat", "lng", "coordinates", "gps", "exactlocation", "studysite", "districtlga", "lga"}
+PUBLIC_IDENTITY_KEYS = {"name", "fullname", "patientname", "participantname", "email", "emailaddress", "phone", "phonenumber", "address", "street", "hospitalnumber", "nationalid", "passportnumber", "dateofbirth", "dob", "contactdetails", "notes", "comments", "freetext", "narrative", "customnotes", "userid", "researchid", "participantid", "sessionid", "assessmentdate", "createdat", "timestamp", "datetime", "date", "ip", "ipaddress", "latitude", "longitude", "lat", "lng", "coordinates", "gps", "exactlocation", "studysite", "districtlga", "lga"}
 
 class PublicAssessmentCreate(BaseModel):
     record_type: str
@@ -1031,7 +1031,7 @@ def public_neuromap_aggregates(layer: str = "stroke"):
         group = grouped.setdefault(key, {"country": country, "province": (province or None) if country == "Nigeria" else None, "geopolitical_zone": record.get("nigeria_geopolitical_zone"), "area": area, "record_type": record.get("assessment_type"), "n": 0, "high_risk_n": 0})
         group["n"] += 1
         data = record.get("data_json") or {}
-        if isinstance(data, dict) and str(data.get("risk_level", data.get("risk_category", ""))).upper() == "HIGH":
+        if isinstance(data, dict) and str(data.get("risk_level", data.get("risk_category", (data.get("model_response") or {}).get("risk_level", ""))).upper() == "HIGH":
             group["high_risk_n"] += 1
     aggregates = []
     for group in grouped.values():
