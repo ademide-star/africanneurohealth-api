@@ -1,8 +1,4 @@
-"""
-African NeuroHealth Intelligence — FastAPI Backend
-Loads your trained .pkl models and serves predictions to the HTML frontend.
-Deploy on Render (free tier) at: https://africanneurohealth-api-jhke.onrender.com
-"""
+""" African NeuroHealth Intelligence — FastAPI Backend Loads your trained .pkl models and serves predictions to the HTML frontend. Deploy on Render (free tier) at: https://africanneurohealth-api-jhke.onrender.com """
 
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -59,14 +55,15 @@ app.add_middleware(
 )
 
 # ── Load models once at startup ──
-stroke_model  = None
+stroke_model = None
 dementia_model = None
-cognitive_symptom_bundle = None
+stroke_model_path = None
+dementia_model_path = None
 
 
 @app.on_event("startup")
 def load_models():
-    global stroke_model, dementia_model, cognitive_symptom_bundle
+    global stroke_model, dementia_model, stroke_model_path, dementia_model_path
 
     stroke_paths = [
         "stroke_REAL_model.pkl",
@@ -76,8 +73,12 @@ def load_models():
     for path in stroke_paths:
         if os.path.exists(path):
             try:
-                stroke_model = joblib.load(path)
-                logger.info(f"✅ Stroke model loaded from {path}")
+                candidate = joblib.load(path)
+                if not hasattr(candidate, "predict_proba"):
+                    raise TypeError("Loaded stroke artifact does not expose predict_proba")
+                stroke_model = candidate
+                stroke_model_path = path
+                logger.info("Stroke model loaded from %s", path)
                 break
             except Exception as e:
                 logger.error(f"Failed to load stroke model from {path}: {e}")
@@ -90,30 +91,35 @@ def load_models():
     for path in dementia_paths:
         if os.path.exists(path):
             try:
-                dementia_model = joblib.load(path)
-                logger.info(f"✅ Dementia model loaded from {path}")
+                candidate = joblib.load(path)
+                if not hasattr(candidate, "predict_proba"):
+                    raise TypeError("Loaded dementia artifact does not expose predict_proba")
+                expected_features = [
+                    'Age', 'Gender', 'EducationLevel', 'BMI', 'Smoking',
+                    'AlcoholConsumption', 'PhysicalActivity', 'DietQuality', 'SleepQuality',
+                    'FamilyHistoryAlzheimers', 'CardiovascularDisease', 'Diabetes', 'Depression',
+                    'HeadInjury', 'Hypertension', 'SystolicBP', 'DiastolicBP',
+                    'CholesterolTotal', 'CholesterolLDL', 'CholesterolHDL', 'CholesterolTriglycerides',
+                    'MMSE', 'FunctionalAssessment', 'MemoryComplaints', 'BehavioralProblems', 'ADL',
+                    'Confusion', 'Disorientation', 'PersonalityChanges',
+                    'DifficultyCompletingTasks', 'Forgetfulness'
+                ]
+                actual_features = list(getattr(candidate, "feature_names_in_", []))
+                if actual_features and actual_features != expected_features:
+                    raise ValueError("Dementia model feature names/order do not match the 31-feature API contract")
+                dementia_model = candidate
+                dementia_model_path = path
+                logger.info("Dementia model loaded from %s", path)
                 break
             except Exception as e:
                 logger.error(f"Failed to load dementia model from {path}: {e}")
 
     if not stroke_model:
-        logger.warning("⚠️  Stroke model not loaded — predictions will return demo values")
+        logger.error("Stroke model unavailable. /predict/stroke will return HTTP 503; no demo score is permitted.")
     if not dementia_model:
-        logger.warning("⚠️  Dementia model not loaded — predictions will return demo values")
+        logger.error("Dementia model unavailable. /predict/dementia will return HTTP 503; no demo score is permitted.")
 
-    # Load the cognitive-symptom model independently. Failure to load this new
-    # bundle must not prevent the existing stroke/dementia endpoints from starting.
-    cognitive_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  "models", "african_cognitive_symptom_rf_platt.joblib")
-    if os.path.exists(cognitive_path):
-        try:
-            cognitive_symptom_bundle = joblib.load(cognitive_path)
-            logger.info("Cognitive-symptom model loaded from %s", cognitive_path)
-        except Exception as e:
-            cognitive_symptom_bundle = None
-            logger.exception("Could not load cognitive-symptom model: %s", e)
-    else:
-        logger.warning("Cognitive-symptom model not found at %s", cognitive_path)
+
 
 
 # ── Health check ──
@@ -122,9 +128,11 @@ def root():
     return {
         "service": "African NeuroHealth Intelligence API",
         "status": "running",
-        "stroke_model":  "loaded" if stroke_model  else "demo mode",
-        "dementia_model": "loaded" if dementia_model else "demo mode",
-        "cognitive_symptom_model": "loaded" if cognitive_symptom_bundle else "not loaded",
+        "stroke_model": "loaded" if stroke_model is not None else "unavailable",
+        "stroke_model_file": stroke_model_path,
+        "dementia_model": "loaded" if dementia_model is not None else "unavailable",
+        "dementia_model_file": dementia_model_path,
+        "prediction_mode": "trained_models_only",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -132,14 +140,16 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok", "models": {
-        "stroke":   stroke_model  is not None,
+        "stroke": stroke_model is not None,
         "dementia": dementia_model is not None,
-        "cognitive_symptoms": cognitive_symptom_bundle is not None
+        "stroke_model_file": stroke_model_path,
+        "dementia_model_file": dementia_model_path,
+        "prediction_mode": "trained_models_only"
     }}
 
 
 # ════════════════════════════════════════════
-#  STROKE PREDICTION
+# STROKE PREDICTION
 # ════════════════════════════════════════════
 
 class StrokeInput(BaseModel):
@@ -206,11 +216,7 @@ def safe_float(val, default=0.0):
 
 
 def build_stroke_df(data: StrokeInput) -> pd.DataFrame:
-    """
-    Build the exact DataFrame the stroke model expects.
-    Columns/order here match model.feature_names_in_ exactly — do not add,
-    remove, or reorder without re-checking feature_names_in_ on the .pkl.
-    """
+    """ Build the exact DataFrame the stroke model expects. Columns/order here match model.feature_names_in_ exactly — do not add, remove, or reorder without re-checking feature_names_in_ on the .pkl. """
     expected = [
         'gender', 'age', 'hypertension', 'heart_disease', 'ever_married',
         'work_type', 'Residence_type', 'avg_glucose_level', 'bmi',
@@ -304,11 +310,15 @@ def predict_stroke(data: StrokeInput):
         df = build_stroke_df(data)
 
         if stroke_model is None:
-            risk_score = _demo_stroke_score(data)
-        else:
-            model = stroke_model.get('model') if isinstance(stroke_model, dict) else stroke_model
-            proba = model.predict_proba(df)[0]
-            risk_score = float(proba[1])
+            raise HTTPException(status_code=503, detail="The trained stroke model is unavailable. No risk estimate was generated.")
+        model = stroke_model.get('model') if isinstance(stroke_model, dict) else stroke_model
+        if not hasattr(model, "predict_proba"):
+            raise HTTPException(status_code=503, detail="The trained stroke model cannot produce class probabilities.")
+        proba = model.predict_proba(df)[0]
+        classes = list(getattr(model, "classes_", [0, 1]))
+        if 1 not in classes:
+            raise HTTPException(status_code=503, detail="The trained stroke model does not contain the expected positive class.")
+        risk_score = float(proba[classes.index(1)])
 
         risk_pct   = round(risk_score * 100, 1)
         risk_level = "HIGH" if risk_score > 0.65 else "MEDIUM" if risk_score > 0.30 else "LOW"
@@ -322,28 +332,13 @@ def predict_stroke(data: StrokeInput):
             "risk_level":  risk_level,
             "risk_factors": factors,
             "recommendations": recos,
-            "model_used":  "trained" if stroke_model else "demo",
+            "model_used": "trained",
+            "model_file": stroke_model_path,
             "timestamp":   datetime.now().isoformat()
         }
     except Exception as e:
         logger.error(f"Stroke prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-def _demo_stroke_score(d: StrokeInput) -> float:
-    score = 0.0
-    if d.age > 60:              score += 0.20
-    elif d.age > 45:            score += 0.10
-    if d.hypertension:          score += 0.18
-    if d.heart_disease:         score += 0.15
-    if d.avg_glucose_level > 200: score += 0.12
-    if d.systolic_bp > 140:     score += 0.10
-    if d.smoking_status == "Smokes": score += 0.10
-    if d.bmi > 30:              score += 0.08
-    if d.stress_level >= 2:     score += 0.06
-    if d.ptsd:                  score += 0.05
-    if d.salt_intake_High:      score += 0.04
-    return min(0.97, score)
 
 
 def _stroke_risk_factors(d: StrokeInput) -> list:
@@ -375,7 +370,7 @@ def _stroke_recommendations(d: StrokeInput, level: str) -> list:
 
 
 # ════════════════════════════════════════════
-#  DEMENTIA PREDICTION
+# DEMENTIA PREDICTION
 # ════════════════════════════════════════════
 
 class DementiaInput(BaseModel):
@@ -389,10 +384,10 @@ class DementiaInput(BaseModel):
     SleepQuality:            float = 6.0
     SystolicBP:              float = 120.0
     DiastolicBP:              float = 80.0
-    CholesterolTotal:        float = 200.0
-    CholesterolLDL:          float = 120.0
-    CholesterolHDL:          float = 50.0
-    CholesterolTriglycerides:float = 150.0
+    CholesterolTotal: Optional[float] = None
+    CholesterolLDL: Optional[float] = None
+    CholesterolHDL: Optional[float] = None
+    CholesterolTriglycerides: Optional[float] = None
     FunctionalAssessment:    float = 8.0
     ADL:                     float = 8.0
     HeadInjury:              float = 0.0
@@ -434,11 +429,7 @@ class DementiaInput(BaseModel):
 
 
 def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
-    """
-    Build the exact DataFrame the dementia model expects.
-    Columns/order here match model.feature_names_in_ exactly — do not add,
-    remove, or reorder without re-checking feature_names_in_ on the .pkl.
-    """
+    """ Build the exact DataFrame the dementia model expects. Columns/order here match model.feature_names_in_ exactly — do not add, remove, or reorder without re-checking feature_names_in_ on the .pkl. """
     expected = [
         'Age', 'Gender', 'EducationLevel', 'BMI', 'Smoking',
         'AlcoholConsumption', 'PhysicalActivity', 'DietQuality', 'SleepQuality',
@@ -476,7 +467,17 @@ def build_dementia_df(data: DementiaInput) -> pd.DataFrame:
     d = data.dict()
     row = {}
     for col in numeric_cols:
-        row[col] = safe_float(d.get(col, 0))
+        value = d.get(col)
+        if col in {"CholesterolTotal", "CholesterolLDL", "CholesterolHDL", "CholesterolTriglycerides"}:
+            if value is None or (isinstance(value, str) and not value.strip()):
+                row[col] = np.nan
+            else:
+                try:
+                    row[col] = float(value)
+                except (TypeError, ValueError):
+                    raise HTTPException(status_code=422, detail=f"{col} must be a numeric laboratory value or left blank.")
+        else:
+            row[col] = safe_float(value, 0.0)
     for col in binary_cols:
         row[col] = to_binary(d.get(col, "No"))
     for col in boolean_cols:
@@ -508,21 +509,17 @@ def predict_dementia(data: DementiaInput):
         df = build_dementia_df(data)
 
         if dementia_model is None:
-            risk_score = _demo_dementia_score(data)
-        else:
-            model = dementia_model.get('model') if isinstance(dementia_model, dict) else dementia_model
-            # Handle ensemble dict from Streamlit app, if the pkl was saved that way
-            if isinstance(model, dict):
-                probas = []
-                for name, m in model.items():
-                    try:
-                        p = m.predict_proba(df)[0][1]
-                        probas.append(p)
-                    except Exception:
-                        pass
-                risk_score = float(np.mean(probas)) if probas else _demo_dementia_score(data)
-            else:
-                risk_score = float(model.predict_proba(df)[0][1])
+            raise HTTPException(status_code=503, detail="The trained dementia risk model is unavailable. No risk estimate was generated.")
+        model = dementia_model.get('model') if isinstance(dementia_model, dict) else dementia_model
+        if not hasattr(model, "predict_proba"):
+            raise HTTPException(status_code=503, detail="The trained dementia model cannot produce class probabilities.")
+        probabilities = model.predict_proba(df)[0]
+        classes = list(getattr(model, "classes_", [0, 1]))
+        if 1 not in classes:
+            raise HTTPException(status_code=503, detail="The trained dementia model does not contain the expected positive class.")
+        risk_score = float(probabilities[classes.index(1)])
+        if not np.isfinite(risk_score) or not 0 <= risk_score <= 1:
+            raise HTTPException(status_code=500, detail="The trained dementia model returned an invalid probability.")
 
         risk_pct   = round(risk_score * 100, 1)
         risk_level = "HIGH" if risk_score > 0.60 else "MEDIUM" if risk_score > 0.30 else "LOW"
@@ -545,29 +542,13 @@ def predict_dementia(data: DementiaInput):
             "mmse_label":  mmse_label,
             "risk_factors": factors,
             "recommendations": recos,
-            "model_used":  "trained" if dementia_model else "demo",
+            "model_used": "trained",
+            "model_file": dementia_model_path,
             "timestamp":   datetime.now().isoformat()
         }
     except Exception as e:
         logger.error(f"Dementia prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-def _demo_dementia_score(d: DementiaInput) -> float:
-    score = 0.0
-    if d.Age > 75:              score += 0.22
-    elif d.Age > 65:            score += 0.14
-    if d.MMSE < 24:             score += 0.22
-    elif d.MMSE < 27:           score += 0.10
-    if d.FamilyHistoryAlzheimers == "Yes": score += 0.16
-    if d.Depression == "Yes":   score += 0.10
-    if d.CardiovascularDisease == "Yes": score += 0.09
-    if d.Hypertension == "Yes": score += 0.07
-    if d.HeadInjury > 0:        score += 0.08
-    if d.PhysicalActivity < 2:  score += 0.06
-    if d.DietQuality < 4:       score += 0.05
-    if d.SleepQuality < 4:      score += 0.05
-    return min(0.97, score)
 
 
 def _dementia_risk_factors(d: DementiaInput) -> list:
@@ -579,7 +560,7 @@ def _dementia_risk_factors(d: DementiaInput) -> list:
     if d.CardiovascularDisease == "Yes": f.append("Cardiovascular disease")
     if d.Hypertension == "Yes":f.append("Hypertension")
     if d.HeadInjury > 0:       f.append("History of head injury")
-    if d.CholesterolTotal > 240: f.append(f"High cholesterol ({d.CholesterolTotal:.0f} mg/dL)")
+    if d.CholesterolTotal is not None and d.CholesterolTotal > 240: f.append(f"High cholesterol ({d.CholesterolTotal:.0f} mg/dL)")
     if d.PhysicalActivity < 2: f.append("Physical inactivity")
     if d.SleepQuality < 4:     f.append("Poor sleep quality")
     return f if f else ["No major risk factors identified"]
@@ -599,111 +580,6 @@ def _dementia_recommendations(d: DementiaInput, level: str) -> list:
     return r
 
 
-# ════════════════════════════════════════════
-#  SELF-REPORTED COGNITIVE-SYMPTOM SCREENING
-#  Separate endpoint: existing stroke and dementia routes remain unchanged.
-# ════════════════════════════════════════════
-
-COGNITIVE_DEFAULTS = {
-    "AGE": 55,
-    "SEX": "M",
-    "EDU- L": "SECONDARY",
-    "S- BP": 120,
-    "D-BP": 80,
-    "DIABETES": "NO",
-    "HYPERTENSION": "NO",
-    "HEART- D": "NO",
-    "STRESS- L": "M",
-    "SLEEP HOURS": 7,
-    "CHRONIC- PAIN": "NO",
-    "NUTRITION SCORE": 6,
-    "HEART RATE": 72,
-    "POLLUTION": "L",
-    "OCCUPATION HAZZARD": "NO",
-    "ACCESS TO HEALTH CARE": "YES",
-    "SMOKING STATUS (CORRECTED)": "Non-smoker / not reported",
-    "HYPERTENSION TREATMENT (CORRECTED)": "Not applicable",
-    "FRUIT_INTAKE": 2,
-    "VEGETABLE_INTAKE": 2,
-    "HYDRATION_LITERS": 2.0,
-    "LIFESTYLE_CHOICES": "Homemade Food",
-    "Total_Salt Intake Score": 8,
-    "ZONE": "Ijebu Zone",
-}
-
-COGNITIVE_NUMERIC_FIELDS = [
-    "AGE", "S- BP", "D-BP", "SLEEP HOURS", "NUTRITION SCORE",
-    "HEART RATE", "HYDRATION_LITERS", "Total_Salt Intake Score"
-]
-
-@app.post("/predict/cognitive-symptoms")
-def predict_cognitive_symptoms(payload: dict):
-    """Estimate self-reported cognitive-symptom likelihood, not dementia diagnosis."""
-    if cognitive_symptom_bundle is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Cognitive-symptom model is not loaded. Confirm the model file is deployed under models/.",
-        )
-
-    try:
-        predictors = list(cognitive_symptom_bundle["predictors"])
-        values = dict(COGNITIVE_DEFAULTS)
-        # Accept only fields known to this model; missing fields use documented defaults.
-        for field in predictors:
-            if field in payload and payload[field] is not None and payload[field] != "":
-                values[field] = payload[field]
-
-        # Friendly aliases from the HTML form/API clients.
-        sex = str(values["SEX"]).strip().lower()
-        values["SEX"] = "F" if sex in ("f", "female", "woman") else "M" if sex in ("m", "male", "man") else values["SEX"]
-        for field in ("DIABETES", "HYPERTENSION", "HEART- D", "OCCUPATION HAZZARD", "ACCESS TO HEALTH CARE"):
-            val = str(values[field]).strip().upper()
-            values[field] = "YES" if val in ("YES", "Y", "TRUE", "1") else "NO" if val in ("NO", "N", "FALSE", "0") else values[field]
-        for field in COGNITIVE_NUMERIC_FIELDS:
-            try:
-                values[field] = float(values[field])
-            except (TypeError, ValueError):
-                values[field] = float(COGNITIVE_DEFAULTS[field])
-        for field in ("FRUIT_INTAKE", "VEGETABLE_INTAKE"):
-            try:
-                values[field] = int(float(values[field]))
-            except (TypeError, ValueError):
-                values[field] = COGNITIVE_DEFAULTS[field]
-
-        X = pd.DataFrame([{field: values[field] for field in predictors}], columns=predictors)
-        raw_probability = cognitive_symptom_bundle["model"].predict_proba(X)[:, 1]
-        calibrated_probability = cognitive_symptom_bundle["calibrator"].predict_proba(
-            raw_probability.reshape(-1, 1)
-        )[0, 1]
-        risk_score = float(calibrated_probability)
-        risk_pct = round(risk_score * 100, 1)
-        risk_level = "LOW" if risk_pct < 30 else "MEDIUM" if risk_pct < 60 else "HIGH"
-
-        return {
-            "risk_score": round(risk_score, 6),
-            "risk_pct": risk_pct,
-            "cognitive_symptom_risk_pct": risk_pct,
-            "risk_level": risk_level,
-            "risk_factors": [],
-            "recommendations": [
-                "If memory or thinking concerns persist, arrange an assessment with a qualified healthcare professional.",
-                "Continue monitoring blood pressure, sleep, nutrition, and other relevant health factors.",
-            ],
-            "model_used": "trained",
-            "model_name": "African Cognitive Symptom Risk Model",
-            "note": (
-                "Screening estimate for self-reported cognitive symptoms. It is not a diagnosis of dementia or Alzheimer's disease. "
-                "Some fields use defaults when not supplied; interpret the estimate accordingly."
-            ),
-            "timestamp": datetime.now().isoformat(),
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception("Cognitive-symptom prediction error: %s", e)
-        raise HTTPException(status_code=400, detail=f"Cognitive-symptom prediction failed: {e}")
-
-
 # ═══════════════════════════════════════════════════════════════════════
 # PRIVACY-FIRST RESEARCH DATA + SERVER-SIDE AUTHENTICATION
 # Required Render environment variables:
@@ -713,7 +589,7 @@ def predict_cognitive_symptoms(payload: dict):
 # ═══════════════════════════════════════════════════════════════════════
 
 ALLOWED_RESEARCH_RECORD_TYPES = {
-    "stroke_predictions", "alzheimer_predictions", "cognitive_symptom_assessments",
+    "stroke_predictions", "alzheimer_predictions",
     "nutrition_tracker", "stress_assessments", "pain_stroke_study"
 }
 IDENTITY_KEYS = {
@@ -776,13 +652,7 @@ def _require_researcher(authorization: Optional[str]) -> dict:
 
 
 
-def _supabase_rest(
-    table: str,
-    method: str = "POST",
-    payload=None,
-    query: str = "",
-    prefer: str = "return=minimal",
-):
+def _supabase_rest( table: str, method: str = "POST", payload=None, query: str = "", prefer: str = "return=minimal", ):
     base_url = os.getenv("SUPABASE_URL", "").rstrip("/")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
@@ -955,7 +825,7 @@ def auth_verify(authorization: Optional[str] = Header(default=None)):
 
 
 # Public anonymous application storage, separate from secondary research records.
-PUBLIC_ASSESSMENT_TYPES = {"stroke_predictions", "alzheimer_predictions", "cognitive_symptom_assessments", "nutrition_tracker", "stress_assessments"}
+PUBLIC_ASSESSMENT_TYPES = {"stroke_predictions", "alzheimer_predictions", "nutrition_tracker", "stress_assessments"}
 PUBLIC_IDENTITY_KEYS = {"name", "fullname", "patientname", "participantname", "email", "emailaddress", "phone", "phonenumber", "address", "street", "hospitalnumber", "nationalid", "passportnumber", "dateofbirth", "dob", "contactdetails", "notes", "comments", "freetext", "narrative", "customnotes", "userid", "researchid", "participantid", "sessionid", "assessmentdate", "createdat", "timestamp", "datetime", "date", "ip", "ipaddress", "latitude", "longitude", "lat", "lng", "coordinates", "gps", "exactlocation", "studysite", "districtlga", "lga"}
 
 class PublicAssessmentCreate(BaseModel):
@@ -1015,7 +885,7 @@ def save_public_assessment(payload: PublicAssessmentCreate):
 def public_neuromap_aggregates(layer: str = "stroke"):
     """Return coarse public aggregates only; never return individual records."""
     layer = (layer or "stroke").strip().lower()
-    allowed_types = {"stroke": {"stroke_predictions"}, "dementia": {"alzheimer_predictions"}, "cognitive": {"cognitive_symptom_assessments"}}
+    allowed_types = {"stroke": {"stroke_predictions"}, "dementia": {"alzheimer_predictions"}, }
     if layer not in allowed_types:
         return {"aggregates": [], "min_group_size": 10, "note": "No eligible dataset is configured for this layer."}
     query = urlencode({"select": "country,state_province,nigeria_geopolitical_zone,assessment_type,data_json", "assessment_type": "in.({})".format(",".join(sorted(allowed_types[layer]))), "limit": "10000", "order": "created_at.desc"})
@@ -1031,7 +901,7 @@ def public_neuromap_aggregates(layer: str = "stroke"):
         group = grouped.setdefault(key, {"country": country, "province": (province or None) if country == "Nigeria" else None, "geopolitical_zone": record.get("nigeria_geopolitical_zone"), "area": area, "record_type": record.get("assessment_type"), "n": 0, "high_risk_n": 0})
         group["n"] += 1
         data = record.get("data_json") or {}
-        if isinstance(data, dict) and str(data.get("risk_level", data.get("risk_category", (data.get("model_response") or {}).get("risk_level", ""))).upper() == "HIGH":
+        if isinstance(data, dict) and str(data.get("risk_level") or data.get("risk_category") or ((data.get("model_response") or {}).get("risk_level", ""))).upper() == "HIGH":
             group["high_risk_n"] += 1
     aggregates = []
     for group in grouped.values():
@@ -1161,10 +1031,7 @@ def _participant_registration(research_id: str) -> dict:
 
 
 @app.post("/research/records")
-def save_research_record(
-    payload: ResearchRecordCreate,
-    authorization: Optional[str] = Header(default=None),
-):
+def save_research_record( payload: ResearchRecordCreate, authorization: Optional[str] = Header(default=None), ):
     """Store de-identified assessments in the privacy-first research table."""
     status = _protocol_collection_status()
     if not status["collection_enabled"]:
@@ -1253,10 +1120,7 @@ def save_research_record(
 
 
 @app.get("/research/records")
-def get_research_records(
-    authorization: Optional[str] = Header(default=None),
-    limit: int = 500,
-):
+def get_research_records( authorization: Optional[str] = Header(default=None), limit: int = 500, ):
     _require_researcher(authorization)
     limit = max(1, min(int(limit), 2000))
     query = urlencode({
@@ -1332,10 +1196,7 @@ def research_participant_summary(authorization: Optional[str] = Header(default=N
 
 
 @app.get("/research/map/aggregates")
-def research_map_aggregates(
-    layer: str = "stroke",
-    authorization: Optional[str] = Header(default=None),
-):
+def research_map_aggregates( layer: str = "stroke", authorization: Optional[str] = Header(default=None), ):
     """Return grouped aggregates only; suppress groups smaller than ten records."""
     _require_researcher(authorization)
     layer = (layer or "stroke").lower().strip()
@@ -1404,10 +1265,7 @@ def research_map_aggregates(
 
 
 @app.post("/research/outcomes")
-def save_research_outcome(
-    payload: ResearchOutcomeCreate,
-    authorization: Optional[str] = Header(default=None),
-):
+def save_research_outcome( payload: ResearchOutcomeCreate, authorization: Optional[str] = Header(default=None), ):
     """Store a verified outcome in the shared privacy-first research table."""
     status = _protocol_collection_status()
     if not status["collection_enabled"]:
