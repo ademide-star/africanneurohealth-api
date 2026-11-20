@@ -376,10 +376,11 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
 <svg class="brain-logo-img" viewBox="0 0 200 200" style="width:140px;height:140px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M70 70c0-13 9-22 22-22s22 9 22 22v9c6 0 12 6 12 13s-6 13-12 13v9c0 13-9 22-22 22s-22-9-22-22c-10 0-17-7-17-16s7-16 17-16v-10z" fill="none" stroke="url(#anhrlG2)" stroke-width="6" stroke-linejoin="round"/><circle cx="90" cy="80" r="4" fill="#c9a84c"/><circle cx="105" cy="100" r="4" fill="#4ECB82"/><circle cx="90" cy="120" r="4" fill="#c9a84c"/><text x="100" y="170" text-anchor="middle" fill="#c9a84c" font-family="sans-serif" font-size="18" font-weight="700">ANHRL</text></svg>
         </div>
         <div class="mini-metrics">
-          <div class="mini-m"><span class="mini-m-val">94%</span><span class="mini-m-lbl">Stroke Acc.</span></div>
-          <div class="mini-m"><span class="mini-m-val">91%</span><span class="mini-m-lbl">Dementia Acc.</span></div>
+          <div class="mini-m"><span class="mini-m-val">0.953</span><span class="mini-m-lbl">Stroke ROC-AUC*</span></div>
+          <div class="mini-m"><span class="mini-m-val">0.955</span><span class="mini-m-lbl">Dementia ROC-AUC**</span></div>
           <div class="mini-m"><span class="mini-m-val">Live</span><span class="mini-m-lbl">AI Status</span></div>
         </div>
+        <p style="font-size:.68rem;color:var(--mist);line-height:1.5;margin-top:.8rem;">* Independent Nigerian field cohort after isotonic recalibration. ** Dementia 10-fold cross-validation: 0.9549 ± 0.0124. ROC-AUC measures discrimination, not accuracy.</p>
       </div>
     </div>
   </div>
@@ -524,11 +525,11 @@ For researchers, the same platform doubles as live research infrastructure: uplo
   <div class="wrap">
     <span class="section-label" data-i18n="mapLabel">// NeuroMap Africa</span>
     <h2 class="section-title" style="margin-bottom:.5rem;" data-i18n="mapTitle">Interactive Brain Health Geography of Africa</h2>
-    <p class="section-sub" style="margin-bottom:2rem;" data-i18n="mapDesc">Explore privacy-protected summaries of stroke-risk, dementia-risk and cognitive-symptom assessments where enough records are available. Modelled results are not disease-prevalence estimates.</p>
+    <p class="section-sub" style="margin-bottom:2rem;" data-i18n="mapDesc">Explore privacy-protected summaries of stroke-risk and dementia-risk assessments where enough records are available. Modelled results are not disease-prevalence estimates.</p>
     <p class="map-data-status" id="map-data-status">NeuroMap is public. It displays only privacy-protected aggregate data when enough eligible records are available. No data is not the same as low risk.</p>
     <div class="map-controls" role="group" aria-label="NeuroMap data layer">
       <button class="map-btn active" data-layer="stroke" onclick="setMapLayer(this)">🫀 Stroke</button>
-      <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Memory symptoms</button>
+      <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Dementia risk</button>
       <button class="map-btn" data-layer="herbal" onclick="setMapLayer(this)">🌿 Herbal use</button>
       <button class="map-btn" data-layer="pollution" onclick="setMapLayer(this)">💨 Pollution</button>
       <button class="map-btn" data-layer="sex" onclick="setMapLayer(this)">⚥ Sex differences</button>
@@ -721,7 +722,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 <!-- STROKE PAGE -->
 <div id="page-stroke" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
-  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. When you submit it, selected health fields may be stored without your name, contact details, account or research ID, or precise location to support application analytics and privacy-protected summaries. Individual records are not public. Researcher access to secondary data is separately controlled.</div>
+  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. Selected assessment responses, model outputs and some demographic or broad location fields you provide may be stored in the application database for service analytics and privacy-protected aggregate summaries. These records are stored without your name, contact details, account ID, research ID or precise street address. They are separate from the protocol-gated research dataset, and individual records are not public. Researcher access to approved secondary research data is separately controlled.</div>
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
 
@@ -861,61 +862,9 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 <!-- DEMENTIA PAGE -->
 <div id="page-dementia" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
-  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. When you submit it, selected health fields may be stored without your name, contact details, account or research ID, or precise location to support application analytics and privacy-protected summaries. Individual records are not public. Researcher access to secondary data is separately controlled.</div>
+  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. Selected assessment responses, model outputs and some demographic or broad location fields you provide may be stored in the application database for service analytics and privacy-protected aggregate summaries. These records are stored without your name, contact details, account ID, research ID or precise street address. They are separate from the protocol-gated research dataset, and individual records are not public. Researcher access to approved secondary research data is separately controlled.</div>
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
-
-  <!-- Separate cognitive-symptom model assessment. Kept separate from the existing dementia-risk model. -->
-  <div class="asmt-section" id="cognitive-symptom-assessment" style="margin:1.5rem 0 2rem;padding:1.5rem;border:1px solid rgba(201,168,76,.35);border-radius:16px;background:rgba(201,168,76,.035);">
-    <span class="section-label">// Community Cognitive Symptom Screening</span>
-    <h2 class="section-title" style="margin:.5rem 0 1rem;">🧠 Cognitive Symptom Assessment</h2>
-    <p style="color:var(--mist);font-size:.88rem;line-height:1.65;margin-bottom:1.2rem;">This is a separate lifestyle and health-factor assessment using the African Cognitive Symptom Risk Model. It does not diagnose dementia and does not replace the dementia-risk assessment below. Complete the fields with the participant's reported or measured information.</p>
-    <div id="cognitive-protocol-notice" role="status" aria-live="polite" style="background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.35);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;color:var(--amber);font-size:.82rem;line-height:1.6;">
-      Checking study approval status…
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Age</label><input type="number" id="cs-age" min="18" max="120" value="45"></div>
-      <div class="fg"><label>Sex</label><select id="cs-sex"><option value="M">Male</option><option value="F">Female</option></select></div>
-      <div class="fg"><label>Education level</label><select id="cs-edu"><option value="NONE">None</option><option value="PRIMARY">Primary</option><option value="SECONDARY" selected>Secondary</option><option value="TERTIARY">Tertiary</option><option value="POSTGRADUATE">Postgraduate</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Systolic BP (mmHg)</label><input type="number" id="cs-sbp" min="60" max="260" value="120"></div>
-      <div class="fg"><label>Diastolic BP (mmHg)</label><input type="number" id="cs-dbp" min="30" max="160" value="80"></div>
-      <div class="fg"><label>Heart rate (bpm)</label><input type="number" id="cs-hr" min="25" max="240" value="72"></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Diabetes</label><select id="cs-diabetes"><option>NO</option><option>YES</option></select></div>
-      <div class="fg"><label>Hypertension</label><select id="cs-htn"><option>NO</option><option>YES</option></select></div>
-      <div class="fg"><label>Heart disease</label><select id="cs-heart"><option>NO</option><option>YES</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Stress level</label><select id="cs-stress"><option value="L">Low</option><option value="M" selected>Moderate</option><option value="H">High</option></select></div>
-      <div class="fg"><label>Sleep (hours/night)</label><input type="number" id="cs-sleep" min="0" max="24" step="0.5" value="7"></div>
-      <div class="fg"><label>Chronic pain</label><select id="cs-pain"><option>NO</option><option>YES</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Nutrition score (model scale)</label><input type="number" id="cs-nutrition" min="0" max="10" step="1" value="3"></div>
-      <div class="fg"><label>Environmental pollution</label><select id="cs-pollution"><option value="L">Low</option><option value="M">Moderate</option><option value="H">High</option></select></div>
-      <div class="fg"><label>Occupational hazard</label><select id="cs-hazard"><option>NO</option><option>YES</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Access to healthcare</label><select id="cs-access"><option>YES</option><option>NO</option></select></div>
-      <div class="fg"><label>Smoking status</label><select id="cs-smoking"><option>Non-smoker / not reported</option><option>Current smoker</option><option>Former smoker</option></select></div>
-      <div class="fg"><label>Hypertension treatment</label><select id="cs-treatment"><option>Not applicable</option><option>Treated</option><option>Untreated</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Fruit intake (servings/day)</label><input type="number" id="cs-fruit" min="0" max="20" value="2"></div>
-      <div class="fg"><label>Vegetable intake (servings/day)</label><input type="number" id="cs-vegetable" min="0" max="20" value="3"></div>
-      <div class="fg"><label>Hydration (litres/day)</label><input type="number" id="cs-water" min="0" max="15" step="0.1" value="2"></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Lifestyle choice</label><select id="cs-lifestyle"><option>Homemade Food</option><option>Mixed Diet</option><option>Mostly Processed Food</option></select></div>
-      <div class="fg"><label>Total salt-intake score</label><input type="number" id="cs-salt" min="0" max="30" value="5"></div>
-      <div class="fg"><label>Zone</label><select id="cs-zone"><option>Ijebu Zone</option><option>Egba Zone</option><option>Remo Zone</option><option>Yewa Zone</option><option>Other / outside Ogun</option></select></div>
-    </div>
-    <button class="btn btn-gold btn-full" id="btn-run-cognitive-symptoms" onclick="runCognitiveSymptomAssessment()" style="margin-top:1rem;">🧠 Run Cognitive Symptom Assessment</button>
-    <div id="cognitive-symptom-result" class="result-card" style="display:none;margin-top:1.2rem;" aria-live="polite"></div>
-  </div>
 
   <!-- Quick Form (default) -->
   <div id="dementia-form-wrap">
@@ -1065,7 +1014,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 <!-- NUTRITION PAGE -->
 <div id="page-nutrition" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
-  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. When you submit it, selected health fields may be stored without your name, contact details, account or research ID, or precise location to support application analytics and privacy-protected summaries. Individual records are not public. Researcher access to secondary data is separately controlled.</div>
+  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. Selected assessment responses, model outputs and some demographic or broad location fields you provide may be stored in the application database for service analytics and privacy-protected aggregate summaries. These records are stored without your name, contact details, account ID, research ID or precise street address. They are separate from the protocol-gated research dataset, and individual records are not public. Researcher access to approved secondary research data is separately controlled.</div>
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
   <span class="section-label">// Health Tool</span>
@@ -1205,7 +1154,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 <!-- STRESS PAGE -->
 <div id="page-stress" class="page z1" style="padding-top:88px;padding-bottom:4rem;">
-  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. When you submit it, selected health fields may be stored without your name, contact details, account or research ID, or precise location to support application analytics and privacy-protected summaries. Individual records are not public. Researcher access to secondary data is separately controlled.</div>
+  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. Selected assessment responses, model outputs and some demographic or broad location fields you provide may be stored in the application database for service analytics and privacy-protected aggregate summaries. These records are stored without your name, contact details, account ID, research ID or precise street address. They are separate from the protocol-gated research dataset, and individual records are not public. Researcher access to approved secondary research data is separately controlled.</div>
 <div class="wrap">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
   <span class="section-label">// Health Tool</span>
@@ -1393,7 +1342,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
 
 <!-- MEMORY PAGE -->
 <div id="page-memory" class="page z1" style="padding-top:100px;padding-bottom:4rem;">
-  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. When you submit it, selected health fields may be stored without your name, contact details, account or research ID, or precise location to support application analytics and privacy-protected summaries. Individual records are not public. Researcher access to secondary data is separately controlled.</div>
+  <div class="access-note public-data-note" style="border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin:.5rem 0 1.25rem;"><strong>Privacy note:</strong> You can use this assessment without an account. Selected assessment responses, model outputs and some demographic or broad location fields you provide may be stored in the application database for service analytics and privacy-protected aggregate summaries. These records are stored without your name, contact details, account ID, research ID or precise street address. They are separate from the protocol-gated research dataset, and individual records are not public. Researcher access to approved secondary research data is separately controlled.</div>
 <div class="wrap" style="max-width:680px;">
   <button class="back-btn" onclick="showPage('home')">&#8592; Back</button>
   <span class="section-label">// Cognitive Assessment</span>
@@ -1644,8 +1593,8 @@ For researchers, the same platform doubles as live research infrastructure: uplo
   </div>
   <div id="atab-models" class="tab-panel">
     <div class="grid2" style="gap:1.5rem;">
-      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Stroke Model</h4><span class="tag tag-green">v2.1</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Gradient Boosting · 24 features · 94.2%</p><div class="progress-track"><div class="progress-fill" style="width:94%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
-      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Dementia Model</h4><span class="tag tag-green">v1.8</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">Random Forest · 35 features · 91.6%</p><div class="progress-track"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,var(--jade),var(--mint));"></div></div></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Stroke Model</h4><span class="tag tag-green">Deployed</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">XGBoost · 24 features. ROC-AUC 0.953 on an independent Nigerian field cohort after isotonic recalibration.</p></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;"><h4 style="font-family:'Playfair Display',serif;">Dementia Model</h4><span class="tag tag-green">Deployed</span></div><p style="color:var(--mist);font-size:.83rem;margin-bottom:1rem;">HistGradientBoosting · 31 features. ROC-AUC 0.9549 ± 0.0124 across 10-fold cross-validation.</p></div>
     </div>
   </div>
   <div id="atab-livedata" class="tab-panel">
@@ -1774,7 +1723,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <button class="modal-close" onclick="closeModal('modal-assess')">&#x2715;</button>
 <svg viewBox="0 0 64 64" style="width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG3)" stroke-width="2.2" stroke-linejoin="round"/></svg>
     <h2>Start Your Assessment</h2>
-    <p>Free screening and synthetic testing. Research records are not saved while study approval is pending.</p>
+    <p>Free screening and synthetic testing. While study approval is pending, assessment responses are not added to the protocol-gated research dataset. Selected de-identified assessment data may still be stored separately for application operation, analytics and privacy-protected aggregate summaries, as explained in the privacy note.</p>
     <div id="assessment-test-mode-note" style="display:none;background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.3);border-radius:8px;padding:.75rem;margin:.75rem 0 1rem;color:var(--amber);font-size:.8rem;line-height:1.5;">Protocol gate is closed. Use synthetic test values only. Do not enter real participant data; predictions will not be saved as research records.</div>
     <div class="modal-opts">
       <button class="modal-opt" onclick="closeModal('modal-assess');showPage('stroke')"><span style="font-size:1.5rem;">&#x1FA7A;</span><div><strong>Stroke Risk Assessment</strong><span>BP, BMI, lifestyle, environment · AI scoring · PDF report · ~5 min</span></div></button>
@@ -1957,7 +1906,7 @@ async function saveRecord(table, payload) {
       if (error) { toast('Could not send message. Please try again later.'); return false; }
       return true;
     }
-    const allowed = ['stroke_predictions','alzheimer_predictions','cognitive_symptom_assessments','nutrition_tracker','stress_assessments','pain_stroke_study'];
+    const allowed = ['stroke_predictions','alzheimer_predictions','nutrition_tracker','stress_assessments','pain_stroke_study'];
     if (!allowed.includes(table)) { console.warn('Blocked non-approved record type:', table); return false; }
     // Pain-study records are a separate research workflow and stay behind the approved protocol gate.
     if (table === 'pain_stroke_study') {
@@ -1983,7 +1932,7 @@ async function saveRecord(table, payload) {
     const response = await fetch(API_BASE + '/public/assessments', {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ record_type: table, payload: clean, model_name: table === 'cognitive_symptom_assessments' ? 'African Cognitive Symptom Risk Model' : null })
+      body: JSON.stringify({ record_type: table, payload: clean })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -3251,7 +3200,7 @@ function runStrokeAssessment() {
 
     document.getElementById('stroke-extra-details').innerHTML =
       '<div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:1rem;font-size:.82rem;">' +
-      '<div style="margin-bottom:.4rem;"><strong>Model:</strong> ' + (model_used === 'trained' ? '✅ Published Gradient Boosting (94% accuracy)' : '⚡ Demo scoring') + '</div>' +
+      '<div style="margin-bottom:.4rem;"><strong>Model:</strong> ' + (model_used === 'trained' ? '✅ XGBoost stroke model' : 'Model unavailable') + '</div>' +
       '<div style="margin-bottom:.4rem;"><strong>BP:</strong> ' + sbp + '/' + dbp + ' mmHg</div>' +
       '<div style="margin-bottom:.4rem;"><strong>BMI:</strong> ' + bmi.toFixed(1) + ' — ' + document.getElementById('s-bmi-cat').textContent + '</div>' +
       '<div style="margin-bottom:.4rem;"><strong>Glucose:</strong> ' + glucose + ' mg/dL</div>' +
@@ -3273,7 +3222,7 @@ function runStrokeAssessment() {
     window._lastStroke = { riskLevel: risk_level, riskPct: risk_pct,
       factors: risk_factors, recos: recommendations, userId: uid,
       extras: [
-        { label: 'Model', value: model_used === 'trained' ? 'Published Gradient Boosting (94% accuracy)' : 'Demo scoring' },
+        { label: 'Model', value: model_used === 'trained' ? 'XGBoost stroke model' : 'Demo scoring' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
         { label: 'BMI', value: bmi.toFixed(1) + ' — ' + document.getElementById('s-bmi-cat').textContent },
         { label: 'Glucose', value: glucose + ' mg/dL' },
@@ -3374,64 +3323,6 @@ function estimateCulturalMMSE(age) {
   else if (age > 60) mmseScore *= 0.97;
 
   return Math.max(0, Math.min(30, Math.round(mmseScore)));
-}
-
-async function runCognitiveSymptomAssessment() {
-  const byId = id => document.getElementById(id);
-  const num = (id, label) => {
-    const el = byId(id); const n = Number(el.value);
-    if (el.value.trim() === '' || !Number.isFinite(n)) throw new Error('Please enter a valid value for ' + label + '.');
-    return n;
-  };
-  let payload;
-  try {
-    payload = {
-      "AGE": num('cs-age','age'), "SEX": byId('cs-sex').value,
-      "EDU- L": byId('cs-edu').value, "S- BP": num('cs-sbp','systolic blood pressure'),
-      "D-BP": num('cs-dbp','diastolic blood pressure'), "DIABETES": byId('cs-diabetes').value,
-      "HYPERTENSION": byId('cs-htn').value, "HEART- D": byId('cs-heart').value,
-      "STRESS- L": byId('cs-stress').value, "SLEEP HOURS": num('cs-sleep','sleep hours'),
-      "CHRONIC- PAIN": byId('cs-pain').value, "NUTRITION SCORE": num('cs-nutrition','nutrition score'),
-      "HEART RATE": num('cs-hr','heart rate'), "POLLUTION": byId('cs-pollution').value,
-      "OCCUPATION HAZZARD": byId('cs-hazard').value, "ACCESS TO HEALTH CARE": byId('cs-access').value,
-      "SMOKING STATUS (CORRECTED)": byId('cs-smoking').value,
-      "HYPERTENSION TREATMENT (CORRECTED)": byId('cs-treatment').value,
-      "FRUIT_INTAKE": num('cs-fruit','fruit intake'), "VEGETABLE_INTAKE": num('cs-vegetable','vegetable intake'),
-      "HYDRATION_LITERS": num('cs-water','hydration'), "LIFESTYLE_CHOICES": byId('cs-lifestyle').value,
-      "Total_Salt Intake Score": num('cs-salt','salt-intake score'), "ZONE": byId('cs-zone').value
-    };
-  } catch (e) { toast('⚠️ ' + e.message); return; }
-
-  const btn = byId('btn-run-cognitive-symptoms');
-  const out = byId('cognitive-symptom-result');
-  btn.disabled = true; btn.textContent = '⏳ Assessing…';
-  out.style.display = 'block';
-  out.innerHTML = '<p style="color:var(--mist);">Sending all 24 model predictors to the cognitive-symptom endpoint…</p>';
-  try {
-    const response = await fetch(API_BASE + '/predict/cognitive-symptoms', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.detail || result.message || ('API error ' + response.status));
-    const pct = Number(result.risk_pct ?? result.risk_percent ?? result.probability_percent ?? result.probability);
-    const level = String(result.risk_level ?? result.risk_category ?? result.category ?? 'RESULT').toUpperCase();
-    const summary = result.note || result.interpretation || result.message || result.summary || 'Model prediction returned successfully.';
-    out.innerHTML = '<h3 style="margin-bottom:.7rem;">Cognitive symptom model result</h3>' +
-      (Number.isFinite(pct) ? '<p style="font-size:1.5rem;color:var(--gold);font-weight:700;">' + Math.round(pct* (pct <= 1 ? 100 : 1)) + '%</p>' : '') +
-      '<p><strong>' + level.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</strong></p>' +
-      '<p style="color:var(--smoke);line-height:1.6;">' + String(summary).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</p>' +
-      ((Array.isArray(result.recommendations) && result.recommendations.length) ? '<h4 style="margin:.8rem 0 .4rem;">Suggested next steps</h4><ul>' + result.recommendations.map(x => '<li>' + String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</li>').join('') + '</ul>' : '') +
-      ((Array.isArray(result.fields_defaulted) && result.fields_defaulted.length) ? '<p style="font-size:.78rem;color:var(--mist);margin-top:.7rem;">Model defaults used for: ' + result.fields_defaulted.map(x => String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))).join(', ') + '</p>' : '') +
-      '<p style="font-size:.78rem;color:var(--mist);margin-top:.8rem;">This is a model-based symptom-risk estimate, not a diagnosis. Seek clinical assessment for persistent or worsening cognitive concerns.</p>';
-    const saved = await saveRecord('cognitive_symptom_assessments', { assessment_type:'cognitive_symptom_assessment', inputs:payload, model_response:result, model_name:result.model_used || 'African Cognitive Symptom Risk Model', model_version:result.model_version || null });
-    if (!saved) {
-      out.insertAdjacentHTML('beforeend', '<p style="font-size:.8rem;color:var(--mist);margin-top:.8rem;">Your result is available above, but anonymous storage is temporarily unavailable.</p>');
-    } else {
-      out.insertAdjacentHTML('beforeend', '<p style="font-size:.8rem;color:var(--mist);margin-top:.8rem;">Saved without your name, contact details, account ID, research ID, or precise location. Researcher access is separately controlled.</p>');
-    }
-  } catch (e) {
-    out.innerHTML = '<p style="color:#EF4444;">The cognitive-symptom assessment could not be completed: ' + String(e.message || e).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '</p><p style="color:var(--mist);font-size:.82rem;">Your existing dementia-risk assessment remains available below.</p>';
-  } finally { btn.disabled = false; btn.textContent = '🧠 Run Cognitive Symptom Assessment'; }
 }
 
 function runDementiaAssessment() {
@@ -3557,7 +3448,7 @@ function runDementiaAssessment() {
       '<div style="font-size:.72rem;color:var(--mist);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">MMSE Score</div>' +
       '<div style="font-family:\'Space Mono\',monospace;font-size:1.8rem;color:var(--gold);">' + mmse + '<span style="font-size:.9rem;color:var(--mist)">/30</span></div>' +
       '<div style="font-size:.78rem;color:var(--smoke);margin-top:.35rem;">' + mmse_label + '</div>' +
-      '<div style="font-size:.72rem;color:var(--mist);margin-top:.25rem;">Model: ' + (model_used === 'trained' ? '✅ Published Random Forest (91.6% accuracy)' : '⚡ Demo scoring') + '</div>' +
+      '<div style="font-size:.72rem;color:var(--mist);margin-top:.25rem;">Model: ' + (model_used === 'trained' ? '✅ HistGradientBoosting dementia model' : 'Model unavailable') + '</div>' +
       '</div>';
 
     const uid = 'USR-' + Math.random().toString(36).substr(2,8).toUpperCase();
@@ -3581,7 +3472,7 @@ function runDementiaAssessment() {
     window._lastDementia = { riskLevel: risk_level, riskPct: risk_pct,
       factors: risk_factors, recos: recommendations, userId: uid,
       extras: [
-        { label: 'Model', value: model_used === 'trained' ? 'Published Random Forest (91.6% accuracy)' : 'Demo scoring' },
+        { label: 'Model', value: model_used === 'trained' ? 'HistGradientBoosting dementia model' : 'Demo scoring' },
         { label: 'MMSE Score', value: mmse + '/30 — ' + mmse_label },
         { label: 'Education', value: edu + ' years' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
