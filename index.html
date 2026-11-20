@@ -1723,8 +1723,8 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     <button class="modal-close" onclick="closeModal('modal-assess')">&#x2715;</button>
 <svg viewBox="0 0 64 64" style="width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 1rem;border:2px solid var(--gold);background:#0a2418;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL"><defs><linearGradient id="anhrlG3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG3)" stroke-width="2.2" stroke-linejoin="round"/></svg>
     <h2>Start Your Assessment</h2>
-    <p>Free screening and synthetic testing. While study approval is pending, assessment responses are not added to the protocol-gated research dataset. Selected de-identified assessment data may still be stored separately for application operation, analytics and privacy-protected aggregate summaries, as explained in the privacy note.</p>
-    <div id="assessment-test-mode-note" style="display:none;background:rgba(240,207,114,.08);border:1px solid rgba(240,207,114,.3);border-radius:8px;padding:.75rem;margin:.75rem 0 1rem;color:var(--amber);font-size:.8rem;line-height:1.5;">Protocol gate is closed. Use synthetic test values only. Do not enter real participant data; predictions will not be saved as research records.</div>
+    <p>Choose a health assessment to receive a personalised, model-based report. You can explore the platform without creating an account.</p>
+
     <div class="modal-opts">
       <button class="modal-opt" onclick="closeModal('modal-assess');showPage('stroke')"><span style="font-size:1.5rem;">&#x1FA7A;</span><div><strong>Stroke Risk Assessment</strong><span>BP, BMI, lifestyle, environment · AI scoring · PDF report · ~5 min</span></div></button>
       <button class="modal-opt" onclick="closeModal('modal-assess');showPage('dementia')"><span style="font-size:1.5rem;">&#x1F9EC;</span><div><strong>Dementia Risk Screening</strong><span>MMSE, metabolic, cognitive symptoms · AI scoring · PDF · ~7 min</span></div></button>
@@ -1848,14 +1848,6 @@ async function refreshProtocolGate() {
       statusEl.style.borderColor = protocolCollectionEnabled ? 'rgba(78,203,130,.35)' : 'rgba(240,207,114,.3)';
     }
     if (submit) submit.disabled = !protocolCollectionEnabled;
-    const testModeNote = document.getElementById('assessment-test-mode-note');
-    if (testModeNote) testModeNote.style.display = protocolCollectionEnabled ? 'none' : 'block';
-    const cognitiveNotice = document.getElementById('cognitive-protocol-notice');
-    if (cognitiveNotice) {
-      cognitiveNotice.textContent = protocolCollectionEnabled
-        ? 'The backend reports that research collection is enabled. Research assessments may only be saved after the approved consent and eligibility process is completed.'
-        : 'RESEARCH COLLECTION IS DISABLED. Use synthetic test values only. Do not enter real participant data. Predictions are not saved as research records while approval is pending.';
-    }
     // The server exposes the approved consent version only to the registration handler via configuration;
     // the client must not invent or hard-code a version. Request it only when the gate is enabled.
     if (protocolCollectionEnabled) {
@@ -2759,7 +2751,7 @@ async function handleRegister() {
   const eligibilityConfirmed = !!document.getElementById('reg-eligibility').checked;
   const witnessConfirmed = !!document.getElementById('reg-witness-confirmed').checked;
   const assistantCode = (document.getElementById('reg-ra-code').value || '').trim();
-  if (!protocolCollectionEnabled) { toast('Research collection is blocked until the approved protocol is verified on the backend.'); return; }
+  if (!protocolCollectionEnabled) { toast('Research registration is temporarily unavailable. Please contact the study administrator.'); return; }
   if (!country) { toast('Please select a country.'); return; }
   if (age !== null && (!Number.isFinite(age) || age < 1 || age > 120)) { toast('Enter a valid age or leave it blank.'); return; }
   if (!consent || !infoReviewed || !eligibilityConfirmed) { toast('Complete the approved information, eligibility and voluntary consent steps first.'); return; }
