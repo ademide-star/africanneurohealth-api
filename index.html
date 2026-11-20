@@ -3222,7 +3222,7 @@ function runStrokeAssessment() {
     window._lastStroke = { riskLevel: risk_level, riskPct: risk_pct,
       factors: risk_factors, recos: recommendations, userId: uid,
       extras: [
-        { label: 'Model', value: model_used === 'trained' ? 'XGBoost stroke model' : 'Demo scoring' },
+        { label: 'Model', value: model_used === 'trained' ? 'XGBoost stroke model' : 'Model unavailable' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
         { label: 'BMI', value: bmi.toFixed(1) + ' — ' + document.getElementById('s-bmi-cat').textContent },
         { label: 'Glucose', value: glucose + ' mg/dL' },
@@ -3472,7 +3472,7 @@ function runDementiaAssessment() {
     window._lastDementia = { riskLevel: risk_level, riskPct: risk_pct,
       factors: risk_factors, recos: recommendations, userId: uid,
       extras: [
-        { label: 'Model', value: model_used === 'trained' ? 'HistGradientBoosting dementia model' : 'Demo scoring' },
+        { label: 'Model', value: model_used === 'trained' ? 'HistGradientBoosting dementia model' : 'Model unavailable' },
         { label: 'MMSE Score', value: mmse + '/30 — ' + mmse_label },
         { label: 'Education', value: edu + ' years' },
         { label: 'Blood Pressure', value: sbp + '/' + dbp + ' mmHg' },
