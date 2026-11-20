@@ -931,7 +931,7 @@ def _protocol_collection_status() -> dict:
         "message": (
             "Research collection is enabled by backend configuration. Confirm that the configured approval and versions match the current approved documents."
             if enabled else
-            "Research data collection is disabled until ethics approval, protocol and consent versions, administrative permission, community permission, and explicit activation are configured on the backend. Synthetic model testing may continue."
+            "Research data collection is not active in the live service configuration. The administrator must verify the approved ethics reference, protocol and consent versions, permissions, and explicit activation."
         ),
     }
 
