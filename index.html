@@ -401,13 +401,13 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
     <span class="section-label" data-i18n="mapLabel">// NeuroMap Africa</span>
     <h2 class="section-title" style="margin-bottom:.5rem;" data-i18n="mapTitle">Interactive Brain Health Geography of Africa</h2>
     <p class="section-sub" style="margin-bottom:2rem;" data-i18n="mapDesc">Explore privacy-protected summaries of stroke-risk and dementia-risk assessments where enough records are available. Modelled results are not disease-prevalence estimates.</p>
-    <p class="map-data-status" id="map-data-status">NeuroMap is public. It displays only privacy-protected aggregate data when enough eligible records are available. No data is not the same as low risk.</p>
+
     <div class="map-controls" role="group" aria-label="NeuroMap data layer">
       <button class="map-btn active" data-layer="stroke" onclick="setMapLayer(this)">🫀 Stroke</button>
       <button class="map-btn" data-layer="dementia" onclick="setMapLayer(this)">🧠 Dementia risk</button>
-      <button class="map-btn" data-layer="herbal" onclick="setMapLayer(this)">🌿 Herbal use</button>
-      <button class="map-btn" data-layer="pollution" onclick="setMapLayer(this)">💨 Pollution</button>
-      <button class="map-btn" data-layer="sex" onclick="setMapLayer(this)">⚥ Sex differences</button>
+
+
+
     </div>
     <div class="neuromap-filters" aria-label="Geographic filters">
       <label>Country<select id="map-country" onchange="updateMapRegionOptions()"><option value="All Africa">All Africa</option></select></label>
