@@ -320,11 +320,9 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
     <div class="nav-brand-text">African <em>NeuroHealth</em><br><span data-i18n="navSubtitle">Intelligence</span></div>
   </div>
   <ul class="nav-links">
-    <li><a onclick="gotoSection('about')" data-i18n="navAbout">What We Do</a></li>
-    <li data-private-nav="true"><a onclick="gotoSection('pillars')" data-i18n="navResearch">Research</a></li>
-    <li><a onclick="gotoSection('neuromap')" data-i18n="navMap">NeuroMap</a></li>
-    <li><a onclick="gotoSection('publications')" data-i18n="navPubs">Publications</a></li>
-    <li><a onclick="gotoSection('contact')" data-i18n="navContact">Contact</a></li>
+    <li><a onclick="gotoSection('brain-games')">Brain games</a></li>
+    <li><a onclick="gotoSection('brain-health-tips')">Health tips</a></li>
+    <li><a onclick="gotoSection('neuromap')">NeuroMap</a></li>
   </ul>
   <div class="nav-right">
     <div class="lang-switcher-nav">
@@ -355,9 +353,9 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
 <div class="hero">
   <div class="hero-inner wrap">
     <div>
-      <div class="hero-pill fade-up"><div class="hero-dot"></div><span data-i18n="heroPill">African NeuroHealth Intelligence · Personal Brain-Health Platform</span></div>
+      <div class="hero-pill fade-up"><div class="hero-dot"></div><span >African NeuroHealth Intelligence · Personal Brain-Health Platform</span></div>
       <h1 class="headline hero-title fade-up fade-up-1">African<br><span class="g">NeuroHealth</span><br><span class="m">Intelligence</span></h1>
-      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">Explore your brain-health profile, learn the warning signs of stroke, try quick brain games and discover privacy-protected patterns across Africa.</span></p>
+      <p class="hero-desc fade-up fade-up-2"><span >Explore your brain-health profile, learn the warning signs of stroke, try quick brain games and discover privacy-protected patterns across Africa.</span></p>
       <div class="hero-ctas fade-up fade-up-3">
         <button class="btn btn-gold" onclick="openAssessModal()" data-i18n="heroStartBtn">🩺 Start Assessment</button>
         <button class="btn btn-outline" onclick="gotoSection('brain-games')">🎮 Try a brain game</button>
@@ -417,7 +415,7 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
       <label id="map-study-zone-wrap" style="display:none;">Ogun study zone<select id="map-study-zone" onchange="applyMapFilters()"><option value="All study zones">All study zones</option><option value="Egba Zone">Egba</option><option value="Ijebu Zone">Ijebu</option><option value="Remo Zone">Remo</option></select></label>
     </div>
     <p id="map-data-status" class="map-data-status" role="status">Current configured field-survey summaries cover selected Ogun State sites. Other locations will show no data until eligible aggregated records are available.</p>
-    <div id="map-el" role="application" aria-label="Interactive African neurohealth research map"></div>
+    <div id="map-el" role="application" aria-label="Interactive African brain-health map"></div>
     <div class="map-legend">
       <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div>Highest third of LGAs</div>
       <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div>Middle third</div>
@@ -433,21 +431,10 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
   <div class="footer-inner">
     <div class="footer-brand">
 <div class="nav-brand"><svg class="nav-logo-img" viewBox="0 0 64 64" style="width:42px;height:42px;display:block;" xmlns="http://www.w3.org/2000/svg" aria-label="ANHRL Logo"><defs><linearGradient id="anhrlG1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#4ECB82"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a2418" stroke="url(#anhrlG1)" stroke-width="2"/><path d="M22 22c0-4 3-7 7-7s7 3 7 7v3c2 0 4 2 4 4s-2 4-4 4v3c0 4-3 7-7 7s-7-3-7-7c-3 0-5-2-5-5s2-5 5-5v-4z" fill="none" stroke="url(#anhrlG1)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="29" cy="25" r="1.5" fill="#c9a84c"/><circle cx="33" cy="32" r="1.5" fill="#4ECB82"/><circle cx="29" cy="39" r="1.5" fill="#c9a84c"/></svg><div class="nav-brand-text">African <em>NeuroHealth</em><br>Intelligence</div></div>
-      <p data-i18n="footerTagline">AI-powered neuroscience research and community health intelligence platform. Built for Africa, by Africa.</p>
+      <p>AI-powered stroke and dementia risk screening, brain-health education and NeuroMap Africa.</p>
     </div>
-    <div class="footer-col"><h5 data-i18n="footerPlatform">Platform</h5><ul>
-      <li><a onclick="openAssessModal()">Community Portal</a></li>
-      <li><a onclick="openLoginModal('researcher')">Researcher Portal</a></li>
-      <li><a onclick="openLoginModal('admin')">Admin Portal</a></li>
-      <li><a onclick="gotoSection('neuromap')">NeuroMap Africa</a></li>
-      <li><a href="https://neuromatrixbiosystems.com" target="_blank">← NeuroMatrix Biosystems</a></li>
-    </ul></div>
-    <div class="footer-col"><h5 data-i18n="footerResearch">Research</h5><ul>
-      <li><a onclick="gotoSection('publications')">Publications</a></li>
-      <li><a onclick="openLoginModal('researcher')">Datasets</a></li>
-      <li><a>NeuroTrack Pro</a></li>
-      <li><a>Protocols</a></li>
-    </ul></div>
+    <div class="footer-col"><h5>Explore</h5><ul><li><a onclick="openAssessModal()">Health assessment</a></li><li><a onclick="gotoSection('brain-games')">Brain games</a></li><li><a onclick="gotoSection('brain-health-tips')">Stroke & dementia tips</a></li><li><a onclick="gotoSection('neuromap')">NeuroMap Africa</a></li></ul></div>
+    <div class="footer-col"><h5>About this platform</h5><ul><li><a href="https://neuromatrixbiosystems.com" target="_blank">NeuroMatrix Biosystems ↗</a></li><li><a href="https://neuromatrixbiosystems.com/anhrl.html" target="_blank">African NeuroHealth Research Lab ↗</a></li></ul></div>
     <div class="footer-col"><h5 data-i18n="footerLegal">Legal</h5><ul>
       <li><a>Privacy Policy</a></li><li><a>Terms of Use</a></li>
       <li><a>Data Ethics</a></li><li><a>Accessibility</a></li>
