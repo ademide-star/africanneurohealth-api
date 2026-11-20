@@ -311,7 +311,7 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
 @media(max-width:600px){.neuromap-filters{gap:.5rem}.neuromap-filters label{min-width:calc(50% - .25rem)}}
 
 </style>
-</head>
+<style>@keyframes brainFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-9px) rotate(3deg)}}#brain-games .card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}#brain-games .card:hover{transform:translateY(-5px);border-color:rgba(201,168,76,.55);box-shadow:0 18px 45px rgba(0,0,0,.2)}@media(prefers-reduced-motion:reduce){#brain-games *{animation:none!important;transition:none!important}}</style></head>
 <body class="public-view">
 <!-- NAV -->
 <nav id="navbar">
@@ -340,7 +340,7 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
       </select>
     </div>
     <button class="btn btn-gold" id="nav-btn-assess" data-i18n="navAssess" onclick="openAssessModal()">🩺 Start Assessment</button>
-    <button class="btn btn-outline btn-sm" id="nav-btn-researcher" data-i18n="navResearcher" onclick="SESSION.researcher ? showPage('researcher') : openLoginModal('researcher')">Researcher Login</button>
+    
     <button class="btn btn-outline btn-sm" id="nav-research-id" onclick="copyResearchId()" style="display:none;" title="Click to copy your research ID">Research ID</button>
     <button class="btn btn-outline btn-sm" id="nav-btn-logout" onclick="logoutSession()" style="display:none;">Sign out</button>
     <a href="https://neuromatrixbiosystems.com" target="_blank" class="btn btn-outline btn-sm" style="font-size:.75rem;padding:6px 14px;">NeuroMatrix ↗</a>
@@ -355,12 +355,12 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
 <div class="hero">
   <div class="hero-inner wrap">
     <div>
-      <div class="hero-pill fade-up"><div class="hero-dot"></div><span data-i18n="heroPill">African NeuroHealth Research Lab ·GRASP/NIH/DSI</span></div>
+      <div class="hero-pill fade-up"><div class="hero-dot"></div><span data-i18n="heroPill">African NeuroHealth Intelligence · Personal Brain-Health Platform</span></div>
       <h1 class="headline hero-title fade-up fade-up-1">African<br><span class="g">NeuroHealth</span><br><span class="m">Intelligence</span></h1>
-      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">AI-powered stroke and dementia risk prediction, community health intelligence, and translational neuroscience research — built for Africa, by Africa.</span></p>
+      <p class="hero-desc fade-up fade-up-2"><span data-i18n="heroDesc">Explore your brain-health profile, learn the warning signs of stroke, try quick brain games and discover privacy-protected patterns across Africa.</span></p>
       <div class="hero-ctas fade-up fade-up-3">
         <button class="btn btn-gold" onclick="openAssessModal()" data-i18n="heroStartBtn">🩺 Start Assessment</button>
-        <button class="btn btn-outline" onclick="gotoSection('about')" data-i18n="heroAboutBtn">📖 What This App Does</button>
+        <button class="btn btn-outline" onclick="gotoSection('brain-games')">🎮 Try a brain game</button>
       </div>
       <div class="hero-stats fade-up fade-up-4">
         <div><span class="hero-stat-num" data-count="6">0</span><span class="hero-stat-num">+</span><span class="hero-stat-lbl" data-i18n="statLang">Languages</span></div>
@@ -387,139 +387,16 @@ body.public-view .nav-links li[data-private-nav="true"] { display:none !importan
   <div class="scroll-ind"><div class="scroll-arrow"></div><span data-i18n="scrollText">Scroll to explore</span></div>
 </div>
 
-<!-- ABOUT -->
-<section id="about" class="section">
-  <div class="wrap">
-    <div class="grid2" style="gap:5rem;align-items:start;">
-      <div>
-        <span class="section-label" data-i18n="aboutLabel">// What This App Does</span>
-        <h2 class="section-title" data-i18n="aboutTitle">AI-Powered Brain Health Screening,<br>Built for African Communities</h2>
-        <p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP1">
-The <strong>African NeuroHealth Dashboard</strong> is a free, AI-driven platform that predicts your risk of stroke and dementia in minutes. Our machine learning models — externally validated on an independent African cohort — combine biomedical measurements, lifestyle habits, environmental exposures, and cognitive testing to give you a personalised risk score with clear, actionable next steps.
-</p>
-
-<p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP2">
-Beyond risk prediction, the platform includes a nutrition tracker, a stress assessment built around African stress domains, a memory recall game, and an instant PDF report generated in your language — English, Yorùbá, Hausa, Igbo, French, Arabic, or Swahili. No login is required to get started.
-</p>
-
-<p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP3">
-For researchers, the same platform doubles as live research infrastructure: upload and export datasets, visualise stroke and dementia hotspots across Africa on NeuroMap, and browse a documented ethnobotanical database of herbal remedies — all built on real field data collected through community assessments.
-</p>
-<p class="section-sub" style="margin-bottom:1.25rem;" data-i18n="aboutP4">
-<strong>Developed by:</strong> Adebimpe-John Omolola E<br>
-<strong>Principal Investigator:</strong> Prof. Mayowa Owolabi<br>
-<strong>Collaborative Program:</strong> GRASP / NIH / DSI Collaborative Program
-</p>
-        <div class="card card-gold"><p style="font-style:italic;font-size:.92rem;color:var(--smoke);" data-i18n="aboutQuote">"From spice to science — our research investigates natural herbal compounds alongside computational modelling to deliver real-world neuroprotective insights for African populations." <br><strong style="color:var(--gold);">— Adebimpe-John O.E., PhD.&amp; African NeuroHealth Research Lab</strong></p></div>
-
-        <!-- ANHRL Page Link -->
-        <div style="margin-top:1.5rem;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(45,155,90,.08));border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-          <div>
-            <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem;">About the Lab</div>
-            <div style="font-weight:600;font-size:.95rem;margin-bottom:.3rem;">African NeuroHealth Research Lab (ANHRL)</div>
-            <div style="font-size:.82rem;color:var(--mist);">Full lab profile — team, field reports, gallery, and research vision on the NeuroMatrix Biosystems website.</div>
-          </div>
-          <a href="https://neuromatrixbiosystems.com/anhrl.html" target="_blank" class="btn btn-gold btn-sm" style="white-space:nowrap;">
-            View Lab Profile &#x2197;
-          </a>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:1.25rem;">
-        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
-          <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏛️</div>
-          <div><strong data-i18n="feat1Title">ANHRL · African Neurohealth Lab </strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;">Supported by GRASP/NIH/DSI Africa.</p></div>
-        </div>
-        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
-          <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🌿</div>
-          <div><strong data-i18n="feat2Title">Ethnopharmacology & Herbal Therapeutics</strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;" data-i18n="feat2Desc">Systematic investigation of African botanicals — Saigon cinnamon, Aframomum melegueta, and more.</p></div>
-        </div>
-        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
-          <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🤖</div>
-          <div><strong data-i18n="feat3Title">AI Health Intelligence Platform</strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;" data-i18n="feat3Desc">ML models trained on African demographic, metabolic, and lifestyle data — multilingual, open-access.</p></div>
-        </div>
-        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
-          <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--jade));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🌍</div>
-          <div><strong data-i18n="feat4Title">Pan-African Research Vision</strong><p style="font-size:.81rem;color:var(--mist);margin-top:.35rem;line-height:1.6;" data-i18n="feat4Desc">Geospatial epidemiology and open infrastructure for researchers across 54 nations.</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- PILLARS -->
-<section id="pillars" class="section">
-  <div class="wrap">
-    <div style="text-align:center;margin-bottom:3.5rem;">
-      <span class="section-label" data-i18n="pillarsLabel">// Research Focus Areas</span>
-      <h2 class="section-title" data-i18n="pillarsTitle">Four Pillars of African Brain Health</h2>
-    </div>
-    <div class="pillars-grid">
-      <div class="pillar"><div class="pillar-icon" style="background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.2);">🫀</div><h3 data-i18n="p1Title">Stroke Prevention</h3><p data-i18n="p1Desc">Geospatial mapping of stroke hotspots, hypertension-driven risk modelling, and cardiometabolic profiling across Nigeria and sub-Saharan Africa.</p><div style="margin-top:1rem;"><span class="tag tag-red">Clinical AI</span></div></div>
-      <div class="pillar"><div class="pillar-icon" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.2);">🧬</div><h3>Dementia & Alzheimer's</h3><p data-i18n="p2Desc">Early detection algorithms integrating MMSE, biomarkers, lifestyle factors, and sex-dependent cognitive trajectories in African cohorts.</p><div style="margin-top:1rem;"><span class="tag tag-purple">Computational</span></div></div>
-      <div class="pillar"><div class="pillar-icon" style="background:rgba(45,155,90,.15);border:1px solid rgba(45,155,90,.25);">🌿</div><h3 data-i18n="p3Title">Herbal Therapeutics</h3><p data-i18n="p3Desc">Systematic reviews and preclinical trials — Saigon cinnamon, Aframomum melegueta, and African botanicals for neuroprotection.</p><div style="margin-top:1rem;"><span class="tag tag-green">Translational</span></div></div>
-      <div class="pillar"><div class="pillar-icon" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);">⚡</div><h3 data-i18n="p4Title">AI Health Intelligence</h3><p data-i18n="p4Desc">Federated ML, neural network activity modelling, and dataset tools designed for low-resource African research settings.</p><div style="margin-top:1rem;"><span class="tag tag-gold">Infrastructure</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<section id="stats" class="section" style="background:rgba(7,11,22,.4);border-top:1px solid rgba(201,168,76,.08);border-bottom:1px solid rgba(201,168,76,.08);">
-  <div class="wrap">
-    <div style="text-align:center;margin-bottom:3.5rem;">
-      <span class="section-label" data-i18n="statsLabel">// Platform Statistics</span>
-      <h2 class="section-title" data-i18n="statsTitle">Research Impact Dashboard</h2>
-      <p class="section-sub" style="margin:0 auto;" data-i18n="statsSub">Live aggregate metrics across all assessments, predictions, and research records.</p>
-    </div>
-    <div class="stats-cards">
-      <div class="stat-card"><span class="stat-num"><span id="stat-stroke" data-count="2600">0</span></span><span class="stat-lbl" data-i18n="statsStroke">Stroke Assessments</span></div>
-      <div class="stat-card"><span class="stat-num"><span id="stat-dementia" data-count="2400">0</span></span><span class="stat-lbl" data-i18n="statsDementia">Dementia Screenings</span></div>
-      <div class="stat-card"><span class="stat-num"><span id="stat-states" data-count="36">0</span></span><span class="stat-lbl" data-i18n="statsStates">Nigerian States</span></div>
-      <div class="stat-card"><span class="stat-num"><span id="stat-pubs" data-count="12">0</span>+</span><span class="stat-lbl" data-i18n="statsPubs">Publications</span></div>
-    </div>
-    <div id="plotly-chart" style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem;"></div>
-  </div>
-</section>
-
-<!-- PORTALS -->
-<section id="portals" class="section">
-  <div class="wrap">
-    <div class="grid2" style="gap:4rem;align-items:end;margin-bottom:3rem;">
-      <div><span class="section-label" data-i18n="portalsLabel">// Access Portals</span><h2 class="section-title" data-i18n="portalsTitle">Your Gateway<br>to NeuroHealth</h2></div>
-      <p class="section-sub">Community members, researchers, and administrators each have dedicated, purpose-built portals.</p>
-    </div>
-    <div class="portals-wrap">
-      <div class="portal-card wide" onclick="openAssessModal()">
-        <div class="portal-icon" style="background:rgba(78,203,130,.15);border:1px solid rgba(78,203,130,.25);">🩺</div>
-        <div>
-          <span class="p-label" data-i18n="portalComLabel">Public · No login required</span>
-          <h3 data-i18n="portalComTitle">Patient & Community Portal</h3>
-          <p data-i18n="portalComDesc">Complete stroke risk assessment, dementia screening, nutrition tracker, stress evaluation, and memory test. Receive a personalised PDF report in your language.</p>
-          <div class="portal-tags"><span class="ptag">Stroke Risk</span><span class="ptag">Dementia Screen</span><span class="ptag">Nutrition</span><span class="ptag">Stress</span><span class="ptag">Memory Game</span><span class="ptag">PDF Report</span><span class="ptag">7 Languages</span><span class="ptag">Country/Region</span><span class="ptag">Ethnicity</span></div>
-        </div>
-        <div class="portal-arrow">→</div>
-      </div>
-      <div class="portal-card" onclick="openLoginModal('researcher')" style="cursor:pointer;">
-        <div class="portal-icon" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.2);">🔬</div>
-        <span class="p-label" data-i18n="portalResLabel">PI · Students · Collaborators</span>
-        <h3 data-i18n="portalResTitle">Researcher Portal</h3>
-        <p data-i18n="portalResDesc">Upload datasets, run analysis, export CSV/SPSS, visualise geospatial patterns, and access herbal intervention databases.</p>
-        <div class="portal-tags"><span class="ptag">Dataset Upload</span><span class="ptag">SPSS Export</span><span class="ptag">NeuroMap</span><span class="ptag">Statistics</span></div>
-        <div class="portal-arrow">→</div>
-      </div>
-      <div class="portal-card" onclick="openLoginModal('admin')" style="cursor:pointer;">
-        <div class="portal-icon" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);">⚙️</div>
-        <span class="p-label" data-i18n="portalAdmLabel">Administrators only</span>
-        <h3 data-i18n="portalAdmTitle">Admin Portal</h3>
-        <p data-i18n="portalAdmDesc">Manage users, permissions, AI model versions, survey records, notifications, and platform-wide reports.</p>
-        <div class="portal-tags"><span class="ptag">User Mgmt</span><span class="ptag">AI Versions</span><span class="ptag">Reports</span></div>
-        <div class="portal-arrow">→</div>
-      </div>
-    </div>
-  </div>
-</section>
-
+<!-- PERSONAL BRAIN-HEALTH EXPERIENCE -->
+<section id="brain-games" class="section"><div class="wrap">
+<div style="text-align:center;margin-bottom:2.5rem;"><span class="section-label">// Play · Learn · Check in</span><h2 class="section-title">Give your brain a two-minute workout</h2><p class="section-sub" style="margin:0 auto;">Try a quick memory challenge or test what you know about stroke warning signs. These activities are for learning, not diagnosis.</p></div>
+<div class="grid2" style="gap:1.25rem;">
+<div class="card card-gold" style="padding:1.6rem;"><div style="font-size:2.2rem;animation:brainFloat 3s ease-in-out infinite;">🧠</div><span class="tag tag-gold">Memory sprint</span><h3>Remember the pattern</h3><p style="color:var(--mist);font-size:.86rem;">Watch the symbols, then repeat them in the right order.</p><div id="mini-memory-display" style="min-height:65px;display:grid;place-items:center;font-size:2rem;margin:1rem 0;background:rgba(7,11,22,.35);border-radius:12px;">🧠 ✨ 🌿</div><div id="mini-memory-status" role="status" style="font-size:.82rem;color:var(--mist);min-height:2em;">Press start when ready.</div><div id="mini-memory-actions" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;"><button class="btn btn-gold btn-sm" onclick="startMiniMemory()">Start challenge</button></div></div>
+<div class="card" style="padding:1.6rem;"><div style="font-size:2.2rem;animation:brainFloat 3.4s ease-in-out infinite;">⚡</div><span class="tag tag-red">Stroke awareness quiz</span><h3>Spot the warning signs</h3><p style="color:var(--mist);font-size:.86rem;">Three quick questions to help you remember when stroke needs emergency attention.</p><div id="stroke-quiz"><div id="stroke-quiz-question" style="font-weight:600;min-height:3em;"></div><div id="stroke-quiz-options" style="display:grid;gap:.5rem;margin-top:.8rem;"></div><p id="stroke-quiz-feedback" role="status" style="font-size:.82rem;color:var(--mist);margin-top:.8rem;min-height:2.5em;"></p><button id="stroke-quiz-next" class="btn btn-gold btn-sm" onclick="nextStrokeQuiz()" style="display:none;">Next question</button></div></div>
+</div><div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-gold" onclick="openAssessModal()">🩺 Ready to check your brain-health profile?</button></div>
+</div></section>
+<section id="brain-health-tips" class="section"><div class="wrap"><div style="text-align:center;margin-bottom:2rem;"><span class="section-label">// Small steps · Big protection</span><h2 class="section-title">Know the signs. Protect your brain.</h2></div><div class="grid2" style="gap:1.2rem;"><article class="card" style="border-top:3px solid #EF4444;"><div style="font-size:2rem;">🚨</div><h3>Stroke is an emergency</h3><p style="color:var(--mist);font-size:.86rem;line-height:1.65;">Remember FAST: Face drooping, Arm weakness, Speech difficulty, Time to seek emergency help. Sudden vision loss, severe imbalance or an unusually severe headache can also be warning signs. Do not wait for symptoms to pass.</p></article><article class="card" style="border-top:3px solid var(--gold);"><div style="font-size:2rem;">🧩</div><h3>Support cognitive health</h3><p style="color:var(--mist);font-size:.86rem;line-height:1.65;">Keep blood pressure and blood sugar under review, stay physically active, protect sleep, eat a varied diet, stay socially connected and seek assessment for persistent changes in memory or daily function.</p></article></div><p style="font-size:.75rem;color:var(--mist);text-align:center;margin-top:1.2rem;">If stroke is suspected, contact local emergency services immediately. This website is not an emergency service.</p></div></section>
+<section id="how-it-works" class="section"><div class="wrap"><div style="text-align:center;margin-bottom:2rem;"><span class="section-label">// African NeuroHealth Intelligence</span><h2 class="section-title">Your health. Clearer signals.</h2><p class="section-sub" style="margin:0 auto;">Personal brain-health screening and an interactive view of population-level patterns.</p></div><div class="grid2" style="gap:1.2rem;"><div class="card"><div style="font-size:1.8rem;">🩺</div><h3>Personal assessment</h3><p style="color:var(--mist);font-size:.86rem;">Receive a model-based stroke or dementia risk assessment with practical next steps.</p></div><div class="card"><div style="font-size:1.8rem;">🗺️</div><h3>NeuroMap Africa</h3><p style="color:var(--mist);font-size:.86rem;">Explore privacy-protected aggregate patterns where eligible data are available. Empty areas mean no eligible data, not low risk.</p><button class="btn btn-outline btn-sm" onclick="gotoSection('neuromap')">Explore NeuroMap</button></div></div></div></section>
 <!-- NEUROMAP -->
 <section id="neuromap" class="section" style="background:rgba(7,11,22,.45);">
   <div class="wrap">
@@ -551,58 +428,6 @@ For researchers, the same platform doubles as live research infrastructure: uplo
   </div>
 </section>
 
-<!-- PUBLICATIONS -->
-<section id="publications" class="section">
-  <div class="wrap">
-    <span class="section-label" data-i18n="pubsLabel">// Selected Publications</span>
-    <h2 class="section-title" style="margin-bottom:2rem;" data-i18n="pubsTitle">From the Lab</h2>
-    <div class="pub-grid">
-      <div class="pub-card"><span class="pub-journal">J. Food Measurement & Characterization · Springer 2026</span><h4>Phytochemical Profiling of Saigon Cinnamon: Neuroprotective Compound Identification</h4><p>Comprehensive GC-MS and HPLC characterisation of bioactive compounds with predicted blood-brain barrier penetration.</p><div class="pub-meta"><span>Owoyele BV et al. · 2026</span><span style="color:var(--mint);">Open Access ↗</span></div></div>
-      <div class="pub-card"><span class="pub-journal">Journal of Ethnopharmacology · In Submission</span><h4>Saigon Cinnamon Neuroprotection in Male Wistar Rats with Intrahippocampal Scopolamine-Induced Alzheimer's-Like Disease</h4><p>28 biomarkers across 6 neurological domains; 7-group model; multi-dose efficacy.</p><div class="pub-meta"><span>2026 · Under Review</span><span style="color:var(--amber);">Preprint ↗</span></div></div>
-      <div class="pub-card"><span class="pub-journal">Biology of Sex Differences · In Preparation</span><h4>Sex-Dependent Neuroprotective Responses to Cinnamomum loureiroi in an Alzheimer's-Like Rat Model</h4><p>Male vs. female biomarker profiles, HPA-axis sex interactions, and differential therapeutic windows.</p><div class="pub-meta"><span>2026 · In preparation</span><span style="color:var(--mist);">Forthcoming</span></div></div>
-      <div class="pub-card"><span class="pub-journal">SoftwareX / JOSS · In Preparation</span><h4>NeuroTrack Pro: Open-Source Behavioural Analysis for Preclinical Neuroscience</h4><p>Desktop app for automated scoring of Morris water maze, open-field, and forced swim tests.</p><div class="pub-meta"><span>2026 · Software Paper</span><span style="color:var(--mint);">GitHub ↗</span></div></div>
-      <div class="pub-card"><span class="pub-journal">Systematic Review · Completed</span><h4>Nutraceuticals, Herbal Remedies & Hypertension-Related Stroke Risk: A Multi-Omics Perspective</h4><p>Pan-African systematic review with meta-analysis incorporating cardiometabolic risk factors.</p><div class="pub-meta"><span>2026 · Protocol registered</span><span style="color:var(--amber);">PROSPERO ↗</span></div></div>
-      <div class="pub-card"><span class="pub-journal">Systematic Review · Completed</span><h4>The Interconnected Roles of Cardiometabolic and Mental Health Conditions in Stroke Outcome: A Systematic Review of African Evidence</h4><p>Pan-African systematic review with meta-analysis incorporating cardiometabolic risk factors.</p><div class="pub-meta"><span>2026 · Protocol registered</span><span style="color:var(--mist);">PROSPERO</span></div></div>
-      <div class="pub-card"><span class="pub-journal">Systematic Review · Completed</span><h4>The Interconnected Roles of Cardiometabolic and Mental Health Conditions in Stroke Risks: A Systematic Review of African Evidence</h4><p>Pan-African systematic review with meta-analysis incorporating cardiometabolic risk factors.</p><div class="pub-meta"><span>2026 · Protocol registered</span><span style="color:var(--mist);">PROSPERO</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact" class="section">
-  <div class="wrap">
-    <div class="contact-grid">
-      <div>
-        <span class="section-label" data-i18n="contactLabel">// Get in Touch</span>
-        <h2 class="section-title" data-i18n="contactTitle">Connect With Our Lab</h2>
-        <p class="section-sub" data-i18n="contactDesc">Whether you're a funder, collaborator, healthcare institution, or community partner — we welcome conversations that advance African brain health.</p>
-        <div class="contact-items">
-          <div class="contact-item"><div class="c-icon">🏛️</div>African NeuroHealth Lab (ANHRL)</div>
-          <div class="contact-item"><div class="c-icon">📧</div><a href="mailto:africanneurohealth@gmail.com">africanneurohealth@gmail.com</a></div>
-          <div class="contact-item"><div class="c-icon">🌐</div>neuromatrixbiosystems.com</div>
-          <div class="contact-item"><div class="c-icon">🤝</div>GRASP · NIH · DSI Africa.</div>
-        </div>
-      </div>
-      <div class="contact-form">
-        <h3 data-i18n="contactFormTitle">Send a Message</h3>
-        <div class="form-row">
-          <div class="fg"><label>Full Name</label><input type="text" id="cnt-name" placeholder="Dr. / Prof. / Mr. / Ms."></div>
-          <div class="fg"><label>Email</label><input type="email" id="cnt-email" placeholder="you@institution.edu"></div>
-        </div>
-        <div class="fg"><label>I am a…</label>
-          <select id="cnt-role">
-            <option>— Select role —</option><option>Funder / Donor</option><option>Researcher / Collaborator</option>
-            <option>Healthcare Professional</option><option>Patient / Community Member</option>
-            <option>Student / Trainee</option><option>Journalist / Media</option>
-          </select>
-        </div>
-        <div class="fg"><label>Message</label><textarea id="cnt-msg" placeholder="Tell us how you'd like to collaborate…"></textarea></div>
-        <button class="btn btn-gold btn-full" onclick="sendContact()">Send Message →</button>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
@@ -629,7 +454,7 @@ For researchers, the same platform doubles as live research infrastructure: uplo
     </ul></div>
   </div>
   <div class="footer-bottom">
-    <p data-i18n="footerCopy">© 2026 African NeuroHealth Research Lab ·ANHRL GRASP/NIH/DSI· NeuroMatrix Biosystems</p>
+    <p data-i18n="footerCopy">© 2026 African NeuroHealth Intelligence · NeuroMatrix Biosystems</p>
     <div class="stack-badges"><span class="stack-badge">Supabase</span><span class="stack-badge">Leaflet</span><span class="stack-badge">Plotly</span><span class="stack-badge">jsPDF</span><span class="stack-badge">HTML5</span></div>
   </div>
 </footer>
