@@ -3611,7 +3611,7 @@ function generatePDF(type, data) {
   doc.setTextColor(201,168,76); doc.setFontSize(16); doc.setFont('helvetica','bold');
   doc.text('African NeuroHealth Intelligence', M, 13);
   doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,220,200);
-  doc.text('African NeuroHealth Research Lab· GRASP/NIH/DSI Africa', M, 21);
+  doc.text('African NeuroHealth Intelligence', M, 21);
   doc.text('neuromatrixbiosystems.com  |  A Research Unit of NeuroMatrix Biosystems', M, 28);
 
   doc.setFillColor(240,192,64); doc.rect(M,40,W-M*2,10,'F');
@@ -3669,9 +3669,9 @@ function generatePDF(type, data) {
 
   doc.setFillColor(7,11,22); doc.rect(0,286,W,11,'F');
   doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(160,210,180);
-  doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026', M, 293);
+  doc.text('African NeuroHealth Intelligence · NeuroMatrix Biosystems · © 2026', M, 293);
 
-  doc.save('ANHRL_' + type + '_Report_' + String(data.patientName || data.userId || 'research').replace(/\s+/g,'_') + '_' + Date.now() + '.pdf');
+  doc.save('ANHI_' + type + '_Report_' + String(data.patientName || data.userId || 'research').replace(/\s+/g,'_') + '_' + Date.now() + '.pdf');
   toast('📄 PDF report downloaded!');
 }
 
@@ -3723,8 +3723,8 @@ function generateNutritionPDF() {
   });
   doc.setFillColor(7,11,22);doc.rect(0,286,W,11,'F');
   doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,210,180);
-  doc.text('African NeuroHealth Research Lab · NeuroMatrix Biosystems · © 2026',M,293);
-  doc.save('ANHRL_Nutrition_Report_' + (SESSION.user?SESSION.user.id:'') + '_' + Date.now() + '.pdf');
+  doc.text('African NeuroHealth Intelligence · NeuroMatrix Biosystems · © 2026',M,293);
+  doc.save('ANHI_Nutrition_Report_' + (SESSION.user?SESSION.user.id:'') + '_' + Date.now() + '.pdf');
   toast('📄 Nutrition PDF downloaded!');
 }
 function doStrokePDF() {
